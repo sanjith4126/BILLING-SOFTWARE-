@@ -2,6 +2,8 @@ using System;
 using System.IO;
 using System.Windows.Forms;
 using GroceryPos.Data;
+using GroceryPos.Hardware;
+using GroceryPos.Printing;
 
 namespace GroceryPos.App
 {
@@ -30,6 +32,17 @@ namespace GroceryPos.App
                 Suppliers = new SupplierRepository(db)
             };
             ctx.Items = new ItemRepository(db, ctx.Audit);
+            ctx.Bills = new BillRepository(db, ctx.Audit);
+            ctx.Customers = new CustomerRepository(db, ctx.Audit);
+            ctx.CustomerLedger = new CustomerLedgerRepository(db, ctx.Audit);
+            ctx.CreditLimits = new CreditLimitRepository(db);
+            ctx.CreditPayments = new CreditPaymentRepository(db, ctx.Audit);
+            ctx.Batches = new BatchRepository(db);
+            ctx.StockLedger = new StockLedgerRepository(db, ctx.Audit);
+            ctx.Purchases = new PurchaseRepository(db, ctx.Audit);
+            ctx.Shifts = new ShiftRepository(db, ctx.Audit);
+            ctx.Printer = new WindowsRawPrinter();
+            ctx.WeightSource = new ManualWeightSource();
 
             // Seed default owner if empty
             if (ctx.Users.All().Count == 0)

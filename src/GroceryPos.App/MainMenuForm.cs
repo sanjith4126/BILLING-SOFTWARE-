@@ -15,7 +15,7 @@ namespace GroceryPos.App
             StartPosition = FormStartPosition.CenterScreen;
 
             var flow = new FlowLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(20), FlowDirection = FlowDirection.TopDown };
-            flow.Controls.Add(MakeBtn("1. Billing counter (F1)", () => new BillingStubForm(_ctx).ShowDialog()));
+            flow.Controls.Add(MakeBtn("1. Billing counter (F1)", () => new BillingForm(_ctx).ShowDialog()));
             flow.Controls.Add(MakeBtn("2. Scale & weight setup", () => new ScaleSetupStubForm(_ctx).ShowDialog()));
             flow.Controls.Add(MakeBtn("4. Item master", () => new ItemMasterForm(_ctx).ShowDialog()));
             flow.Controls.Add(MakeBtn("5. Stock & inventory", () => Msg("Stock — Phase 4 stub")));

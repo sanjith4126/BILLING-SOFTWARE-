@@ -227,29 +227,7 @@ namespace GroceryPos.App
         }
     }
 
-    public class SettingsForm : Form
-    {
-        public SettingsForm(AppContext ctx)
-        {
-            Text = "Settings"; Width = 500; Height = 400; StartPosition = FormStartPosition.CenterParent;
-            var grid = new DataGridView { Dock = DockStyle.Fill };
-            var all = ctx.Settings.GetAll();
-            var rows = new List<KeyValuePair<string, string>>();
-            foreach (var kv in all) rows.Add(kv);
-            grid.DataSource = rows;
-            Controls.Add(grid);
-        }
-    }
-
-    // Phase-2/3 stubs
-    public class BillingStubForm : Form
-    {
-        public BillingStubForm(AppContext ctx)
-        {
-            Text = "Billing (stub)"; Width = 600; Height = 300;
-            Controls.Add(new Label { Text = "Billing counter — implemented in service layer.\nUI wire-up beyond scope of this build session.", Dock = DockStyle.Fill });
-        }
-    }
+    // Phase-3 stub
     public class ScaleSetupStubForm : Form
     {
         public ScaleSetupStubForm(AppContext ctx)
