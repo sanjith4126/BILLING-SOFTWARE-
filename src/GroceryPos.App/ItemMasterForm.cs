@@ -227,13 +227,4 @@ namespace GroceryPos.App
         }
     }
 
-    // Phase-3 stub
-    public class ScaleSetupStubForm : Form
-    {
-        public ScaleSetupStubForm(AppContext ctx)
-        {
-            Text = "Scale setup (stub)"; Width = 600; Height = 300;
-            Controls.Add(new Label { Text = "Serial port + regex parser configured in settings table.\nSerialWeightSource fully implemented; UI wiring stubbed.", Dock = DockStyle.Fill });
-        }
-    }
 }

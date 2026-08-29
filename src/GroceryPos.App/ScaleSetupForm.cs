@@ -1,0 +1,356 @@
+using System;
+using System.Collections.Generic;
+using System.IO.Ports;
+using System.Linq;
+using System.Text;
+using System.Windows.Forms;
+using GroceryPos.Domain;
+using GroceryPos.Hardware;
+
+namespace GroceryPos.App
+{
+    /// <summary>
+    /// Scale setup: mode, port config, raw dump viewer, detect cycler, regex tester,
+    /// per-item tare / round-to / min-sale.
+    /// Persists mode, port, baud, parity, data, stop, regex, poll_cmd via settings table.
+    /// </summary>
+    public class ScaleSetupForm : Form
+    {
+        private readonly AppContext _ctx;
+
+        private ComboBox _mode, _port, _baud, _parity, _data, _stop;
+        private TextBox _regex, _poll;
+        private TextBox _rawDump;
+        private TextBox _testFrame;
+        private Label _testResult;
+        private Timer _rawTimer;
+
+        private SerialWeightSource _tmpSource; // used for live raw view
+
+        private DataGridView _itemsGrid;
+
+        public const string KeyMode = "scale.mode";
+        public const string KeyPort = "scale.port";
+        public const string KeyBaud = "scale.baud";
+        public const string KeyParity = "scale.parity";
+        public const string KeyDataBits = "scale.data_bits";
+        public const string KeyStopBits = "scale.stop_bits";
+        public const string KeyRegex = "scale.regex";
+        public const string KeyPoll = "scale.poll_cmd";
+
+        public const string DefaultRegex = @"(?<status>ST|US)?[,\s]*(?:GS|NT)?[,\s]*(?<sign>[+-])?\s*(?<value>\d+(?:\.\d+)?)\s*(?<unit>kg|g)?";
+
+        public ScaleSetupForm(AppContext ctx)
+        {
+            _ctx = ctx;
+            Text = "Scale & weight setup";
+            Width = 900; Height = 640;
+            StartPosition = FormStartPosition.CenterParent;
+
+            var tabs = new TabControl { Dock = DockStyle.Fill };
+            tabs.TabPages.Add(BuildDeviceTab());
+            tabs.TabPages.Add(BuildItemsTab());
+            Controls.Add(tabs);
+
+            FormClosed += (s, e) => { StopLiveDump(); };
+        }
+
+        // ---------- Device tab ----------
+        private TabPage BuildDeviceTab()
+        {
+            var tp = new TabPage("Device");
+
+            int y = 12;
+            AddLabel(tp, "Mode", 10, y);
+            _mode = new ComboBox { Left = 120, Top = y, Width = 120, DropDownStyle = ComboBoxStyle.DropDownList };
+            _mode.Items.AddRange(new object[] { "Serial", "Manual" });
+            tp.Controls.Add(_mode);
+            y += 30;
+
+            AddLabel(tp, "Port", 10, y);
+            _port = new ComboBox { Left = 120, Top = y, Width = 120 };
+            foreach (var p in SerialPort.GetPortNames()) _port.Items.Add(p);
+            tp.Controls.Add(_port);
+            y += 30;
+
+            AddLabel(tp, "Baud", 10, y);
+            _baud = new ComboBox { Left = 120, Top = y, Width = 100, DropDownStyle = ComboBoxStyle.DropDownList };
+            _baud.Items.AddRange(new object[] { "1200", "2400", "4800", "9600", "19200", "38400", "57600", "115200" });
+            tp.Controls.Add(_baud);
+            AddLabel(tp, "Data bits", 240, y);
+            _data = new ComboBox { Left = 320, Top = y, Width = 60, DropDownStyle = ComboBoxStyle.DropDownList };
+            _data.Items.AddRange(new object[] { "7", "8" });
+            tp.Controls.Add(_data);
+            AddLabel(tp, "Parity", 400, y);
+            _parity = new ComboBox { Left = 460, Top = y, Width = 80, DropDownStyle = ComboBoxStyle.DropDownList };
+            _parity.Items.AddRange(new object[] { "None", "Even", "Odd" });
+            tp.Controls.Add(_parity);
+            AddLabel(tp, "Stop", 550, y);
+            _stop = new ComboBox { Left = 600, Top = y, Width = 60, DropDownStyle = ComboBoxStyle.DropDownList };
+            _stop.Items.AddRange(new object[] { "1", "2" });
+            tp.Controls.Add(_stop);
+            y += 30;
+
+            AddLabel(tp, "Regex", 10, y);
+            _regex = new TextBox { Left = 120, Top = y, Width = 600 };
+            tp.Controls.Add(_regex);
+            y += 30;
+
+            AddLabel(tp, "Poll cmd", 10, y);
+            _poll = new TextBox { Left = 120, Top = y, Width = 200 };
+            tp.Controls.Add(_poll);
+            y += 30;
+
+            var saveBtn = new Button { Text = "Save settings", Left = 120, Top = y, Width = 130 };
+            saveBtn.Click += (s, e) => SaveSettings();
+            tp.Controls.Add(saveBtn);
+            var detectBtn = new Button { Text = "Detect", Left = 260, Top = y, Width = 100 };
+            detectBtn.Click += (s, e) => Detect();
+            tp.Controls.Add(detectBtn);
+            var startBtn = new Button { Text = "Start live dump", Left = 370, Top = y, Width = 130 };
+            startBtn.Click += (s, e) => StartLiveDump();
+            tp.Controls.Add(startBtn);
+            var stopBtn = new Button { Text = "Stop", Left = 510, Top = y, Width = 80 };
+            stopBtn.Click += (s, e) => StopLiveDump();
+            tp.Controls.Add(stopBtn);
+            y += 40;
+
+            AddLabel(tp, "Raw dump (hex / ASCII)", 10, y);
+            y += 20;
+            _rawDump = new TextBox
+            {
+                Left = 10, Top = y, Width = 860, Height = 160,
+                Multiline = true, ScrollBars = ScrollBars.Vertical, ReadOnly = true,
+                Font = new System.Drawing.Font("Consolas", 9F)
+            };
+            tp.Controls.Add(_rawDump);
+            y += 170;
+
+            AddLabel(tp, "Test frame", 10, y);
+            _testFrame = new TextBox { Left = 120, Top = y, Width = 500 };
+            tp.Controls.Add(_testFrame);
+            var testBtn = new Button { Text = "Parse", Left = 630, Top = y - 2, Width = 80 };
+            testBtn.Click += (s, e) => ParseTest();
+            tp.Controls.Add(testBtn);
+            y += 26;
+            _testResult = new Label { Left = 120, Top = y, Width = 700, Height = 40 };
+            tp.Controls.Add(_testResult);
+
+            Load += (s, e) => LoadSettings();
+            return tp;
+        }
+
+        private void AddLabel(Control parent, string text, int x, int y)
+        {
+            parent.Controls.Add(new Label { Text = text, Left = x, Top = y + 3, Width = 100 });
+        }
+
+        private void LoadSettings()
+        {
+            _mode.Text = _ctx.Settings.Get(KeyMode, "Manual");
+            _port.Text = _ctx.Settings.Get(KeyPort, "COM1");
+            _baud.Text = _ctx.Settings.Get(KeyBaud, "9600");
+            _data.Text = _ctx.Settings.Get(KeyDataBits, "8");
+            _parity.Text = _ctx.Settings.Get(KeyParity, "None");
+            _stop.Text = _ctx.Settings.Get(KeyStopBits, "1");
+            _regex.Text = _ctx.Settings.Get(KeyRegex, DefaultRegex);
+            _poll.Text = _ctx.Settings.Get(KeyPoll, "");
+        }
+
+        private void SaveSettings()
+        {
+            _ctx.Settings.Set(KeyMode, _mode.Text);
+            _ctx.Settings.Set(KeyPort, _port.Text);
+            _ctx.Settings.Set(KeyBaud, _baud.Text);
+            _ctx.Settings.Set(KeyDataBits, _data.Text);
+            _ctx.Settings.Set(KeyParity, _parity.Text);
+            _ctx.Settings.Set(KeyStopBits, _stop.Text);
+            _ctx.Settings.Set(KeyRegex, _regex.Text);
+            _ctx.Settings.Set(KeyPoll, _poll.Text);
+            MessageBox.Show("Scale settings saved. Restart the app for the new source to take effect.", "Saved");
+        }
+
+        // ---------- Detect ----------
+        private void Detect()
+        {
+            var attempts = new List<Tuple<int, int, Parity, StopBits>>
+            {
+                Tuple.Create(9600, 8, Parity.None, StopBits.One),
+                Tuple.Create(4800, 8, Parity.None, StopBits.One),
+                Tuple.Create(2400, 8, Parity.None, StopBits.One),
+                Tuple.Create(9600, 7, Parity.Even, StopBits.One),
+            };
+            string port = _port.Text;
+            if (string.IsNullOrWhiteSpace(port)) { MessageBox.Show("Pick a port first"); return; }
+            var sb = new StringBuilder();
+            foreach (var a in attempts)
+            {
+                sb.AppendLine("Trying " + a.Item1 + " " + a.Item2 + a.Item3.ToString()[0] + a.Item4);
+                try
+                {
+                    using (var sp = new SerialPort(port, a.Item1, a.Item3, a.Item2, a.Item4))
+                    {
+                        sp.ReadTimeout = 2000;
+                        sp.Open();
+                        var buf = new byte[512];
+                        var end = DateTime.Now.AddSeconds(2);
+                        int total = 0; int printable = 0;
+                        while (DateTime.Now < end)
+                        {
+                            try
+                            {
+                                int n = sp.Read(buf, 0, buf.Length);
+                                for (int i = 0; i < n; i++)
+                                {
+                                    total++;
+                                    if (buf[i] >= 32 && buf[i] <= 126) printable++;
+                                }
+                            }
+                            catch (TimeoutException) { }
+                        }
+                        sb.AppendLine("  bytes=" + total + " printable=" + printable);
+                        if (printable > 0 && printable * 100 / Math.Max(1, total) > 60)
+                        {
+                            sb.AppendLine("  *** looks good ***");
+                        }
+                    }
+                }
+                catch (Exception ex) { sb.AppendLine("  failed: " + ex.Message); }
+            }
+            _rawDump.Text = sb.ToString();
+        }
+
+        // ---------- Live raw dump ----------
+        private void StartLiveDump()
+        {
+            StopLiveDump();
+            try
+            {
+                int baud = int.Parse(_baud.Text);
+                int data = int.Parse(_data.Text);
+                Parity par = (Parity)Enum.Parse(typeof(Parity), _parity.Text);
+                StopBits sb = _stop.Text == "2" ? StopBits.Two : StopBits.One;
+                _tmpSource = new SerialWeightSource(_port.Text, baud, data, par, sb,
+                    string.IsNullOrEmpty(_regex.Text) ? DefaultRegex : _regex.Text, _poll.Text);
+                _tmpSource.Start();
+                _rawTimer = new Timer { Interval = 300 };
+                _rawTimer.Tick += (s, e) => RefreshDump();
+                _rawTimer.Start();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Cannot open port: " + ex.Message);
+            }
+        }
+
+        private void RefreshDump()
+        {
+            if (_tmpSource == null) return;
+            var frames = _tmpSource.RawFrames();
+            var sb = new StringBuilder();
+            foreach (var f in frames)
+            {
+                sb.Append(ToHex(f)).Append("   |   ").AppendLine(f);
+            }
+            _rawDump.Text = sb.ToString();
+            _rawDump.SelectionStart = _rawDump.Text.Length;
+            _rawDump.ScrollToCaret();
+        }
+
+        private static string ToHex(string s)
+        {
+            var sb = new StringBuilder();
+            foreach (var c in s) sb.Append(((int)c).ToString("X2")).Append(' ');
+            return sb.ToString();
+        }
+
+        private void StopLiveDump()
+        {
+            try { if (_rawTimer != null) { _rawTimer.Stop(); _rawTimer.Dispose(); _rawTimer = null; } } catch { }
+            try { if (_tmpSource != null) { _tmpSource.Dispose(); _tmpSource = null; } } catch { }
+        }
+
+        // ---------- Regex test ----------
+        private void ParseTest()
+        {
+            try
+            {
+                var s = new SerialWeightSource("COM_TEST", 9600, 8, Parity.None, StopBits.One,
+                    string.IsNullOrEmpty(_regex.Text) ? DefaultRegex : _regex.Text, "");
+                var r = s.TryParse(_testFrame.Text ?? "");
+                if (!r.HasValue) { _testResult.Text = "No match."; return; }
+                _testResult.Text = "Grams: " + r.Value.Grams + "   Stable: " + r.Value.Stable;
+                s.Dispose();
+            }
+            catch (Exception ex) { _testResult.Text = "Error: " + ex.Message; }
+        }
+
+        // ---------- Items tab ----------
+        private class ItemRow
+        {
+            public long Id { get; set; }
+            public string Name { get; set; }
+            public string SoldBy { get; set; }
+            public int TareGrams { get; set; }
+            public int RoundToGrams { get; set; }
+            public int MinSaleGrams { get; set; }
+        }
+
+        private TabPage BuildItemsTab()
+        {
+            var tp = new TabPage("Per-item weight");
+            _itemsGrid = new DataGridView
+            {
+                Dock = DockStyle.Fill, AutoGenerateColumns = false, AllowUserToAddRows = false,
+                SelectionMode = DataGridViewSelectionMode.FullRowSelect, RowHeadersVisible = false
+            };
+            _itemsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "ID", DataPropertyName = "Id", Width = 50, ReadOnly = true });
+            _itemsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Name", DataPropertyName = "Name", Width = 260, ReadOnly = true });
+            _itemsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Sold by", DataPropertyName = "SoldBy", Width = 80, ReadOnly = true });
+            _itemsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Tare g", DataPropertyName = "TareGrams", Width = 80 });
+            _itemsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Round g", DataPropertyName = "RoundToGrams", Width = 80 });
+            _itemsGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Min sale g", DataPropertyName = "MinSaleGrams", Width = 100 });
+
+            var save = new Button { Text = "Save changes", Dock = DockStyle.Bottom, Height = 36 };
+            save.Click += (s, e) => SaveItems();
+            tp.Controls.Add(_itemsGrid);
+            tp.Controls.Add(save);
+
+            tp.Enter += (s, e) => ReloadItems();
+            return tp;
+        }
+
+        private List<ItemRow> _itemRows = new List<ItemRow>();
+
+        private void ReloadItems()
+        {
+            var items = _ctx.Items.Search("");
+            _itemRows.Clear();
+            foreach (var it in items.Where(x => x.SoldBy == SoldBy.Weight))
+            {
+                _itemRows.Add(new ItemRow
+                {
+                    Id = it.Id, Name = it.Name, SoldBy = it.SoldBy.ToString(),
+                    TareGrams = it.TareGrams, RoundToGrams = it.RoundToGrams, MinSaleGrams = it.MinSaleGrams
+                });
+            }
+            _itemsGrid.DataSource = null;
+            _itemsGrid.DataSource = _itemRows;
+        }
+
+        private void SaveItems()
+        {
+            int updated = 0;
+            foreach (var r in _itemRows)
+            {
+                var it = _ctx.Items.FindById(r.Id);
+                if (it == null) continue;
+                if (it.TareGrams == r.TareGrams && it.RoundToGrams == r.RoundToGrams && it.MinSaleGrams == r.MinSaleGrams) continue;
+                it.TareGrams = r.TareGrams; it.RoundToGrams = r.RoundToGrams; it.MinSaleGrams = r.MinSaleGrams;
+                _ctx.Items.Save(it, _ctx.CurrentUser.Id);
+                updated++;
+            }
+            MessageBox.Show("Saved " + updated + " items", "Weight settings");
+        }
+    }
+}

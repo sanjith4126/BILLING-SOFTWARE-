@@ -151,7 +151,7 @@ namespace GroceryPos.Hardware
             else h(this, r);
         }
 
-        internal WeightReading? TryParse(string frame)
+        public WeightReading? TryParse(string frame)
         {
             var m = _regex.Match(frame);
             if (!m.Success) return null;

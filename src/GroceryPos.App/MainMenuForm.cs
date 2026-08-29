@@ -11,30 +11,36 @@ namespace GroceryPos.App
         {
             _ctx = ctx;
             Text = "Grocery POS — " + ctx.CurrentUser.Name + " (" + ctx.CurrentUser.Role + ")";
-            Width = 700; Height = 480;
+            Width = 720; Height = 640;
             StartPosition = FormStartPosition.CenterScreen;
 
             var flow = new FlowLayoutPanel { Dock = DockStyle.Fill, Padding = new Padding(20), FlowDirection = FlowDirection.TopDown };
-            flow.Controls.Add(MakeBtn("1. Billing counter (F1)", () => new BillingForm(_ctx).ShowDialog()));
-            flow.Controls.Add(MakeBtn("2. Scale & weight setup", () => new ScaleSetupStubForm(_ctx).ShowDialog()));
-            flow.Controls.Add(MakeBtn("4. Item master", () => new ItemMasterForm(_ctx).ShowDialog()));
-            flow.Controls.Add(MakeBtn("5. Stock & inventory", () => Msg("Stock — Phase 4 stub")));
-            flow.Controls.Add(MakeBtn("6. Purchase entry", () => Msg("Purchase — Phase 4 stub")));
-            flow.Controls.Add(MakeBtn("7. Customer khata", () => Msg("Khata — Phase 5 stub")));
-            flow.Controls.Add(MakeBtn("8. Day close / cash tally", () => Msg("Shift — Phase 5 stub")));
-            flow.Controls.Add(MakeBtn("9. Reports & GST", () => Msg("Reports — Phase 6 stub")));
-            flow.Controls.Add(MakeBtn("Settings", () => new SettingsForm(_ctx).ShowDialog()));
-            flow.Controls.Add(MakeBtn("Sign out", () => { Close(); }));
+            flow.Controls.Add(Btn("1. Billing counter", () => new BillingForm(_ctx).ShowDialog()));
+            flow.Controls.Add(Btn("2. Scale & weight setup", () => new ScaleSetupForm(_ctx).ShowDialog()));
+            flow.Controls.Add(Btn("4. Item master", () => new ItemMasterForm(_ctx).ShowDialog()));
+            flow.Controls.Add(Btn("5a. Stock summary", () => new StockSummaryForm(_ctx).ShowDialog()));
+            flow.Controls.Add(Btn("5b. Stock take", () => new StockTakeForm(_ctx).ShowDialog()));
+            flow.Controls.Add(Btn("5c. Damage / wastage", () => new WastageForm(_ctx).ShowDialog()));
+            flow.Controls.Add(Btn("5d. Unit conversion (bag to loose)", () => new UnitConversionForm(_ctx).ShowDialog()));
+            flow.Controls.Add(Btn("5e. Near-expiry report", () => new NearExpiryReportForm(_ctx).ShowDialog()));
+            flow.Controls.Add(Btn("5f. Reorder report", () => new ReorderReportForm(_ctx).ShowDialog()));
+            flow.Controls.Add(Btn("6a. Purchase entry", () => new PurchaseEntryForm(_ctx).ShowDialog()));
+            flow.Controls.Add(Btn("6b. Purchase return", () => new PurchaseReturnForm(_ctx).ShowDialog()));
+            flow.Controls.Add(Btn("7a. Customer khata (ledger)", () => new CustomerLedgerForm(_ctx).ShowDialog()));
+            flow.Controls.Add(Btn("7b. Opening balance import", () => new OpeningBalanceImportForm(_ctx).ShowDialog()));
+            flow.Controls.Add(Btn("7c. Ageing report", () => new AgeingReportForm(_ctx).ShowDialog()));
+            flow.Controls.Add(Btn("8. Shift / day close", () => new ShiftForm(_ctx).ShowDialog()));
+            flow.Controls.Add(Btn("9. Reports & GST", () => new ReportsMenuForm(_ctx).ShowDialog()));
+            flow.Controls.Add(Btn("Settings", () => new SettingsForm(_ctx).ShowDialog()));
+            flow.Controls.Add(Btn("Sign out", () => { Close(); }));
             Controls.Add(flow);
         }
 
-        private Button MakeBtn(string t, Action a)
+        private Button Btn(string t, Action a)
         {
-            var b = new Button { Text = t, Width = 300, Height = 40 };
+            var b = new Button { Text = t, Width = 320, Height = 36 };
             b.Click += (s, e) => a();
             return b;
         }
-
-        private void Msg(string s) { MessageBox.Show(s); }
     }
 }
