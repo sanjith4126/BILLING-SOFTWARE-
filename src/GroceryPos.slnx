@@ -1,0 +1,8 @@
+<Solution>
+  <Project Path="GroceryPos.App/GroceryPos.App.csproj" />
+  <Project Path="GroceryPos.Data/GroceryPos.Data.csproj" />
+  <Project Path="GroceryPos.Domain/GroceryPos.Domain.csproj" />
+  <Project Path="GroceryPos.Hardware/GroceryPos.Hardware.csproj" />
+  <Project Path="GroceryPos.Printing/GroceryPos.Printing.csproj" />
+  <Project Path="GroceryPos.Tests/GroceryPos.Tests.csproj" />
+</Solution>
