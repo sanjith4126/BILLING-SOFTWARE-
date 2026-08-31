@@ -91,5 +91,66 @@ namespace GroceryPos.Tests
             Assert.Equal("Rs.100", ReceiptFormatter.SafeAscii("₹100"));
             Assert.Equal("it's a \"test\"", ReceiptFormatter.SafeAscii("it’s a “test”"));
         }
+
+        [Fact]
+        public void TitleIsCashBillWhenGstinBlank()
+        {
+            var fmt = new ReceiptFormatter();
+            var lines = fmt.Format(new ReceiptFormatter.StoreInfo { Name = "AKIL STORE", CounterId = 1 },
+                                   SampleBill(), "U", new Dictionary<long, string> { { 1, "x" }, { 2, "y" } });
+            Assert.Contains(lines, l => l.Contains("CASH BILL"));
+            Assert.DoesNotContain(lines, l => l.Contains("TAX INVOICE"));
+        }
+
+        [Fact]
+        public void TitleIsTaxInvoiceWhenGstinPresent()
+        {
+            var fmt = new ReceiptFormatter();
+            var lines = fmt.Format(new ReceiptFormatter.StoreInfo { Name = "AKIL STORE", Gstin = "29ABCDE1234F1Z5", CounterId = 1 },
+                                   SampleBill(), "U", new Dictionary<long, string> { { 1, "x" }, { 2, "y" } });
+            Assert.Contains(lines, l => l.Contains("TAX INVOICE"));
+            Assert.DoesNotContain(lines, l => l.Contains("CASH BILL"));
+        }
+
+        [Fact]
+        public void PhoneAndFooterFromSettings()
+        {
+            var fmt = new ReceiptFormatter();
+            var lines = fmt.Format(new ReceiptFormatter.StoreInfo
+            {
+                Name = "AKIL STORE", Phone = "9698776767", Footer = "Thank you, Visit Again!!!", CounterId = 1
+            }, SampleBill(), "U", new Dictionary<long, string> { { 1, "x" }, { 2, "y" } });
+            Assert.Contains(lines, l => l.Contains("Ph: 9698776767"));
+            Assert.Contains(lines, l => l.Contains("Thank you, Visit Again!!!"));
+        }
+
+        [Fact]
+        public void LoyaltyBlockPrintsWhenSupplied()
+        {
+            var fmt = new ReceiptFormatter();
+            var loyalty = new ReceiptFormatter.LoyaltyBlock
+            {
+                CustomerPhone = "9876543210",
+                PointsEarnedThisBill = 7,
+                PointsBalance = 49
+            };
+            var lines = fmt.Format(new ReceiptFormatter.StoreInfo { Name = "AKIL STORE", CounterId = 1 },
+                                   SampleBill(), "U", new Dictionary<long, string> { { 1, "x" }, { 2, "y" } },
+                                   false, null, null, loyalty);
+            Assert.Contains(lines, l => l.Contains("Customer: 9876543210"));
+            Assert.Contains(lines, l => l.Contains("Points earned this bill"));
+            Assert.Contains(lines, l => l.Contains("Points balance"));
+            foreach (var l in lines) Assert.True(l.Length <= ReceiptFormatter.Width);
+        }
+
+        [Fact]
+        public void LoyaltyBlockOmittedByDefault()
+        {
+            var fmt = new ReceiptFormatter();
+            var lines = fmt.Format(new ReceiptFormatter.StoreInfo { Name = "AKIL STORE", CounterId = 1 },
+                                   SampleBill(), "U", new Dictionary<long, string> { { 1, "x" }, { 2, "y" } });
+            Assert.DoesNotContain(lines, l => l.Contains("Points earned"));
+            Assert.DoesNotContain(lines, l => l.Contains("Points balance"));
+        }
     }
 }

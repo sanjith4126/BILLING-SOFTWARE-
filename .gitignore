@@ -8,3 +8,4 @@ obj/
 *.sqlite
 *.sqlite-*
 packages/
+.claude/settings.local.json

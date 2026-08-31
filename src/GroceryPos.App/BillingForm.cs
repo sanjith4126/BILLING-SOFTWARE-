@@ -420,7 +420,10 @@ namespace GroceryPos.App
                     Name = _ctx.Settings.Get("store_name", "GROCERY STORE"),
                     Address1 = _ctx.Settings.Get("store_address_1", ""),
                     Address2 = _ctx.Settings.Get("store_address_2", ""),
+                    Phone = _ctx.Settings.Get("store_phone", ""),
                     Gstin = _ctx.Settings.Get("store_gstin", ""),
+                    Footer = _ctx.Settings.Get("store_footer", ""),
+                    TitleNoGst = _ctx.Settings.Get("receipt_title_no_gst", "CASH BILL"),
                     CounterId = b.CounterId
                 };
                 var names = new Dictionary<long, string>();
@@ -428,7 +431,22 @@ namespace GroceryPos.App
                 var fmt = new ReceiptFormatter();
                 Money? prev = _customer != null && b.IsCreditSale ? (Money?)new Money(prevBalPaise) : null;
                 Money? cur = _customer != null && b.IsCreditSale ? (Money?)new Money(_customer.CurrentBalancePaise) : null;
-                var lines = fmt.Format(store, b, _ctx.CurrentUser.Name, names, false, prev, cur);
+
+                ReceiptFormatter.LoyaltyBlock loyalty = null;
+                if (_customer != null)
+                {
+                    int loyaltyRate;
+                    int.TryParse(_ctx.Settings.Get("loyalty_points_per_100rupees", "1"), out loyaltyRate);
+                    long pointsEarned = (b.NetPaise / 10000L) * loyaltyRate;
+                    loyalty = new ReceiptFormatter.LoyaltyBlock
+                    {
+                        CustomerName = _customer.Name,
+                        CustomerPhone = _customer.Phone,
+                        PointsEarnedThisBill = pointsEarned,
+                        PointsBalance = _customer.LoyaltyPoints
+                    };
+                }
+                var lines = fmt.Format(store, b, _ctx.CurrentUser.Name, names, false, prev, cur, loyalty);
                 var payments = b.Payments != null && b.Payments.Any(p => p.Mode == PaymentMode.Cash);
                 int drawerPin;
                 int.TryParse(_ctx.Settings.Get("drawer_pin", "0"), out drawerPin);

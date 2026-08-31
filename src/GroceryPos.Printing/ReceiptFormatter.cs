@@ -19,22 +19,39 @@ namespace GroceryPos.Printing
             public string Name;
             public string Address1;
             public string Address2;
+            public string Phone;
             public string Gstin;
+            public string Footer;
+            public string TitleNoGst;
             public int CounterId;
+        }
+
+        public class LoyaltyBlock
+        {
+            public string CustomerName;
+            public string CustomerPhone;
+            public long PointsEarnedThisBill;
+            public long PointsBalance;
         }
 
         public IList<string> Format(StoreInfo store, Bill bill, string cashierName,
                                     Dictionary<long, string> itemNamesById,
                                     bool duplicate = false,
                                     Money? previousBalance = null,
-                                    Money? newBalance = null)
+                                    Money? newBalance = null,
+                                    LoyaltyBlock loyalty = null)
         {
             var lines = new List<string>();
             lines.Add(Center(SafeAscii(store.Name)));
             if (!string.IsNullOrWhiteSpace(store.Address1)) lines.Add(Center(SafeAscii(store.Address1)));
             if (!string.IsNullOrWhiteSpace(store.Address2)) lines.Add(Center(SafeAscii(store.Address2)));
-            if (!string.IsNullOrWhiteSpace(store.Gstin)) lines.Add(Center("GSTIN: " + SafeAscii(store.Gstin)));
-            lines.Add(Center("- - - - - TAX INVOICE - - - - -"));
+            if (!string.IsNullOrWhiteSpace(store.Phone)) lines.Add(Center("Ph: " + SafeAscii(store.Phone)));
+            bool hasGstin = !string.IsNullOrWhiteSpace(store.Gstin);
+            if (hasGstin) lines.Add(Center("GSTIN: " + SafeAscii(store.Gstin)));
+            string title = hasGstin
+                ? "TAX INVOICE"
+                : (!string.IsNullOrWhiteSpace(store.TitleNoGst) ? store.TitleNoGst : "CASH BILL");
+            lines.Add(Center("- - - - - " + title + " - - - - -"));
             if (duplicate) lines.Add(Center("*** DUPLICATE COPY ***"));
 
             string billNo = "Bill: INV-" + bill.BillNo;
@@ -114,7 +131,20 @@ namespace GroceryPos.Printing
                 lines.Add(PadPair("Total outstanding", newBalance.Value.ToString()));
             }
 
-            lines.Add(Center("Thank you, visit again"));
+            if (loyalty != null)
+            {
+                lines.Add(new string('-', Width));
+                if (!string.IsNullOrWhiteSpace(loyalty.CustomerName))
+                    lines.Add(PadPair("Customer: " + SafeAscii(loyalty.CustomerName),
+                                      "Ph: " + SafeAscii(loyalty.CustomerPhone ?? "")));
+                else
+                    lines.Add("Customer: " + SafeAscii(loyalty.CustomerPhone ?? ""));
+                lines.Add(PadPair("Points earned this bill", loyalty.PointsEarnedThisBill.ToString()));
+                lines.Add(PadPair("Points balance", loyalty.PointsBalance.ToString()));
+            }
+
+            string footer = !string.IsNullOrWhiteSpace(store.Footer) ? SafeAscii(store.Footer) : "Thank you, visit again";
+            lines.Add(Center(footer));
 
             // Enforce invariant: every line <=48
             for (int i = 0; i < lines.Count; i++)

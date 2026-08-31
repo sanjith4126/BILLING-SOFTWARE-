@@ -62,16 +62,17 @@ namespace GroceryPos.Data
         {
             using (var c = _db.Open())
             {
-                var rows = c.Query<dynamic>("SELECT " + Cols + " FROM customers ORDER BY name");
+                var rows = c.Query<dynamic>("SELECT " + Cols + " FROM customers ORDER BY COALESCE(name, phone)");
                 return rows.Select(r => (Customer)Map(r)).ToList();
             }
         }
 
         public long Create(Customer cust, long userId)
         {
-            if (string.IsNullOrWhiteSpace(cust.Name)) throw new ArgumentException("Name required");
-            if (cust.CreditAllowed && string.IsNullOrWhiteSpace(cust.Phone))
-                throw new ArgumentException("Credit customers require a phone number");
+            if (string.IsNullOrWhiteSpace(cust.Phone))
+                throw new ArgumentException("Phone required");
+            if (cust.CreditAllowed && string.IsNullOrWhiteSpace(cust.Name))
+                throw new ArgumentException("Credit customers require a name");
             using (var c = _db.Open())
             using (var tx = c.BeginTransaction())
             {
@@ -108,6 +109,12 @@ namespace GroceryPos.Data
             using (var c = _db.Open())
             using (var tx = c.BeginTransaction())
             {
+                if (allowed)
+                {
+                    var name = c.QueryFirstOrDefault<string>("SELECT name FROM customers WHERE id=@i", new { i = customerId }, transaction: tx);
+                    if (string.IsNullOrWhiteSpace(name))
+                        throw new InvalidOperationException("Cannot enable credit: customer has no name on file. Edit the customer and add a name first.");
+                }
                 c.Execute("UPDATE customers SET credit_allowed=@a, updated_at=datetime('now') WHERE id=@i",
                     new { a = allowed ? 1 : 0, i = customerId }, transaction: tx);
                 c.Execute(@"INSERT INTO credit_limit_events(customer_id, event_type, authorised_by)

@@ -115,5 +115,40 @@ namespace GroceryPos.Tests
             sh.Close(s.Id, new List<Tuple<long,int>>(), 1);
             Assert.Throws<InvalidOperationException>(() => sh.RecordPettyCash(s.Id, 100, "note", 1));
         }
+
+        [Fact]
+        public void CustomerCanBeCreatedWithoutNameForLoyaltyOnly()
+        {
+            var repo = new CustomerRepository(_db, _audit);
+            long id = repo.Create(new Customer { Phone = "9876543210", CreditAllowed = false, IsActive = true }, 1);
+            Assert.True(id > 0);
+            var found = repo.FindByPhone("9876543210");
+            Assert.NotNull(found);
+            Assert.True(string.IsNullOrEmpty(found.Name));
+        }
+
+        [Fact]
+        public void CreditCustomerCreateRequiresName()
+        {
+            var repo = new CustomerRepository(_db, _audit);
+            Assert.Throws<ArgumentException>(() =>
+                repo.Create(new Customer { Phone = "9000000000", CreditAllowed = true, IsActive = true }, 1));
+        }
+
+        [Fact]
+        public void CustomerCreateRequiresPhone()
+        {
+            var repo = new CustomerRepository(_db, _audit);
+            Assert.Throws<ArgumentException>(() =>
+                repo.Create(new Customer { Name = "Nameless", IsActive = true }, 1));
+        }
+
+        [Fact]
+        public void EnablingCreditOnNamelessCustomerIsBlocked()
+        {
+            var repo = new CustomerRepository(_db, _audit);
+            long id = repo.Create(new Customer { Phone = "9111111111", IsActive = true }, 1);
+            Assert.Throws<InvalidOperationException>(() => repo.SetCreditAllowed(id, true, 1));
+        }
     }
 }
