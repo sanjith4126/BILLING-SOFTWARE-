@@ -101,8 +101,59 @@ namespace GroceryPos.App
 
             ClearBill(false);
             KeyDown += BillingForm_KeyDown;
-            Shown += (s, e) => _scan.Focus();
+            Shown += (s, e) => { _scan.Focus(); EnsureShiftOpen(); };
             UpdateScaleLabel();
+        }
+
+        private void EnsureShiftOpen()
+        {
+            int counterId;
+            if (!int.TryParse(_ctx.Settings.Get("counter_id", "1"), out counterId)) counterId = 1;
+            var open = _ctx.Shifts.OpenShiftFor(counterId);
+            if (open != null)
+            {
+                _currentShiftId = open.Id;
+                UpdateShiftLabel(open.Id, false);
+                return;
+            }
+
+            var ask = MessageBox.Show(
+                "No shift is open for counter " + counterId + ".\n\n" +
+                "Cash sales must belong to a shift so the day-close cash count works.\n\n" +
+                "Open a shift now?",
+                "Shift not open", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (ask != DialogResult.Yes)
+            {
+                UpdateShiftLabel(null, true);
+                return;
+            }
+
+            string input = Microsoft.VisualBasic.Interaction.InputBox(
+                "Opening cash float in the drawer (rupees):", "Open shift", "0");
+            if (string.IsNullOrWhiteSpace(input)) { UpdateShiftLabel(null, true); return; }
+            long rupees;
+            if (!long.TryParse(input.Trim(), out rupees) || rupees < 0)
+            {
+                MessageBox.Show("Invalid amount. Shift not opened.");
+                UpdateShiftLabel(null, true);
+                return;
+            }
+            var shift = _ctx.Shifts.Open(counterId, _ctx.CurrentUser.Id, rupees * 100L);
+            _currentShiftId = shift.Id;
+            UpdateShiftLabel(shift.Id, false);
+        }
+
+        private void UpdateShiftLabel(long? shiftId, bool warn)
+        {
+            string current = _lblCustomer.Text;
+            // Reuse the top area — append shift status to the title bar for visibility.
+            Text = "Billing counter" +
+                   (shiftId.HasValue ? "  |  Shift #" + shiftId.Value + " OPEN" : "  |  NO SHIFT OPEN") +
+                   "  —  F2 hold  F3 recall  F4 weigh  F5 discount  F9 pay  Del remove  Esc clear";
+            if (warn)
+                MessageBox.Show("Sales will still work, but they will NOT be tied to a shift. " +
+                                "Open one from Main Menu → Shift when convenient.",
+                                "Shift not open", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
         private void UpdateScaleLabel()
