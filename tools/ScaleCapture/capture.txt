@@ -1,0 +1,71 @@
+
+================================================================
+ScaleCapture run started 2026-08-29 14:25:02
+Log file: C:\dev\grocery-pos\tools\ScaleCapture\capture.txt
+================================================================
+
+Detected COM ports:
+  (none)
+Using port: COM1
+
+---- Trying COM1 @ 9600-8-N-1 ----
+  open failed (I/O): The port 'COM1' does not exist.
+  (no bytes streamed) probing...
+  open failed (I/O): The port 'COM1' does not exist.
+  -> probe 'P' no response
+  open failed (I/O): The port 'COM1' does not exist.
+  -> probe 'W' no response
+  open failed (I/O): The port 'COM1' does not exist.
+  -> probe ENQ no response
+  open failed (I/O): The port 'COM1' does not exist.
+  -> probe CR no response
+
+---- Trying COM1 @ 4800-8-N-1 ----
+  open failed (I/O): The port 'COM1' does not exist.
+  (no bytes streamed) probing...
+  open failed (I/O): The port 'COM1' does not exist.
+  -> probe 'P' no response
+  open failed (I/O): The port 'COM1' does not exist.
+  -> probe 'W' no response
+  open failed (I/O): The port 'COM1' does not exist.
+  -> probe ENQ no response
+  open failed (I/O): The port 'COM1' does not exist.
+  -> probe CR no response
+
+---- Trying COM1 @ 2400-8-N-1 ----
+  open failed (I/O): The port 'COM1' does not exist.
+  (no bytes streamed) probing...
+  open failed (I/O): The port 'COM1' does not exist.
+  -> probe 'P' no response
+  open failed (I/O): The port 'COM1' does not exist.
+  -> probe 'W' no response
+  open failed (I/O): The port 'COM1' does not exist.
+  -> probe ENQ no response
+  open failed (I/O): The port 'COM1' does not exist.
+  -> probe CR no response
+
+---- Trying COM1 @ 9600-7-E-1 ----
+  open failed (I/O): The port 'COM1' does not exist.
+  (no bytes streamed) probing...
+  open failed (I/O): The port 'COM1' does not exist.
+  -> probe 'P' no response
+  open failed (I/O): The port 'COM1' does not exist.
+  -> probe 'W' no response
+  open failed (I/O): The port 'COM1' does not exist.
+  -> probe ENQ no response
+  open failed (I/O): The port 'COM1' does not exist.
+  -> probe CR no response
+
+---- Sweep summary ----
+  9600-8-N-1 : 0 bytes
+  4800-8-N-1 : 0 bytes
+  2400-8-N-1 : 0 bytes
+  9600-7-E-1 : 0 bytes
+Best setting: 9600-8-N-1 (0 bytes)
+
+Entering LIVE mode on COM1 @ 9600-8-N-1. Put weights on the pan.
+Press Enter to stop.
+  open failed (I/O): The port 'COM1' does not exist.
+Could not open port for live mode.
+
+ScaleCapture done 2026-08-29 14:25:02
