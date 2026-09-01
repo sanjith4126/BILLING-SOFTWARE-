@@ -58,6 +58,27 @@ namespace GroceryPos.Data
 
         public bool VerifyPin(User u, string pin) { return PinHasher.Verify(pin, u.PinHash); }
 
+        public void SetPin(long userId, string newPin)
+        {
+            using (var c = _db.Open())
+                c.Execute("UPDATE users SET pin_hash=@h WHERE id=@i",
+                    new { h = PinHasher.Hash(newPin), i = userId });
+        }
+
+        public void SetActive(long userId, bool active)
+        {
+            using (var c = _db.Open())
+                c.Execute("UPDATE users SET is_active=@a WHERE id=@i",
+                    new { a = active ? 1 : 0, i = userId });
+        }
+
+        public void SetRole(long userId, UserRole role)
+        {
+            using (var c = _db.Open())
+                c.Execute("UPDATE users SET role=@r WHERE id=@i",
+                    new { r = role.ToString().ToLowerInvariant(), i = userId });
+        }
+
         private static User Map(dynamic r)
         {
             return new User

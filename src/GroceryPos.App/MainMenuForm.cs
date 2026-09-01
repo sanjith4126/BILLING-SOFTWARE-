@@ -32,6 +32,7 @@ namespace GroceryPos.App
             flow.Controls.Add(Btn("8. Shift / day close", () => new ShiftForm(_ctx).ShowDialog()));
             flow.Controls.Add(Btn("9. Reports & GST", () => new ReportsMenuForm(_ctx).ShowDialog()));
             flow.Controls.Add(Btn("Settings", () => new SettingsForm(_ctx).ShowDialog()));
+            flow.Controls.Add(Btn("Users (staff logins)", () => new UsersForm(_ctx).ShowDialog()));
             flow.Controls.Add(Btn("Sign out", () => { Close(); }));
             Controls.Add(flow);
         }

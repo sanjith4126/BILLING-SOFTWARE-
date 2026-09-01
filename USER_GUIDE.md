@@ -158,6 +158,65 @@ This way the end-of-day cash count still matches.
 
 ## PART 4 — OWNER'S JOBS (things staff cannot do)
 
+### Creating staff accounts (cashiers, managers)
+
+**Do this on Day 1**, before the shop opens. Never share the owner PIN with staff. Give each cashier their own account so the audit log can tell who did what.
+
+**To add a new cashier:**
+
+1. Login as owner (user: `owner`, PIN: `1234` on first launch — change it immediately, see below).
+2. Main Menu → **Users (staff logins)**.
+3. Click **Add new user (owner)**.
+4. Type a login name — lowercase, no spaces (e.g. `ramesh`, `priya`, `suresh`). Enter.
+5. Type a 4-digit PIN they will use to log in. Enter.
+6. Type the role: `cashier` (normal staff), `manager` (can approve discounts/cancellations), or `owner` (full access). For staff, use `cashier`. Enter.
+7. Confirmation appears. The user can now log in.
+
+**To change your own PIN (recommended immediately after first login):**
+
+1. Main Menu → **Users (staff logins)**.
+2. Click your row in the grid (e.g. `owner`).
+3. Click **Change PIN**.
+4. Type a new PIN (at least 4 digits). Enter.
+5. Next time you log in, use the new PIN.
+
+**To disable a cashier who left the shop:**
+
+1. Main Menu → **Users (staff logins)**.
+2. Click their row.
+3. Click **Enable / Disable (owner)**.
+4. They can no longer log in. Their old bills stay in the system with their name.
+
+**To promote a cashier to manager:**
+
+1. Main Menu → **Users (staff logins)**.
+2. Click their row.
+3. Click **Change role (owner)**.
+4. Type `manager`. Enter.
+
+**Rules:**
+- Cashiers can only change their own PIN. They cannot add or disable users.
+- Only the owner can add, disable, or change roles.
+- You cannot disable yourself (safety).
+- User names must be unique. If you try to add `ramesh` twice, the system will say "already exists."
+
+**What the roles can do:**
+
+| Action | Cashier | Manager | Owner |
+|---|---|---|---|
+| Make bills | Yes | Yes | Yes |
+| Take khata payment | Yes | Yes | Yes |
+| Cancel a bill | No (needs manager/owner PIN) | Yes | Yes |
+| Give discount >5% | No (needs manager/owner PIN) | Yes | Yes |
+| Allow khata over limit | No | Yes | Yes |
+| Add items | No | Yes | Yes |
+| Add stock (purchase entry) | No | Yes | Yes |
+| Enable a customer for khata | No | No | Yes |
+| Write off a khata debt | No | No | Yes |
+| Add/disable users | No | No | Yes |
+| View reports | No | Yes | Yes |
+| Close the shift | Yes | Yes | Yes |
+
 ### Adding a new item to the shop
 
 Main Menu → **4. Item master** → **Add new**.
@@ -417,8 +476,9 @@ To back up: close the software, copy `C:\Users\<user>\AppData\Local\GroceryPos\g
 | 8. Shift / day close | Cashier + Owner | Every morning (open) and every night (close) |
 | 9. Reports GST | Owner | Weekly/monthly review |
 | Settings | Owner | Rarely |
+| Users (staff logins) | Owner | When adding/removing staff |
 | Sign out | Everyone | End of shift |
 
 ---
 
-**When in doubt, ask.** Sanjith: `9698776767` (or whichever number). Better to ask than guess.
+**When in doubt, ask.** Sanjith: `9677131741` (or whichever number). Better to ask than guess.
