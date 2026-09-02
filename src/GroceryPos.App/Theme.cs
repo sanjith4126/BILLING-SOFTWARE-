@@ -379,13 +379,28 @@ namespace GroceryPos.App
         public static Panel EmptyState(string message, string actionText, Action onAction)
         {
             var host = new Panel { Dock = DockStyle.Fill, BackColor = Surface, Visible = false };
-            var inner = new Panel { Width = 460, Height = actionText == null ? 70 : 116, BackColor = Surface };
+
+            // Measure the real text rather than assuming two lines; a longer
+            // explanation was previously cut off at the bottom.
+            const int width = 520;
+            Size needed;
+            using (var probe = new Label())
+                needed = TextRenderer.MeasureText(message, Body,
+                    new Size(width, int.MaxValue), TextFormatFlags.WordBreak);
+            int textHeight = Math.Max(60, needed.Height + Md);
+
+            var inner = new Panel
+            {
+                Width = width,
+                Height = textHeight + (actionText == null ? 0 : ButtonHeight + Md + Sm),
+                BackColor = Surface
+            };
 
             inner.Controls.Add(new Label
             {
                 Text = message,
                 Dock = DockStyle.Top,
-                Height = 62,
+                Height = textHeight,
                 Font = Body,
                 ForeColor = Muted,
                 TextAlign = ContentAlignment.MiddleCenter
@@ -394,9 +409,9 @@ namespace GroceryPos.App
             if (actionText != null && onAction != null)
             {
                 var b = PrimaryButton(actionText);
-                b.Width = 240;
-                b.Left = (460 - 240) / 2;
-                b.Top = 70;
+                b.Width = 260;
+                b.Left = (width - 260) / 2;
+                b.Top = textHeight + Sm;
                 b.Click += (s, e) => onAction();
                 inner.Controls.Add(b);
             }

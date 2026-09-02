@@ -128,14 +128,18 @@ namespace GroceryPos.Tests
                 if (!c.Visible || c.AutoSize || string.IsNullOrEmpty(c.Text)) continue;
                 if (c.Height <= 0 || c.Width <= 0) continue;
 
-                var needed = TextRenderer.MeasureText(c.Text, c.Font);
-                // Single-line labels only; multi-line ones legitimately wrap.
-                if (c.Text.IndexOf('\n') >= 0) continue;
+                // Measure against the label's own width so wrapped text counts too:
+                // a multi-line explanation cut off at the bottom is a real defect,
+                // and skipping multi-line labels would hide exactly that case.
+                var needed = TextRenderer.MeasureText(
+                    c.Text, c.Font,
+                    new Size(c.Width, int.MaxValue),
+                    TextFormatFlags.WordBreak);
 
                 Assert.True(c.Height >= needed.Height,
                     f.GetType().Name + ": label \"" + Trim(c.Text) + "\" is " + c.Height +
-                    "px tall but its " + c.Font.SizeInPoints + "pt font needs " +
-                    needed.Height + "px. The text is clipped.");
+                    "px tall but needs " + needed.Height + "px at " + c.Width +
+                    "px wide. The text is clipped.");
             }
         }
 

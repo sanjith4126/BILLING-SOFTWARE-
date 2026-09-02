@@ -130,7 +130,7 @@ namespace GroceryPos.App
             row1.Controls.Add(Field("Payment mode", _paymentMode));
 
             row2.Controls.Add(Field("Freight (Rs.)", _freight));
-            row2.Controls.Add(Field("Invoice discount (Rs.)", _discount));
+            row2.Controls.Add(Field("Discount (Rs.)", _discount));
             row2.Controls.Add(Spacer(_hasDueDate, 24));
             row2.Controls.Add(Spacer(_dueDate, 22));
 
