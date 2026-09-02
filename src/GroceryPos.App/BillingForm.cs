@@ -695,8 +695,13 @@ namespace GroceryPos.App
             using (var c = _ctx.Db.Open())
             {
                 var b = c.QueryFirstOrDefault<BatchPick>(
-                    @"SELECT id AS Id, selling_paise AS SellingPaise, mrp_paise AS MrpPaise, batch_code AS BatchCode, expiry_date AS ExpiryDateFROM batches WHERE item_id=@i AND (qty_units>0 OR qty_grams>0)
-                      ORDER BY (expiry_date IS NULL) ASC, expiry_date ASC, mrp_paise ASC LIMIT 1",new { i = it.Id });
+                    @"SELECT id AS Id, selling_paise AS SellingPaise, mrp_paise AS MrpPaise,
+                             batch_code AS BatchCode, expiry_date AS ExpiryDate
+                      FROM batches
+                      WHERE item_id=@i AND (qty_units>0 OR qty_grams>0)
+                      ORDER BY (expiry_date IS NULL) ASC, expiry_date ASC, mrp_paise ASC
+                      LIMIT 1",
+                    new { i = it.Id });
                 if (b != null)
                 {
                     rate = b.SellingPaise;
