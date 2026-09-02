@@ -41,6 +41,9 @@ namespace GroceryPos.Tests
             });
             BillCalculator.ComputeBill(bill);
             bill.Payments.Add(new Payment { Mode = PaymentMode.Cash, AmountPaise = bill.NetPaise });
+            // multiple qty so Items vs Total Qty differ
+            bill.Lines[0].QtyUnits = 3;
+            BillCalculator.ComputeBill(bill);
 
             var names = new Dictionary<long, string>
             {

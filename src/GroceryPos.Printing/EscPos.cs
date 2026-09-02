@@ -7,14 +7,24 @@ namespace GroceryPos.Printing
     /// <summary>Assembles ESC/POS byte streams. CP437 encoded. Every line terminated LF.</summary>
     public static class EscPos
     {
-        // ESC @ (reset) + GS L 0 0 (left margin = 0 dots) + GS W ... (print width max).
-        // Explicit margin/width so a previous job or driver default doesn't leave the
-        // receipt indented on the paper.
+        // ESC @ (reset) + GS L 0 0 (left margin = 0 dots) + GS W (print width).
+        //
+        // Print width must match the text, not the paper. The layout is 48
+        // characters of Font A at 12 dots each = 576 dots. Setting the width to
+        // the full 640-dot paper made the printer centre 576 dots of text inside
+        // a 640-dot area, which pushed every line about five characters to the
+        // right and left a gap down the left edge of the slip.
+        private const int CharsPerLine = 48;
+        private const int FontADotsPerChar = 12;
+        private const int PrintWidthDots = CharsPerLine * FontADotsPerChar;   // 576
+
         public static readonly byte[] Init = new byte[]
         {
-            0x1B, 0x40,                     // ESC @  reset
-            0x1D, 0x4C, 0x00, 0x00,         // GS L nL nH  left margin 0
-            0x1D, 0x57, 0x80, 0x02          // GS W nL nH  print width 640 dots (80mm)
+            0x1B, 0x40,                                   // ESC @  reset
+            0x1D, 0x4C, 0x00, 0x00,                       // GS L   left margin 0
+            0x1D, 0x57,                                   // GS W   print width...
+            (byte)(PrintWidthDots & 0xFF),                //   nL
+            (byte)((PrintWidthDots >> 8) & 0xFF)          //   nH
         };
         public static readonly byte[] AlignLeft = new byte[] { 0x1B, 0x61, 0x00 };
         public static readonly byte[] AlignCenter = new byte[] { 0x1B, 0x61, 0x01 };

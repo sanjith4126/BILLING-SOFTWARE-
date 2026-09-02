@@ -96,6 +96,10 @@ namespace GroceryPos.App
             f.AutoScaleMode = AutoScaleMode.None;
             f.Font = Body;
             f.StartPosition = FormStartPosition.CenterParent;
+
+            // Enter walks the fields like Tab. Hooked on Shown so every control
+            // built after this call is covered.
+            f.Shown += (s, e) => EnterMovesToNextField(f);
         }
 
         /// <summary>Navy title strip across the top of a screen.</summary>
@@ -498,6 +502,58 @@ namespace GroceryPos.App
                 MessageBoxDefaultButton.Button2) == DialogResult.Yes;
         }
 
+        // ---- Keyboard flow --------------------------------------------------
+        /// <summary>
+        /// Makes Enter move to the next field, the way Tab does.
+        ///
+        /// A cashier types with one hand and reaches for Tab with the other; on a
+        /// counter keyboard Enter is where the thumb already is. Multi-line boxes
+        /// keep Enter for new lines, and a form's default button still fires when
+        /// the focus is on a button.
+        /// </summary>
+        /// <summary>Mark a control with this Tag to keep Enter for its own use.</summary>
+        public const string KeepsEnterTag = "keeps-enter";
+
+        public static void EnterMovesToNextField(Form f)
+        {
+            HookEnter(f, f);
+        }
+
+        private static void HookEnter(Form form, Control parent)
+        {
+            foreach (Control c in parent.Controls)
+            {
+                var box = c as TextBox;
+                bool multiline = box != null && box.Multiline;
+
+                // A control tagged "keeps-enter" does its own thing with Enter --
+                // the billing scan box submits a barcode, for instance -- so
+                // stealing the key there would break scanning.
+                bool keepsEnter = string.Equals(c.Tag as string, KeepsEnterTag,
+                                                StringComparison.OrdinalIgnoreCase);
+
+                if (!keepsEnter && !multiline
+                    && (box != null || c is ComboBox || c is NumericUpDown
+                                    || c is DateTimePicker || c is CheckBox))
+                {
+                    c.KeyDown += (s, e) =>
+                    {
+                        if (e.KeyCode != Keys.Enter) return;
+
+                        // Let a combo's own drop-down handle Enter first.
+                        var combo = s as ComboBox;
+                        if (combo != null && combo.DroppedDown) return;
+
+                        e.Handled = true;
+                        e.SuppressKeyPress = true;      // no "ding" from the beep
+                        form.SelectNextControl((Control)s, true, true, true, true);
+                    };
+                }
+
+                if (c.HasChildren) HookEnter(form, c);
+            }
+        }
+
         // ---- Retro-fitting existing forms -----------------------------------
         /// <summary>
         /// Walks a form built with plain WinForms controls and gives it the shared
@@ -513,6 +569,8 @@ namespace GroceryPos.App
             f.ForeColor = OnSurface;
             f.AutoScaleMode = AutoScaleMode.None;   // see the note in ApplyForm
             RetrofitChildren(f);
+            // Wire Enter once the whole tree exists.
+            f.Shown += (s, e) => EnterMovesToNextField(f);
         }
 
         private static void RetrofitChildren(Control parent)

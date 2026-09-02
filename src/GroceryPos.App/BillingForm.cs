@@ -25,6 +25,7 @@ namespace GroceryPos.App
         private Label _lblSubtotal, _lblTax, _lblNet, _lblCustomer, _lblScale;
         private ListBox _heldList;
         private Panel _emptyBill;
+        private Timer _scaleTimer;
         private Bill _bill;
         private readonly List<Bill> _held = new List<Bill>();
         private readonly BindingList<BillLineView> _linesView = new BindingList<BillLineView>();
@@ -60,6 +61,10 @@ namespace GroceryPos.App
             ClearBill(false);
             KeyDown += BillingForm_KeyDown;
             Shown += (s, e) => { _scan.Focus(); EnsureShiftOpen(); };
+            FormClosed += (s, e) =>
+            {
+                if (_scaleTimer != null) { _scaleTimer.Stop(); _scaleTimer.Dispose(); _scaleTimer = null; }
+            };
             UpdateScaleLabel();
         }
 
@@ -89,6 +94,8 @@ namespace GroceryPos.App
                 Font = new Font(Theme.Data.FontFamily, 13f),
                 BorderStyle = BorderStyle.FixedSingle
             };
+            // Enter here submits the barcode, so it must not jump to the next field.
+            _scan.Tag = Theme.KeepsEnterTag;
             _scan.KeyDown += Scan_KeyDown;
 
             _lblCustomer = new Label
@@ -563,9 +570,53 @@ namespace GroceryPos.App
                                 "Shift not open", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
+        /// <summary>
+        /// Shows the weight on the pan as it changes, so the cashier can watch it
+        /// settle instead of pressing F4 and being told it is not stable yet.
+        /// The scale sends several readings a second; a timer polls the latest
+        /// rather than repainting on every frame.
+        /// </summary>
         private void UpdateScaleLabel()
         {
-            _lblScale.Text = "Scale: " + (_ctx.WeightSource == null ? "manual" : _ctx.WeightSource.Mode.ToString());
+            var src = _ctx.WeightSource;
+
+            if (src == null || src.Mode != WeightMode.Serial)
+            {
+                if (_scaleTimer != null) { _scaleTimer.Stop(); _scaleTimer.Dispose(); _scaleTimer = null; }
+                _lblScale.Text = "Scale: type the weight by hand (F4)";
+                _lblScale.ForeColor = Theme.Muted;
+                _lblScale.Font = Theme.Data;
+                return;
+            }
+
+            _lblScale.Font = new Font(Theme.DataBold.FontFamily, 12f, FontStyle.Bold);
+
+            if (_scaleTimer == null)
+            {
+                _scaleTimer = new Timer { Interval = 200 };
+                _scaleTimer.Tick += (s, e) => ShowLiveWeight();
+                _scaleTimer.Start();
+            }
+            ShowLiveWeight();
+        }
+
+        private void ShowLiveWeight()
+        {
+            var src = _ctx.WeightSource;
+            if (src == null || src.Mode != WeightMode.Serial) { UpdateScaleLabel(); return; }
+
+            var reading = src.Latest;
+            if (!reading.HasValue)
+            {
+                _lblScale.Text = "Scale: waiting...";
+                _lblScale.ForeColor = Theme.Muted;
+                return;
+            }
+
+            var r = reading.Value;
+            _lblScale.Text = new Grams(r.Grams).ToString() + (r.Stable ? "   STEADY" : "   ...");
+            // Green once it has settled: that is when F4 will accept it.
+            _lblScale.ForeColor = r.Stable ? Theme.Success : Theme.Warning;
         }
 
         private void BillingForm_KeyDown(object sender, KeyEventArgs e)
@@ -977,10 +1028,17 @@ namespace GroceryPos.App
                 // Refresh customer for updated balance
                 if (_customer != null) _customer = _ctx.Customers.FindById(_customer.Id);
 
-                // Print
-                TryPrint(_bill, prevBal);
+                // The bill is saved either way. Printing is the customer's choice,
+                // so ask rather than firing paper at every sale -- most small purchases
+                // do not need a slip and the roll is not free.
+                bool print = Theme.Confirm(
+                    "Bill INV-" + _bill.BillNo + " saved.\r\n" +
+                    "Total Rs. " + new Money(_bill.NetPaise) + "\r\n\r\n" +
+                    "Print a receipt for the customer?",
+                    "Print the bill?");
 
-                MessageBox.Show("Bill INV-" + _bill.BillNo + " saved. Net Rs. " + new Money(_bill.NetPaise));
+                if (print) TryPrint(_bill, prevBal);
+
                 ClearBill(false);
             }
         }
