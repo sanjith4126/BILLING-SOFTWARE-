@@ -175,9 +175,42 @@ namespace GroceryPos.App
             _ctx.Settings.Set(KeyStopBits, NonEmpty(_stop.Text, "1"));
             _ctx.Settings.Set(KeyRegex, NonEmpty(_regex.Text, DefaultRegex));
             _ctx.Settings.Set(KeyPoll, _poll.Text ?? "");
+            // StopLiveDump already hands the port back, so do not re-open it a
+            // second time here -- two opens in a row can hit a handle Windows has
+            // not finished releasing.
             StopLiveDump();
-            _ctx.RebuildWeightSource();
-            MessageBox.Show("Scale settings saved and applied. F4 on the billing screen will now read from the scale.", "Saved");
+            if (_ctx.WeightSource == null || _ctx.WeightSource.Mode != WeightMode.Serial)
+                _ctx.RebuildWeightSource();
+
+            bool serialWanted = string.Equals(_mode.Text, "Serial", StringComparison.OrdinalIgnoreCase);
+            bool serialWorking = _ctx.WeightSource != null
+                                 && _ctx.WeightSource.Mode == WeightMode.Serial;
+
+            if (serialWanted && !serialWorking)
+            {
+                MessageBox.Show(
+                    "Settings saved, but the scale could not be opened on " +
+                    NonEmpty(_port.Text, "COM1") + ".\r\n" +
+                    "Billing will ask for the weight to be typed in until this is " +
+                    "fixed. Check the scale is on and the cable is pushed in, then " +
+                    "press Start live dump to test it.",
+                    "Saved, but the scale is not reading",
+                    MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            else if (serialWanted)
+            {
+                MessageBox.Show(
+                    "Saved. The scale is connected.\r\n" +
+                    "On the billing screen, press F4 to take a weight.",
+                    "Scale ready", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            else
+            {
+                MessageBox.Show(
+                    "Saved. Weights will be typed in by hand.\r\n" +
+                    "Press F4 on the billing screen to enter a weight.",
+                    "Saved", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         // ---------- Detect ----------
