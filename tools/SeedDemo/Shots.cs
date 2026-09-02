@@ -63,6 +63,9 @@ namespace SeedDemo
             Capture(outDir, "reorder", () => new GroceryPos.App.ReorderReportForm(ctx));
             Capture(outDir, "billing", () => new GroceryPos.App.BillingForm(ctx));
             Capture(outDir, "shift", () => new GroceryPos.App.ShiftForm(ctx));
+            Capture(outDir, "settings", () => new GroceryPos.App.SettingsForm(ctx));
+            Capture(outDir, "users", () => new GroceryPos.App.UsersForm(ctx));
+            Capture(outDir, "customer_khata", () => new GroceryPos.App.CustomerLedgerForm(ctx));
 
             Console.WriteLine("Screens written to " + outDir);
             return 0;

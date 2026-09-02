@@ -232,6 +232,13 @@ namespace GroceryPos.Tests
         [Fact] public void ItemMaster_LaysOutCleanly() { Check(() => new ItemMasterForm(_ctx)); }
         [Fact] public void Shift_LaysOutCleanly() { Check(() => new ShiftForm(_ctx)); }
         [Fact] public void SupplierEdit_LaysOutCleanly() { Check(() => new SupplierEditForm()); }
+        [Fact] public void Settings_LaysOutCleanly() { Check(() => new SettingsForm(_ctx)); }
+        [Fact] public void RawSettings_LaysOutCleanly() { Check(() => new RawSettingsForm(_ctx)); }
+        [Fact] public void Login_LaysOutCleanly() { Check(() => new LoginForm(_ctx)); }
+        [Fact] public void Users_LaysOutCleanly() { Check(() => new UsersForm(_ctx)); }
+        [Fact] public void CustomerLedger_LaysOutCleanly() { Check(() => new CustomerLedgerForm(_ctx)); }
+        [Fact] public void AgeingReport_LaysOutCleanly() { Check(() => new AgeingReportForm(_ctx)); }
+        [Fact] public void ReportsMenu_LaysOutCleanly() { Check(() => new ReportsMenuForm(_ctx)); }
 
         /// <summary>
         /// The specific crash from the screenshot: a purchase line whose item has

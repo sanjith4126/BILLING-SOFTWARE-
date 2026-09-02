@@ -67,10 +67,7 @@ namespace GroceryPos.App
             adj.Click += (s, e) => new AdjustmentForm(_ctx, _current).ShowDialog(this);
             top.Controls.Add(adj);
 
-            Controls.Add(top);
-
             _header = new Label { Dock = DockStyle.Top, Height = 60, Font = new Font("Segoe UI", 10F) };
-            Controls.Add(_header);
 
             _grid = new DataGridView { Dock = DockStyle.Fill, ReadOnly = true, RowHeadersVisible = false, AutoGenerateColumns = false };
             _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Date", DataPropertyName = "Date", Width = 120 });
@@ -82,7 +79,12 @@ namespace GroceryPos.App
             _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Balance", DataPropertyName = "Balance", Width = 100 });
             _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "By", DataPropertyName = "By", Width = 80 });
             _grid.CellDoubleClick += (s, e) => DrillReference();
+
+            // Docked children are laid out in reverse order of addition, so the
+            // Fill grid must go in first or it covers the balance header above it.
             Controls.Add(_grid);
+            Controls.Add(_header);
+            Controls.Add(top);
             Theme.Retrofit(this);
         }
 
@@ -213,8 +215,8 @@ namespace GroceryPos.App
             if (_current == null) return;
             var h = new StatementFormatter.Header
             {
-                StoreName = _ctx.Settings.Get("store.name", "STORE"),
-                StoreAddress = _ctx.Settings.Get("store.address", ""),
+                StoreName = _ctx.Settings.Get("store_name", "GROCERY STORE"),
+                StoreAddress = _ctx.Settings.Get("store_address_1", ""),
                 CustomerName = _current.Name,
                 CustomerPhone = _current.Phone,
                 From = _entries.Count > 0 ? _entries[0].At : DateTime.Today.AddMonths(-1),
@@ -230,7 +232,7 @@ namespace GroceryPos.App
             }
             else
             {
-                var q = _ctx.Settings.Get("printer.queue", "");
+                var q = _ctx.Settings.Get("printer_name", "");
                 if (string.IsNullOrEmpty(q)) { MessageBox.Show("Set printer.queue in Settings"); return; }
                 var bytes = EscPos.Build(lines, cut: true, drawerKick: false, drawerPin: 0);
                 try { _ctx.Printer.Print(q, bytes); } catch (Exception ex) { MessageBox.Show(ex.Message); return; }
@@ -480,11 +482,11 @@ namespace GroceryPos.App
                     _ctx.CurrentUser.Id, shift == null ? (long?)null : shift.Id, _note.Text, overrides);
 
                 // Print thermal receipt
-                var q = _ctx.Settings.Get("printer.queue", "");
+                var q = _ctx.Settings.Get("printer_name", "");
                 if (!string.IsNullOrEmpty(q))
                 {
                     var lines = new List<string>();
-                    lines.Add(ReceiptFormatter.Center(_ctx.Settings.Get("store.name", "STORE")));
+                    lines.Add(ReceiptFormatter.Center(_ctx.Settings.Get("store_name", "GROCERY STORE")));
                     lines.Add(ReceiptFormatter.Center("PAYMENT RECEIPT"));
                     lines.Add(new string('-', ReceiptFormatter.Width));
                     lines.Add(ReceiptFormatter.PadPair("Customer", _cust.Name));
@@ -876,11 +878,11 @@ namespace GroceryPos.App
                 var nc = _ctx.Shifts.NonCashTotals(sh.Id, 1);
                 var closed = _ctx.Shifts.FindById(sh.Id);
                 // Print Z report
-                var q = _ctx.Settings.Get("printer.queue", "");
+                var q = _ctx.Settings.Get("printer_name", "");
                 if (!string.IsNullOrEmpty(q))
                 {
                     var lines = new List<string>();
-                    lines.Add(ReceiptFormatter.Center(_ctx.Settings.Get("store.name", "STORE")));
+                    lines.Add(ReceiptFormatter.Center(_ctx.Settings.Get("store_name", "GROCERY STORE")));
                     lines.Add(ReceiptFormatter.Center("Z REPORT"));
                     lines.Add(new string('-', ReceiptFormatter.Width));
                     lines.Add(ReceiptFormatter.PadPair("Shift", "#" + sh.Id));

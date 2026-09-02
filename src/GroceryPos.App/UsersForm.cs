@@ -34,9 +34,12 @@ namespace GroceryPos.App
             _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Name", DataPropertyName = "Name", Width = 200 });
             _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Role", DataPropertyName = "Role", Width = 100 });
             _grid.Columns.Add(new DataGridViewCheckBoxColumn { HeaderText = "Active", DataPropertyName = "IsActive", Width = 80 });
+            // Fill first: see the note in CustomerLedgerForm.
             Controls.Add(_grid);
 
-            var panel = new Panel { Dock = DockStyle.Fill };
+            // This was Dock.Fill, so it fought the grid for the whole client area
+            // and covered it. The button strip belongs at the bottom.
+            var panel = new Panel { Dock = DockStyle.Bottom, Height = 84 };
             var addBtn = new Button { Text = "Add new user (owner)", Left = 10, Top = 8, Width = 200 };
             addBtn.Click += (s, e) => AddUser();
             var pinBtn = new Button { Text = "Change PIN", Left = 220, Top = 8, Width = 140 };
