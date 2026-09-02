@@ -243,7 +243,7 @@ namespace GroceryPos.App
             flow.Controls.Add(Btn("Dead stock (90d)", () => new ReportForm(_ctx, "Dead stock 90d", Reports.DeadStock).ShowDialog()));
             flow.Controls.Add(Btn("Tax by HSN", () => new ReportForm(_ctx, "Tax by HSN", Reports.TaxByHsn).ShowDialog()));
             flow.Controls.Add(Btn("Cashier performance", () => new ReportForm(_ctx, "Cashier performance", Reports.CashierPerformance).ShowDialog()));
-            flow.Controls.Add(Btn("Collections (khata)", () => new ReportForm(_ctx, "Collections", Reports.Collections).ShowDialog()));
+            flow.Controls.Add(Btn("Collections (kadan)", () => new ReportForm(_ctx, "Collections", Reports.Collections).ShowDialog()));
             flow.Controls.Add(Btn("Limit overrides", () => new ReportForm(_ctx, "Limit overrides", Reports.LimitOverrides).ShowDialog()));
             flow.Controls.Add(Btn("Write-offs", () => new ReportForm(_ctx, "Write-offs", Reports.WriteOffs).ShowDialog()));
             flow.Controls.Add(Btn("Export GSTR-1 CSV", () => Export(x => new ExportService(_ctx.Db).Gstr1(DateTime.Today.AddMonths(-1), DateTime.Today, x), "gstr1.csv")));

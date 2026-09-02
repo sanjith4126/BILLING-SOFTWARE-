@@ -13,14 +13,14 @@ The rest you can look up when you need it. Keep this book near the machine.
 | 1 | Starting up and signing in | Everyone |
 | 2 | Making a bill | Whoever is at the counter |
 | 3 | Weighing loose goods | Whoever is at the counter |
-| 4 | Taking money, khata, holding a bill | Whoever is at the counter |
+| 4 | Taking money, credit (kadan), holding a bill | Whoever is at the counter |
 | 5 | Closing the day | Whoever closes up |
 | 6 | Setting up — do this once | Owner |
 | 7 | Connecting the weighing scale | Owner |
 | 8 | Adding your products | Owner |
 | 9 | Entering goods you bought | Owner |
 | 10 | Counting stock and losses | Owner |
-| 11 | Khata — money customers owe you | Owner |
+| 11 | Credit (kadan) — money customers owe you | Owner |
 | 12 | Reports for you and the accountant | Owner |
 | 13 | When something goes wrong | Everyone |
 
@@ -66,7 +66,7 @@ After signing in you see coloured boxes in six groups:
 - **Billing** — making bills, closing the day
 - **Stock** — what you have, counting it, damage, sacks, expiry, reordering
 - **Buying** — entering supplier bills, sending goods back
-- **Customers and credit** — khata, who owes you, old balances
+- **Customers and credit** — credit (kadan), who owes you, old balances
 - **Products and reports** — your product list, reports
 - **Setup** — the scale, shop details, staff
 
@@ -177,7 +177,7 @@ questions a bill, the record will back you up.
 
 ---
 
-# PART 4 — TAKING MONEY, KHATA AND HELD BILLS
+# PART 4 — TAKING MONEY, CREDIT (KADAN) AND HELD BILLS
 
 ### Taking the money
 
@@ -188,10 +188,10 @@ Press **F9**. A window opens showing what is owed.
 | **Cash** | Type what they handed you. The change is worked out for you. |
 | **UPI** | Type the amount and the UPI number. |
 | **Card** | Type the amount and the reference. |
-| **Khata** | Puts it on the customer's account. See below. |
+| **Credit (kadan)** | Puts it on the customer's account. See below. |
 
-**Part cash, part khata** is normal — they pay Rs. 500 now and put Rs. 270 on
-the account. Enter both. Only the khata part goes on their account.
+**Part cash, part credit** is normal — they pay Rs. 500 now and put Rs. 270 on
+the account. Enter both. Only the credit part goes on their account.
 
 Click **Save**. The bill is saved, then printed.
 
@@ -202,11 +202,11 @@ printer is off, you will see **"Print failed (bill saved)"**.
 
 The sale is safe. Sort the printer out and print it again.
 
-### Selling on khata
+### Selling on credit (kadan)
 
 1. Before pressing F9, press **Ctrl + K** and find the customer by phone.
 2. Their name, what they owe, and how much more they can take shows at the top.
-3. Press **F9**, choose **Khata**, save.
+3. Press **F9**, choose **Credit (kadan)**, save.
 
 If it would take them over their limit, the software **stops** and shows you
 what they owe, their limit, and how much over they are. A manager or owner
@@ -228,7 +228,7 @@ Bills you put aside are listed along the bottom of the screen.
 
 Click **Cancel a past bill**. A manager or owner PIN is needed.
 
-Cancelling puts the stock back, undoes any khata entry, and **keeps the bill
+Cancelling puts the stock back, undoes any credit entry, and **keeps the bill
 number**, marked as cancelled.
 
 Nothing is ever deleted. Bill numbers have to run without gaps for GST, so a
@@ -246,7 +246,7 @@ Click **Shift and day close**.
    - what **should** be in the drawer
    - what you **actually counted**
    - whether you are **short** or **over**, in red
-4. It also shows the UPI, card and khata totals so you can check them against
+4. It also shows the UPI, card and credit totals so you can check them against
    your phone and card machine.
 5. Click **Close the shift and print the day report**.
 6. Say yes. The report prints.
@@ -314,7 +314,7 @@ If you tick it and the drawer does not open, change **Drawer pin** from 2 to 5
 and try again. Different drawer makes are wired differently — this is normal
 and it is not a fault.
 
-The drawer opens by itself on a cash sale, on cash paid against khata, and at
+The drawer opens by itself on a cash sale, on cash paid against credit, and at
 day close. It never opens for UPI or card.
 
 ### 6. Counter rules
@@ -582,14 +582,14 @@ out and `50000` grams in. Both have to be the same product.
 
 ---
 
-# PART 11 — KHATA
+# PART 11 — CREDIT (KADAN)
 
-This replaces the khata notebook. It holds money owed to you by name, so every
+This replaces the kadan notebook. It holds money owed to you by name, so every
 figure has to stand up when a customer argues at the counter.
 
 ### Adding a customer who buys on credit
 
-**Customer khata** → **New customer**.
+**Customer credit (kadan)** → **New customer**.
 
 You need a phone number **and** a name. Then set how much credit they are
 allowed and switch credit on. Nobody gets credit until you say so.
@@ -688,7 +688,7 @@ on the inside cover of this book.
 These are not faults. They are deliberate.
 
 - Delete a bill — you cancel it instead, so the numbers stay unbroken
-- Rub out a khata entry — you add a correcting line instead
+- Rub out a credit entry — you add a correcting line instead
 - Change stock without giving a reason
 - Sell above the MRP
 - Change a day after you have closed it

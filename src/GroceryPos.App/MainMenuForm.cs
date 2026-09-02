@@ -85,11 +85,11 @@ namespace GroceryPos.App
 
             Section("Customers and credit");
             Tiles(
-                Tile("Customer khata", "Who owes what, and why", Color.FromArgb(180, 85, 120),
+                Tile("Customer credit (kadan)", "Who owes what, and why", Color.FromArgb(180, 85, 120),
                      () => new CustomerLedgerForm(_ctx).ShowDialog()),
                 Tile("Money owed by age", "Chase the oldest debts", Color.FromArgb(180, 85, 120),
                      () => new AgeingReportForm(_ctx).ShowDialog()),
-                OwnerTile(isOwner, "Opening balances", "Carry in the old khata book", Color.FromArgb(180, 85, 120),
+                OwnerTile(isOwner, "Opening balances", "Carry in the old kadan book", Color.FromArgb(180, 85, 120),
                      () => new OpeningBalanceImportForm(_ctx).ShowDialog()));
 
             Section("Products and reports");

@@ -997,7 +997,7 @@ namespace GroceryPos.App
                 // Credit limit check
                 if (pay.Payments.Any(p => p.Mode == PaymentMode.Khata))
                 {
-                    if (_customer == null) { MessageBox.Show("Khata requires a customer"); return; }
+                    if (_customer == null) { MessageBox.Show("Credit (kadan) requires a customer"); return; }
                     if (!_customer.CreditAllowed) { MessageBox.Show("Credit not enabled for this customer"); return; }
                     long khata = pay.Payments.Where(p => p.Mode == PaymentMode.Khata).Sum(p => p.AmountPaise);
                     long newBal = _customer.CurrentBalancePaise + khata;
@@ -1240,7 +1240,7 @@ namespace GroceryPos.App
             AddRow("Cash", out _cash, ref y, "0");
             AddRow("UPI", out _upi, ref y, "0"); _upiRef = AddRef(ref y);
             AddRow("Card", out _card, ref y, "0"); _cardRef = AddRef(ref y);
-            AddRow("Khata (credit)", out _khata, ref y, "0");
+            AddRow("Credit (kadan)", out _khata, ref y, "0");
             _change = new Label { Left = 12, Top = y, Width = 380, Text = "Change: 0.00", Font = new Font("Segoe UI", 11, FontStyle.Bold) };
             Controls.Add(_change); y += 30;
             var ok = new Button { Text = "Confirm", Left = 200, Top = y, Width = 100, DialogResult = DialogResult.None };

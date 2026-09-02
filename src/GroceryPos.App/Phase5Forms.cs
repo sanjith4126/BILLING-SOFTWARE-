@@ -27,7 +27,7 @@ namespace GroceryPos.App
         public CustomerLedgerForm(AppContext ctx)
         {
             _ctx = ctx;
-            Text = "Customer khata";
+            Text = "Customer credit (kadan)";
             Width = 1000; Height = 620;
             StartPosition = FormStartPosition.CenterParent;
 
@@ -125,7 +125,7 @@ namespace GroceryPos.App
             var display = _entries.Select(e => new
             {
                 Date = e.At.ToString("dd/MM/yy HH:mm"),
-                Type = e.Type.ToString(),
+                Type = LedgerTypeName(e.Type),
                 Reference = e.RefTable == "bills" && e.RefId.HasValue ? "INV-" + e.RefId : (e.RefTable ?? ""),
                 Description = e.Description,
                 Debit = e.DebitPaise > 0 ? new Money(e.DebitPaise).ToString() : "",
@@ -135,6 +135,25 @@ namespace GroceryPos.App
                 _entry = e
             }).ToList();
             _grid.DataSource = display;
+        }
+
+        /// <summary>
+        /// Plain words for a ledger row's type. The stored value is unchanged;
+        /// this is only what the owner reads on the screen.
+        /// </summary>
+        private static string LedgerTypeName(LedgerType t)
+        {
+            switch (t)
+            {
+                case LedgerType.CreditSale: return "Credit sale";
+                case LedgerType.WriteOff: return "Write-off";
+                case LedgerType.Opening: return "Opening";
+                case LedgerType.Payment: return "Payment";
+                case LedgerType.Discount: return "Discount";
+                case LedgerType.Adjustment: return "Adjustment";
+                case LedgerType.Reversal: return "Reversal";
+                default: return t.ToString();
+            }
         }
 
         private int? OldestUnpaidDays()
@@ -351,7 +370,8 @@ namespace GroceryPos.App
             }
             s.AppendLine("---- Payments ----");
             foreach (var p in bill.Payments)
-                s.AppendLine(p.Mode + " Rs. " + new Money(p.AmountPaise) + " ref=" + p.Reference);
+                s.AppendLine(GroceryPos.Printing.ReceiptFormatter.PaymentModeName(p.Mode) +
+                    " Rs. " + new Money(p.AmountPaise) + " ref=" + p.Reference);
             txt.Text = s.ToString();
             Controls.Add(txt);
             Theme.Retrofit(this);
@@ -832,7 +852,7 @@ namespace GroceryPos.App
             {
                 sb.Append("Not cash: UPI Rs. " + new Money(_nonCash["upi"]) +
                           "   Card Rs. " + new Money(_nonCash["card"]) +
-                          "   Khata Rs. " + new Money(_nonCash["khata"]));
+                          "   Credit Rs. " + new Money(_nonCash["khata"]));
             }
             _summary.Text = sb.ToString();
             _summary.ForeColor = diff == 0 ? Theme.Success : Theme.Danger;
@@ -893,7 +913,7 @@ namespace GroceryPos.App
                     lines.Add(ReceiptFormatter.PadPair("Difference", "Rs. " + new Money(closed.DifferencePaise)));
                     lines.Add(ReceiptFormatter.PadPair("UPI", "Rs. " + new Money(nc["upi"])));
                     lines.Add(ReceiptFormatter.PadPair("Card", "Rs. " + new Money(nc["card"])));
-                    lines.Add(ReceiptFormatter.PadPair("Khata", "Rs. " + new Money(nc["khata"])));
+                    lines.Add(ReceiptFormatter.PadPair("Credit", "Rs. " + new Money(nc["khata"])));
                     try { _ctx.Printer.Print(q, EscPos.Build(lines, true, false, 0)); } catch { }
                 }
                 MessageBox.Show("Shift closed. Counted Rs. " + new Money(counted) + ", diff Rs. " + new Money(closed.DifferencePaise));

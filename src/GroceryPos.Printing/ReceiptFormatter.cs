@@ -190,7 +190,7 @@ namespace GroceryPos.Printing
             {
                 foreach (var p in bill.Payments)
                 {
-                    string mode = p.Mode.ToString().ToUpperInvariant();
+                    string mode = PaymentModeName(p.Mode);
                     string label = mode + (string.IsNullOrEmpty(p.Reference) ? "" : " " + SafeAscii(p.Reference));
                     lines.Add(PadPair(label, new Money(p.AmountPaise).ToString()));
                 }
@@ -200,7 +200,7 @@ namespace GroceryPos.Printing
             {
                 lines.Add(new string(LineChar, Width));
                 lines.Add(PadPair("Previous balance", previousBalance.Value.ToString()));
-                lines.Add(PadPair("This bill (khata)", (net - previousBalance.Value + newBalance.Value).ToString()));
+                lines.Add(PadPair("This bill (credit)", (net - previousBalance.Value + newBalance.Value).ToString()));
                 lines.Add(PadPair("Total outstanding", newBalance.Value.ToString()));
             }
 
@@ -235,7 +235,7 @@ namespace GroceryPos.Printing
 
         /// <summary>
         /// Names the slip after how it was paid: CASH BILL, CARD BILL, UPI BILL
-        /// or KHATA BILL. A split payment is named after whichever mode paid the
+        /// or CREDIT BILL. A split payment is named after whichever mode paid the
         /// most, since one name has to be chosen.
         /// </summary>
         private static string TitleForPayment(Bill bill, string fallback)
@@ -254,8 +254,25 @@ namespace GroceryPos.Printing
             {
                 case PaymentMode.Card: return "CARD BILL";
                 case PaymentMode.Upi: return "UPI BILL";
-                case PaymentMode.Khata: return "KHATA BILL";
+                case PaymentMode.Khata: return "CREDIT BILL";
                 default: return "CASH BILL";
+            }
+        }
+
+        /// <summary>
+        /// What a payment mode is called on screen and on paper. The stored value
+        /// stays "khata" -- every bill already in the database uses it and the
+        /// payments table constrains it -- but the shop calls it credit, so that
+        /// is what gets printed.
+        /// </summary>
+        public static string PaymentModeName(PaymentMode mode)
+        {
+            switch (mode)
+            {
+                case PaymentMode.Khata: return "CREDIT";
+                case PaymentMode.Upi: return "UPI";
+                case PaymentMode.Card: return "CARD";
+                default: return "CASH";
             }
         }
 
