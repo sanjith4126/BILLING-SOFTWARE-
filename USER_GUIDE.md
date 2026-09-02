@@ -1,372 +1,374 @@
 # AKIL STORE — Billing Software Guide
 
-Read Part 1 and Part 2 once. That is enough to run the counter all day.
-The rest is for the owner, and you can look it up when you need it.
+Read Part 1 and Part 2. That is enough to run the counter all day.
 
-Keep this book near the billing machine.
+The rest you can look up when you need it. Keep this book near the machine.
 
 ---
 
-## CONTENTS
+## WHAT IS IN THIS BOOK
 
 | Part | What it covers | Who needs it |
 |---|---|---|
-| 1 | Starting the software, signing in | Everyone |
-| 2 | Making a bill — the main job | Cashier |
-| 3 | Weighing loose goods | Cashier |
-| 4 | Taking payment, khata, holding bills | Cashier |
-| 5 | Closing the day | Cashier or owner |
-| 6 | First-time setup — do this once | Owner |
+| 1 | Starting up and signing in | Everyone |
+| 2 | Making a bill | Whoever is at the counter |
+| 3 | Weighing loose goods | Whoever is at the counter |
+| 4 | Taking money, khata, holding a bill | Whoever is at the counter |
+| 5 | Closing the day | Whoever closes up |
+| 6 | Setting up — do this once | Owner |
 | 7 | Connecting the weighing scale | Owner |
-| 8 | Adding products | Owner |
-| 9 | Buying stock from suppliers | Owner |
-| 10 | Counting stock, wastage, sacks | Owner |
-| 11 | Customer khata (credit) | Owner |
-| 12 | Reports and GST | Owner |
+| 8 | Adding your products | Owner |
+| 9 | Entering goods you bought | Owner |
+| 10 | Counting stock and losses | Owner |
+| 11 | Khata — money customers owe you | Owner |
+| 12 | Reports for you and the accountant | Owner |
 | 13 | When something goes wrong | Everyone |
 
 ---
 
-# PART 1 — STARTING THE SOFTWARE
+# PART 1 — STARTING UP
 
 ### Turning it on
 
-Double-click the **Billing** shortcut on the desktop.
+Double-click the **Billing** picture on the desktop.
 
-If there is no shortcut, the program is at:
-`C:\dev\grocery-pos\publish\GroceryPos.App.exe`
-
-Right-click that file → **Send to** → **Desktop (create shortcut)** so you only
-have to do this once.
+If it is not there, ask whoever set the machine up to put it there. You should
+never have to hunt for the program.
 
 ### Signing in
 
-The sign-in window asks two things:
+1. **Who is signing in** — pick your name from the list.
+2. **PIN** — type your 4-number code and press **Enter**.
 
-1. **Who is signing in** — pick your name from the drop-down list.
-2. **PIN** — type your 4-digit number and press **Enter**.
+To begin with there is one user: **owner**, PIN **1234**.
+Change that on your first day. Part 6 shows how.
 
-The first time ever, the only user is **owner** with PIN **1234**.
-Change that PIN on day one. See Part 6.
+### Who is allowed to do what
 
-### Who can do what
+Each person gets their own name and PIN. That way the software can show you
+later who sold what, who gave a discount, and who cancelled a bill.
 
-| | Owner | Manager | Cashier |
+| | Owner | Manager | Staff |
 |---|---|---|---|
-| Make bills, take payment | Yes | Yes | Yes |
+| Make bills, take money | Yes | Yes | Yes |
 | Look up customers | Yes | Yes | Yes |
-| Cancel a bill | Yes | Yes | Needs a manager PIN |
-| Give a big discount | Yes | Yes | Needs a manager PIN |
+| Cancel a bill | Yes | Yes | Must ask a manager |
+| Give a big discount | Yes | Yes | Must ask a manager |
 | Change prices, add products | Yes | Yes | No |
-| Write off stock | Yes | Yes | No |
-| Change credit limits, write off debt | Yes | No | No |
+| Throw away damaged stock | Yes | Yes | No |
+| Change how much credit a customer gets | Yes | No | No |
 | Add or remove staff | Yes | Yes | No |
 
-### The main menu
+### The main screen
 
-After signing in you see coloured tiles grouped under six headings:
+After signing in you see coloured boxes in six groups:
 
-- **Billing** — Billing counter, Shift and day close
-- **Stock** — Stock summary, Stock take, Damage and wastage, Open a sack,
-  Expiring soon, Items to reorder
-- **Buying** — Purchase entry, Return to supplier
-- **Customers and credit** — Customer khata, Money owed by age, Opening balances
-- **Products and reports** — Item master, Reports and GST
-- **Setup** — Scale and weight, Settings, Staff accounts
+- **Billing** — making bills, closing the day
+- **Stock** — what you have, counting it, damage, sacks, expiry, reordering
+- **Buying** — entering supplier bills, sending goods back
+- **Customers and credit** — khata, who owes you, old balances
+- **Products and reports** — your product list, reports
+- **Setup** — the scale, shop details, staff
 
-Click a tile to open that screen. Close the screen to come back to the menu.
+Click a box to open it. Close it to come back here.
 
-### The shape of a normal day
+### A normal day
 
-| When | What |
+| When | What you do |
 |---|---|
-| Morning | Open a shift — tell the software how much cash is in the drawer |
-| All day | Make bills at the Billing counter |
-| Night | Close the shift — count the cash, print the day report |
+| Morning | Tell the software how much cash you put in the drawer |
+| All day | Make bills |
+| Night | Count the drawer and close the day |
 
-Everything else is occasional.
+Everything else you only do now and then.
 
 ---
 
 # PART 2 — MAKING A BILL
 
-This is the job you will do a hundred times a day. Learn this part properly.
+This is the job you do a hundred times a day. Learn this part properly and
+you can ignore most of the rest.
 
 ### Opening the counter
 
-1. From the main menu click **Billing counter**.
-2. The first time each day it asks **"Open a shift?"** → click **Yes** →
-   type how much cash is in the drawer to start with (for example `500`) → OK.
+1. Click **Billing counter**.
+2. The first time each day it asks **"Open a shift?"** — click **Yes**, then
+   type how much cash you are starting with, like `500`.
 3. The billing screen opens.
 
-The blinking cursor sits in the **Scan barcode or type an item name** box at
-the top left. It should stay there all day. If you ever lose it, click that
-box once.
+The blinking line sits in the **Scan barcode or type an item name** box at the
+top. It should stay there all day. If you lose it, click that box once.
 
-### Adding items — three ways
+### Putting items on the bill
 
-- **Scan the barcode.** The item appears on the bill straight away.
-- **Type the barcode digits** and press **Enter**.
-- **Type part of the name** — for example `atta` — and press **Enter**.
-  A list pops up; pick the right one.
+Three ways. Use whichever is quickest:
 
-Each item appears as a line in the table on the left. The totals on the right
-update as you go.
+- **Scan the barcode.** The item appears straight away.
+- **Type the barcode numbers** and press **Enter**.
+- **Type part of the name** — like `atta` — and press **Enter**. A list pops
+  up and you pick the right one.
 
-### Fixing mistakes
+Each item becomes a line on the left. The total on the right goes up as you add.
+
+### Fixing a mistake
 
 | To do this | Press |
 |---|---|
-| Remove the line you clicked on | **Del** |
-| Throw away the whole bill and start again | **Esc** |
+| Take off the line you clicked on | **Del** |
+| Throw the whole bill away and start again | **Esc** |
 
-### The keys you actually need
+### The keys you need
 
-These are printed along the bottom of the billing screen too, so you do not
-have to remember them.
+These are printed along the bottom of the billing screen, so you do not have
+to remember them.
 
 | Key | What it does |
 |---|---|
-| **F2** | Hold this bill and start a new one |
-| **F3** | Bring a held bill back |
-| **F4** | Weigh the selected line on the scale |
-| **F5** | Give a discount on the selected line |
-| **F9** | Take payment and finish the bill |
-| **Del** | Remove the selected line |
+| **F2** | Put this bill aside and start a new one |
+| **F3** | Bring a bill back that you put aside |
+| **F4** | Weigh the item you clicked on |
+| **F5** | Give a discount on the item you clicked on |
+| **F9** | Take the money and finish |
+| **Del** | Take off the item you clicked on |
 | **Esc** | Clear the whole bill |
-| **Ctrl + K** | Look up a customer by phone number |
+| **Ctrl + K** | Find a customer by phone number |
 
-A full bill can be done without touching the mouse.
+A whole bill can be done without touching the mouse.
 
-### Finishing the bill
+### Finishing
 
-Press **F9**. See Part 4 for what happens next.
+Press **F9**. Part 4 tells you what happens next.
 
 ---
 
 # PART 3 — WEIGHING LOOSE GOODS
 
-For anything sold by weight — tomato, sugar, dal, loose atta.
+For anything you sell by weight — tomato, sugar, dal, loose atta.
 
-### With the scale connected
+### The normal way
 
-1. Put the goods on the scale pan.
-2. **Wait for the number on the scale to stop moving.** This matters — the
-   software will refuse a reading that is still wobbling.
-3. In the billing screen, add the item by scanning or searching.
+1. Put the goods on the scale.
+2. **Wait until the number on the scale stops moving.** This matters. The
+   software will not take a reading that is still jumping about.
+3. On the billing screen, add the item by scanning or typing its name.
 4. Press **F4**.
-5. The weight is filled in and the amount is worked out.
+5. The weight fills in and the amount works itself out.
 
 ### If the scale is not working
 
-You can still sell. Press **F4** and type the weight in grams by hand.
+You can still sell. Press **F4** and type the weight in grams yourself.
 
-A weight typed by hand is **marked in the bill and in the records**, so the
-owner can see later how often it happened. That is deliberate — hand-typed
-weights are how money goes missing.
+Weights typed by hand are **marked in the records**, so the owner can see how
+often it happened. That is on purpose — it is how money quietly goes missing.
 
-### Two rules the software enforces
+### Two things the software will not let you do
 
-- **Minimum 100 g.** Anything lighter is refused. The scale itself is not
-  accurate below that, and the law does not allow it. Sell small quantities
-  as pre-packed items with their own barcode.
-- **Rounded to 5 g.** The scale can only legally report to the nearest 5 g,
-  so the software never charges for a finer amount than that.
+- **Nothing under 100 grams.** Below that the scale is not accurate enough and
+  the law does not allow it. Sell small amounts as ready-made packets with
+  their own barcode.
+- **Weights go in steps of 5 grams.** The scale can only officially report in
+  those steps, so the software never charges for anything smaller.
 
-### Weight is never adjusted
+### The weight is never changed
 
-Whatever the scale reports is the legal figure. The software records the raw
-reading alongside the rounded one and never corrects it.
+Whatever the scale says is what the customer is charged. The software writes
+down exactly what the scale reported and never adjusts it. If anyone ever
+questions a bill, the record will back you up.
 
 ---
 
-# PART 4 — PAYMENT, KHATA AND HELD BILLS
+# PART 4 — TAKING MONEY, KHATA AND HELD BILLS
 
-### Taking payment
+### Taking the money
 
-Press **F9**. The payment window opens showing what is owed.
+Press **F9**. A window opens showing what is owed.
 
 | Paid by | What to do |
 |---|---|
-| **Cash** | Type what the customer handed over. The change is worked out for you. |
-| **UPI** | Enter the amount and the UPI reference number. |
-| **Card** | Enter the amount and the reference. |
-| **Khata** | Puts the amount on the customer's account. See below. |
+| **Cash** | Type what they handed you. The change is worked out for you. |
+| **UPI** | Type the amount and the UPI number. |
+| **Card** | Type the amount and the reference. |
+| **Khata** | Puts it on the customer's account. See below. |
 
-**Part cash, part khata** is normal — a customer pays Rs. 500 now and puts
-Rs. 270 on the account. Enter both lines. Only the khata part goes on their
-account.
+**Part cash, part khata** is normal — they pay Rs. 500 now and put Rs. 270 on
+the account. Enter both. Only the khata part goes on their account.
 
-Click **Save**. The bill is saved first, then printed.
+Click **Save**. The bill is saved, then printed.
 
-### Important: the bill is saved before it prints
+### If the printer fails, you do not lose the sale
 
-If the printer jams, runs out of paper or is switched off, **the sale is still
-recorded**. You will see "Print failed (bill saved)". Fix the printer and
-reprint. You never lose a sale because of the printer.
+The bill is saved **before** it is printed. If the paper runs out or the
+printer is off, you will see **"Print failed (bill saved)"**.
 
-### Selling on khata (credit)
+The sale is safe. Sort the printer out and print it again.
 
-1. Before pressing F9, press **Ctrl + K** and find the customer by phone number.
-2. Their name, balance and available credit appear at the top.
+### Selling on khata
+
+1. Before pressing F9, press **Ctrl + K** and find the customer by phone.
+2. Their name, what they owe, and how much more they can take shows at the top.
 3. Press **F9**, choose **Khata**, save.
 
-If the sale would push them past their credit limit, the software **stops** and
-shows their balance, their limit and the shortfall. A manager or owner PIN is
-needed to go ahead. Every one of these — allowed or refused — is recorded.
+If it would take them over their limit, the software **stops** and shows you
+what they owe, their limit, and how much over they are. A manager or owner
+has to type their PIN to allow it. Every one of these is written down, whether
+you allowed it or refused.
 
-Credit is **off** for a new customer. The owner must switch it on.
+New customers start with **no credit**. The owner has to switch it on.
 
-### Holding a bill
+### Putting a bill aside
 
-A customer goes back for something they forgot, and there is a queue behind them.
+Someone goes back for something they forgot and there is a queue behind them.
 
-- **F2** — the bill is put aside and you get a fresh one.
+- **F2** — the bill goes aside, you get a fresh one.
 - **F3** — bring it back when they return.
 
-Held bills are listed along the bottom of the screen.
+Bills you put aside are listed along the bottom of the screen.
 
 ### Cancelling a bill
 
-Click **Cancel a past bill** on the right. A manager or owner PIN is required.
+Click **Cancel a past bill**. A manager or owner PIN is needed.
 
-Cancelling:
-- puts the stock back on the shelf
-- reverses any khata entry
-- **keeps the bill number** — it is marked cancelled, never deleted
+Cancelling puts the stock back, undoes any khata entry, and **keeps the bill
+number**, marked as cancelled.
 
-The bill number series must stay unbroken for GST. Nothing is ever deleted.
+Nothing is ever deleted. Bill numbers have to run without gaps for GST, so a
+cancelled bill keeps its number instead of disappearing.
 
 ---
 
 # PART 5 — CLOSING THE DAY
 
-From the main menu click **Shift and day close**.
+Click **Shift and day close**.
 
 1. The screen lists every note and coin.
 2. Count the drawer and type **how many** of each you have.
-3. As you type, the software shows:
-   - **Expected in the drawer** — what it should be
-   - **You counted** — what you actually have
-   - whether you are **SHORT** or **OVER**, in red
-4. Also shown: UPI, card and khata totals, to check against your phone or
-   card machine.
-5. Click **Close the shift and print the Z report**.
-6. Confirm. The Z report prints.
+3. As you type it shows you:
+   - what **should** be in the drawer
+   - what you **actually counted**
+   - whether you are **short** or **over**, in red
+4. It also shows the UPI, card and khata totals so you can check them against
+   your phone and card machine.
+5. Click **Close the shift and print the day report**.
+6. Say yes. The report prints.
 
-**Once closed, a shift cannot be changed.** Count carefully before confirming.
+**Once you close the day you cannot change it.** Count properly before you
+say yes.
 
 ---
 
-# PART 6 — FIRST-TIME SETUP (owner, do this once)
+# PART 6 — SETTING UP (owner, once)
 
-Do these in order before the first real sale.
+Do these in order before your first real sale.
 
 ### 1. Change the owner PIN
 
-Main menu → **Staff accounts** → select `owner` → **Change PIN**.
+**Staff accounts** → click `owner` → **Change PIN**.
+
 Do not leave it as 1234.
 
 ### 2. Add your staff
 
-Same screen → **Add new user**. Give each person their own name and PIN.
-Choose the right role — a cashier cannot cancel bills or change prices.
+Same screen → **Add new user**. Give each person their own name and PIN, and
+pick what they are allowed to do.
 
-Everyone must have their own login. Every bill, every discount and every
-cancellation is recorded against a person's name, which only works if they
-are not sharing one login.
+Everyone needs their own login. Every bill, discount and cancellation is
+recorded against a name — which is worth nothing if three people share one
+login.
 
 ### 3. Fill in your shop details
 
-Main menu → **Settings**.
+Click **Settings**.
 
-| Field | What it is |
+| Box | What goes in it |
 |---|---|
 | Shop name | Printed at the top of every bill |
 | Address line 1 and 2 | Printed under the name |
 | Phone number | Printed on the bill |
-| GSTIN | Leave blank if you are not GST registered |
+| GSTIN | Your GST number. Leave empty if you are not registered |
 | Bill title when no GSTIN | Usually `CASH BILL` |
-| Footer line | For example "Thank you, visit again" |
+| Footer line | Something like "Thank you, visit again" |
 
-The GSTIN box tells you as you type whether bills will be titled
+As you type the GST number the screen tells you whether your bills will say
 **TAX INVOICE** or **CASH BILL**.
 
 ### 4. Set up the printer
 
 Still in **Settings**, under **Receipt printer**:
 
-1. Open the drop-down. It lists the printers installed in Windows.
-2. Choose the **TVS RP 3230**.
+1. Open the list. It shows the printers this computer knows about.
+2. Pick your bill printer — the **TVS RP 3230**.
 3. Click **Print a test slip**.
 
-The test slip prints a row of digits. **Check that the row fits the paper
-exactly and does not wrap onto a second line.** If it fits, your printer is
-set up correctly.
+A slip prints with a row of numbers on it. **Check that the row fits the paper
+in one line and does not spill onto a second.** If it fits, your printer is
+set up right.
 
-Leave the box blank to turn printing off.
+Leave the box empty if you do not want to print at all.
 
 ### 5. Cash drawer
 
 Tick **A cash drawer is connected** only if one is actually plugged into the
-printer. If you tick it and the drawer does not open, change **Drawer pin**
-from 2 to 5 and try again — drawer makers wire this differently.
+printer.
 
-The drawer opens by itself on a cash sale, on a cash khata payment, and at
-day close. It never opens on UPI or card.
+If you tick it and the drawer does not open, change **Drawer pin** from 2 to 5
+and try again. Different drawer makes are wired differently — this is normal
+and it is not a fault.
+
+The drawer opens by itself on a cash sale, on cash paid against khata, and at
+day close. It never opens for UPI or card.
 
 ### 6. Counter rules
 
 | Setting | What it means |
 |---|---|
 | Counter number | Leave at 1 unless you have more than one billing machine |
-| Discount without approval (%) | Above this a cashier must get a manager PIN |
-| Loyalty points per Rs. 100 | Set to 0 to turn loyalty off |
+| Discount without approval | How much a staff member can knock off before needing a manager |
+| Loyalty points per Rs. 100 | Put 0 if you do not want points |
 
 Click **Save settings**.
 
-### 7. Connect the scale
+### 7. The scale
 
-See Part 7 — it has its own section.
+Part 7 covers it.
 
 ---
 
 # PART 7 — CONNECTING THE WEIGHING SCALE
 
-Your scale is an **ES 510**. It sends the weight to the computer down a cable,
-so the billing screen can read it without anyone typing.
+Your scale sends the weight down a cable to the computer, so nobody has to
+type it.
 
-## The cable
+## Plugging it in
 
-The scale has a **9-pin plug (DB9)** on its cable. It goes into the matching
-**9-pin socket on the back of the computer** — the COM port, sometimes marked
-`|O|O|` or `COM1`.
+The scale's cable ends in a **plug with 9 pins**. It goes into the matching
+**9-pin socket on the back of the computer**.
 
 - It is **not** a USB plug. Do not look for a USB socket.
-- Push it in and **tighten the two small screws** either side by hand. A loose
-  plug gives dropped readings that are very confusing to chase later.
+- Push it in and **tighten the two little screws** on the sides with your
+  fingers. A loose plug gives readings that come and go, which is very hard to
+  work out later.
 - Switch the scale on. It needs its own power — the cable does not power it.
 
-## Setting it up in the software
+## Telling the software about it
 
-Main menu → **Scale and weight** → **Device** tab.
+Click **Scale and weight**, then the **Device** tab.
 
 Set these four boxes:
 
-| Box | Set to |
+| Box | Put |
 |---|---|
 | **Mode** | `Serial` |
 | **Port** | `COM1` |
 | **Baud** | `9600` |
 | **Poll cmd** | leave empty |
 
-Then click **Save settings**.
+Click **Save settings**.
 
-## Checking it actually works
+## Checking it works
 
-Click **Start live dump**, then put something on the scale pan.
+Click **Start live dump**, then press down on the scale pan.
 
-Numbers should start scrolling in the **Raw dump** box, like this:
+Numbers should start rolling down the **Raw dump** box:
 
 ```
 30 30 30 2E 32 37 30  |  000.270
@@ -374,288 +376,276 @@ Numbers should start scrolling in the **Raw dump** box, like this:
 30 30 30 2E 32 36 35  |  000.265
 ```
 
-The right-hand column is the weight in kilograms. `000.270` means 270 grams.
+Ignore the left half. The right half is the weight in kilos —
+**`000.270` means 270 grams.**
 
-**If you see numbers scrolling and they change when you press on the pan, the
-scale is connected correctly.** Click **Stop**, then **Save settings**, and you
-are finished.
+**If numbers are rolling and they change when you press the pan, the scale is
+connected properly.** Click **Stop**, then **Save settings**. You are done.
 
-## If the Raw dump box stays empty
+## If nothing appears
 
-Work through these in order. Stop as soon as numbers appear.
+Work down this list. Stop as soon as numbers show up.
 
-**1. Is the scale switched on?**
-Its own display should be lit.
+**1. Is the scale switched on?** Its own display should be lit.
 
-**2. Is the plug tight?**
-Push it fully home and tighten both screws.
+**2. Is the plug pushed all the way in?** Tighten both screws.
 
-**3. Is it the right port?**
-Try `COM2` and `COM3` in the Port box, clicking **Start live dump** after each.
+**3. Is it the right socket?** In the **Port** box try `COM2`, then `COM3`,
+clicking **Start live dump** after each.
 
-**4. Try the Detect button.**
-It tries the common speed settings one after another and tells you which one
-the scale answers on.
+**4. Try the Detect button.** It tries the usual settings one after another
+and tells you which one the scale answers on.
 
-**5. Swap pins 2 and 3.**
-This is the most common cause and it is not your fault. There are two ways to
-wire a 9-pin cable and they are not compatible. Any computer shop sells a
-**null-modem adapter** for very little — plug it in between the cable and the
-computer and try again.
+**5. The wires may be the wrong way round.** This is the most common reason
+and it is nobody's fault — there are two ways to make this cable and they do
+not work with each other. Any computer shop sells a small part called a
+**null-modem adapter** for very little money. Plug it in between the cable and
+the computer and try again.
 
-**6. If the port is missing entirely from the Port list**, it is switched off
-in the computer's BIOS rather than broken. That needs a technician for two
-minutes.
+**6. If the Port box has no options at all**, the socket is switched off
+inside the computer's settings, not broken. A computer technician turns it
+back on in two minutes.
 
-## Meanwhile, you can still sell
+## You can still sell without it
 
-If the scale is not working, billing carries on. The screen shows
-**Scale: manual**, and pressing **F4** lets the cashier type the weight in.
-Those bills are marked as hand-typed so you can see them later.
+If the scale is not working, billing carries on as normal. The screen shows
+**Scale: manual** and pressing **F4** lets you type the weight in. Those bills
+are marked so you can find them later.
 
-## What the Regex box is
+## The Regex box — leave it alone
 
-You will not normally touch it. It tells the software how to read the scale's
-message. It is already set correctly for your ES 510:
+That long line of symbols tells the software how to read your scale's
+messages. It is already correct for your scale.
 
-```
-(?<status>ST|US)?[,\s]*(?:GS|NT)?[,\s]*(?<sign>[+-])?\s*(?<value>\d+(?:\.\d+)?)\s*(?<unit>kg|g)?
-```
+Only change it if you buy a different make of scale, and then get whoever
+sets it up to do it.
 
-Leave it alone unless you replace the scale with a different make.
+## The second tab
 
-## Per-item weight settings
-
-The second tab, **Per-item weight**, sets for each loose item:
-
-- **Tare** — the weight of the bag or tray, subtracted automatically
-- **Round to** — normally 5 g
-- **Minimum sale** — normally 100 g
-
-The defaults are correct for most goods.
+**Per-item weight** sets, for each loose item, the weight of the bag, the step
+size, and the smallest amount you will sell. The standard settings suit almost
+everything. Part 8 explains them.
 
 ---
 
-# PART 8 — ADDING PRODUCTS
+# PART 8 — ADDING YOUR PRODUCTS
 
-Main menu → **Item master**.
+Click **Item master**, then **Add a new item**.
 
-### Adding one item
-
-Click **Add a new item** and fill in:
-
-| Field | Notes |
+| Box | What goes in it |
 |---|---|
-| **Code (SKU)** | Your own short code. How you find the item if a barcode will not scan |
+| **Code (SKU)** | Your own short code, like `ATTA5`. How you find the item when a barcode will not scan |
 | **Name** | The full name, for the screen |
-| **Print name** | Shorter name for the bill — the paper is only 48 characters wide |
+| **Print name** | A shorter name for the bill. The paper is narrow, so long names get cut off |
 | **Sold by** | `Piece` for packets, `Weight` for loose goods |
-| **HSN** | The GST code for this kind of goods |
-| **Tax rate** | In basis points — `500` means 5%, `1200` means 12% |
-| **Cost / Selling / MRP** | In rupees. The margin is shown as you type |
-| **Barcodes** | One per line. An item can have several |
+| **HSN** | The government's code for this type of goods. Your accountant or the supplier's bill will have it |
+| **Tax rate** | GST, but written without the % sign and with two extra zeros. **5% is `500`. 12% is `1200`. 18% is `1800`.** |
+| **Cost / Selling / MRP** | In rupees. Your profit shows as you type |
+| **Barcodes** | One per line. An item can have more than one |
 
-### Pricing goods sold by weight
+### Selling by weight — read this once
 
-This is the part people get stuck on, so read it once carefully.
+This is the part people get stuck on.
 
-**You do not enter "this much weight costs this much".** You enter **one price
-per kilogram**, and the software works out every weight from it.
+**You do not enter "half a kilo costs this much".** You enter **one price for
+one kilogram**, and the software works out every weight from it.
 
-Set **Sold by** to `Weight`. The Unit changes to `kg` and the price box
-relabels itself to **Selling /kg**, so you can see what the number means.
+Set **Sold by** to `Weight`. The unit changes to `kg` by itself and the price
+box changes to say **Selling /kg**, so you can see what the number means.
 
-Tomatoes at Rs. 40 a kilo:
+For tomatoes at Rs. 40 a kilo:
 
 | Box | Put |
 |---|---|
 | Sold by | `Weight` |
 | Selling /kg | `40` |
-| Cost | what you paid per kilo |
+| Cost | what you paid for a kilo |
 | MRP | `0` — loose goods have no printed price |
-| Weigh at counter | **ticked** |
+| Weigh at counter | **tick it** |
 
 Now every weight prices itself:
 
-| Customer takes | Software charges |
+| Customer takes | They pay |
 |---|---|
-| 500 g | Rs. 20.00 |
+| half a kilo | Rs. 20.00 |
 | 1.240 kg | Rs. 49.60 |
-| 2 kg | Rs. 80.00 |
+| 2 kilos | Rs. 80.00 |
 
-To change the price when the market moves, edit that one number. Every future
-sale follows it.
+When the market price changes, change that one number. Every sale after that
+follows it.
 
-### The four weight boxes explained
+### The four weight boxes
 
-| Box | What it does | Normal setting |
+| Box | What it does | Normally |
 |---|---|---|
-| **Weigh at counter** | Lets this item take a reading from your scale with **F4**. Without it, the scale is ignored for this item. | **Tick it** for anything you weigh |
-| **Tare grams** | Weight of the bag or tray, taken off automatically so the customer does not pay for packaging. | `0`, unless you weigh into a tray |
-| **Round to grams** | Your scale can only legally report in 5 g steps, so prices are never finer than that. | `5` |
-| **Min sale grams** | Refuses anything lighter. The scale is not accurate below this and the law does not allow it. | `100` |
+| **Weigh at counter** | Lets this item read your scale when you press **F4**. Without the tick, the scale is ignored for this item. | **Tick it** for anything you weigh |
+| **Tare grams** | The weight of the bag or tray, taken off by itself so the customer does not pay for the packing | `0`, unless you weigh into a tray |
+| **Round to grams** | Weights go in steps of this many grams | `5` |
+| **Min sale grams** | The software will not sell less than this | `100` |
 
-These boxes are greyed out for items sold by the piece, because they mean
-nothing for a sealed packet.
+These four are greyed out for packets, because they mean nothing there.
 
-### Two rules the software enforces
+### Two things the software will not let you do
 
-- **Selling price can never be above MRP.** Saving is blocked. This is the law,
-  not a preference.
-- **Selling below cost** gives a warning and asks you to confirm. Sometimes you
-  mean it, but usually it is a typing mistake.
+- **You cannot set a selling price above the MRP.** It refuses to save. That is
+  the law, not a preference.
+- **Selling below what you paid** gives you a warning and asks if you are sure.
+  Sometimes you mean it. Usually it is a typing mistake.
 
-### Adding 1,500 items
+### If you have hundreds of products
 
-Do not type them one by one. Click **Import from CSV** and load a spreadsheet.
-There is a preview before anything is saved, and a list of any rows that
-failed.
+Do not type them one at a time. Click **Import from a spreadsheet** and load an
+Excel file. It shows you what it is about to do before saving anything, and
+lists any rows it could not read.
 
 ---
 
-# PART 9 — BUYING STOCK FROM SUPPLIERS
+# PART 9 — ENTERING GOODS YOU BOUGHT
 
-Main menu → **Purchase entry**. This is how goods get into your stock.
+Click **Purchase entry**. This is how goods get into your stock.
 
-**Nothing appears in your stock until you record the purchase.** If Stock take
-is empty, this is why.
+**Nothing is in your stock until you enter the supplier's bill.** If the stock
+screens look empty, this is why.
 
-### Recording a delivery
+### Entering a delivery
 
-1. **Supplier** — pick from the list. First time, click **+ New supplier**.
-2. **Invoice number** — copy it from the supplier's bill exactly. The software
-   refuses the same invoice twice, which is what stops goods being counted
-   double.
-3. **Invoice date**, **Payment mode**, and a **due date** if it is on credit.
-4. For each item on the delivery, click **Add line** (or press **F2**) and fill in:
+1. **Supplier** — pick from the list. The first time, click **+ New supplier**.
+2. **Invoice number** — copy it off the supplier's bill exactly. The software
+   refuses the same bill twice, which stops goods being counted double.
+3. **Invoice date**, how you are paying, and a **due date** if it is on credit.
+4. For each thing they delivered, click **Add line** and fill in:
 
-| Column | What to put |
+| Column | What goes in it |
 |---|---|
-| Item | Pick from the drop-down |
-| Batch | The supplier's batch code, if there is one |
-| Expiry | As `2026-12-31`. Leave blank if it does not expire |
+| Item | Pick from the list |
+| Batch | The supplier's batch code, if there is one on the packet |
+| Expiry | Written as `2026-12-31`. Leave empty if it does not expire |
 | Pieces / Grams | How much arrived. Pieces for packets, grams for loose |
-| Free pc / Free g | Free goods. **Adds to stock but costs nothing** |
-| Cost | What you paid per unit |
-| MRP | The printed price |
+| Free pc / Free g | Free goods. **They go into stock but cost you nothing** |
+| Cost | What you paid for one |
+| MRP | The price printed on the packet |
 | Line value | Worked out for you |
 
-5. Add **Freight** and any **Discount** on the whole invoice.
-6. Click **Save purchase** (or press **F12**).
+5. Add any **Freight** and **Discount** on the whole bill.
+6. Click **Save purchase**.
 
-The goods are now in your stock and available to sell.
+The goods are now in your stock and ready to sell.
 
-### Free goods matter
+### Why free goods matter
 
-"Buy 10 get 1 free" — put 10 in Pieces and 1 in Free. All 11 go into stock,
-but only 10 are paid for. That is what makes your real margin come out right.
+"Buy 10 get 1 free" — put 10 in Pieces and 1 in Free. All 11 go into stock but
+only 10 cost you anything. That is what makes your real profit come out right.
 
 ---
 
-# PART 10 — LOOKING AFTER STOCK
+# PART 10 — LOOKING AFTER YOUR STOCK
 
 ### Stock summary
 
-What you have, batch by batch, with four figures across the top: total value,
-how many products, how many are below their reorder level, and how many
-batches expire within 30 days. Expiring items are coloured.
+Shows what you have, with four numbers across the top: what your stock is
+worth, how many products you sell, how many are running low, and how many are
+close to their expiry date. Things near expiry are coloured so they stand out.
 
-### Stock take — counting the shelves
+### Counting your shelves
 
-Main menu → **Stock take**.
+Click **Stock take**.
 
-1. Every batch you own is listed with what the software **expects**.
+1. Everything you own is listed, with what the software **thinks** you have.
 2. Walk the shelves and type what you **actually counted** in the cream
    coloured columns.
-3. The **Difference** column shows in plain words — "2 pc short",
+3. The **Difference** column tells you in plain words — "2 pc short",
    "0.150 kg extra". Short is red, extra is green.
-4. Click **Save the count**. You are shown a summary before anything changes.
+4. Click **Save the count**. It shows you a summary before changing anything.
 
-**Only lines you change are touched.** Anything you do not type stays as it is,
-so you can count one shelf at a time.
+**Only lines you type in are changed.** Anything you leave alone stays as it
+is, so you can do one shelf today and another tomorrow.
 
 ### Damage and wastage
 
-For anything spoiled, broken or thrown away. Choose the batch, the amount, and
-**give a reason** — the reason is required, because in a month you will not
+For anything spoiled, broken or thrown out. Pick the item, say how much, and
+**give a reason**. The reason is required, because in a month you will not
 remember.
 
-Without this, your stock figures drift away from reality within weeks.
+Skip this and your stock numbers drift away from reality within weeks.
 
-### Open a sack
+### Opening a sack
 
-A 50 kg rice bag arrives as one piece but is sold loose by the kilo.
+A 50 kg rice bag comes in as one sack but sells loose by the kilo.
 
-Choose the sealed bag as **Take from**, the loose batch as **Add to**, then
-`1` bag out and `50000` grams in. Both must be the same product.
+Pick the sealed bag as **Take from**, the loose one as **Add to**, then `1` bag
+out and `50000` grams in. Both have to be the same product.
 
-### Expiring soon and Items to reorder
+### Two lists worth a weekly look
 
-Two lists worth checking weekly. Expiring soon shows what to sell or send back.
-Items to reorder shows what has fallen below the level you set on the item.
+- **Expiring soon** — sell these first or send them back
+- **Items to reorder** — what has run low
 
 ---
 
-# PART 11 — CUSTOMER KHATA (CREDIT)
+# PART 11 — KHATA
 
-This replaces the paper khata notebook. It holds money owed to you by name, so
-every figure has to stand up when the customer disagrees at the counter.
+This replaces the khata notebook. It holds money owed to you by name, so every
+figure has to stand up when a customer argues at the counter.
 
-### Adding a credit customer
+### Adding a customer who buys on credit
 
-Main menu → **Customer khata** → **New customer**.
+**Customer khata** → **New customer**.
 
-A phone number **and** a name are required for credit. Then set their
-**credit limit** and switch credit on. Credit is off by default for everyone.
+You need a phone number **and** a name. Then set how much credit they are
+allowed and switch credit on. Nobody gets credit until you say so.
 
-### The ledger
+### Their page
 
-Look a customer up by phone. You see their outstanding balance, credit limit,
-available credit and how old their oldest unpaid bill is.
+Look them up by phone. At the top you see what they owe, their limit, how much
+more they can take, and how old their oldest unpaid bill is.
 
-Below that is every transaction, oldest at the top, with a running balance and
-**who recorded it**. Double-click any bill reference to see exactly what was
-bought. A customer asking "what was that Rs. 2,770 for?" gets an answer in two
-clicks.
+Below that is every single transaction, oldest first, with a running total and
+**who wrote it down**. Double-click any bill to see exactly what was bought.
+
+A customer asking "what was that Rs. 2,770 for?" gets an answer in two clicks
+instead of an argument.
 
 ### Taking a payment
 
-**Record payment** — any amount, at any time. Choose cash, UPI or card, and
-record who took the money. It is matched against their oldest unpaid bills
-first. Print a receipt — it protects your staff as much as the customer.
+**Record payment** — any amount, any time. Cash, UPI or card, and it records
+who took the money. It goes against their oldest unpaid bills first.
 
-### Nothing is ever edited or deleted
+Print them a receipt. It protects your staff as much as the customer.
 
-A mistake is fixed by adding a correcting entry, so the trail shows both the
-error and the correction. This is what makes the balance defensible.
+### Nothing is ever rubbed out
+
+A mistake is fixed by adding a correcting line, so you can see both the mistake
+and the correction. That is what makes the balance something you can defend.
 
 ### Statements
 
-**Print statement** gives the customer a printed record. Every statement
-printed is logged, which settles most arguments before they start.
+**Print statement** gives the customer a printed record of everything. Every
+statement you print is logged, which settles most arguments before they start.
 
-### Money owed by age
+### Who owes you, by age
 
-The owner's collection screen. Everyone who owes you money, sorted by how long
-it has been owed: under 30 days, 31–60, 61–90, over 90. The over-90 rows are
-coloured — that is where losses actually live.
+Everyone who owes you money, sorted by how long it has been owed: under 30
+days, 31 to 60, 61 to 90, and over 90. The over-90 rows are coloured.
+
+That last group is where money is actually lost.
 
 ---
 
-# PART 12 — REPORTS AND GST
+# PART 12 — REPORTS
 
-Main menu → **Reports and GST**.
+Click **Reports and GST**.
 
 - **Sales register** — every bill for a period
-- **Item movement** — what sold, what did not
+- **Item movement** — what sold and what did not
 - **Margin and profit** — what you actually made
-- **Stock valuation** — what your stock is worth
+- **Stock valuation** — what your stock is worth today
 - **Dead stock** — nothing sold in 90 days
-- **Tax summary by HSN** — for your GST return
-- **GSTR-1 and GSTR-3B exports** — hand these to your accountant
+- **Tax summary** — for your GST return
+- **GST exports** — hand these to your accountant
 - **Cashier performance** — who billed what
 
-Your accountant works in Tally. Export from here rather than retyping.
+Your accountant works in Tally. Send them these files instead of retyping
+everything by hand.
 
 ---
 
@@ -663,44 +653,50 @@ Your accountant works in Tally. Export from here rather than retyping.
 
 | What you see | What to do |
 |---|---|
-| Nothing prints | Settings → check the printer is chosen → **Print a test slip** |
-| "Print failed (bill saved)" | **The sale is safe.** Fix the printer, then reprint |
-| Printing is garbled | Wrong printer chosen. Pick the TVS RP 3230 in Settings |
-| Text runs onto two lines | Print a test slip. The digits must fit one line exactly |
-| Screen says "Scale: manual" | Scale not connected — see Part 7. Press F4 and type the weight |
-| Scale gives no reading | Wait for it to settle. If nothing, see Part 7 |
-| "Weight below minimum sale" | Under 100 g. Sell it pre-packed instead |
-| Stock take is empty | You have no stock recorded. Do Part 9 first |
-| Item not in the purchase drop-down | Add it in Item master first |
-| "Duplicate supplier invoice" | That bill is already entered. Check before entering again |
-| Cannot save a selling price | It is above the MRP. That is not allowed |
+| Nothing prints | Settings → check a printer is chosen → **Print a test slip** |
+| "Print failed (bill saved)" | **The sale is safe.** Fix the printer and print it again |
+| Printing comes out as nonsense | Wrong printer chosen. Pick the TVS one in Settings |
+| Text spills onto two lines | Print a test slip. The row of numbers must fit one line |
+| Screen says "Scale: manual" | Scale not connected — Part 7. Press F4 and type the weight |
+| Scale shows nothing | Wait for it to settle. If still nothing, Part 7 |
+| "Weight below minimum sale" | Under 100 grams. Sell it as a ready-made packet |
+| Stock take screen is empty | You have not entered any supplier bills yet — Part 9 |
+| An item is missing from the purchase list | Add it in Item master first |
+| "Duplicate supplier invoice" | That bill is already entered. Check before entering it again |
+| It will not save a selling price | It is higher than the MRP. That is not allowed |
 | Drawer will not open | Settings → change Drawer pin from 2 to 5 |
-| Cashier cannot cancel a bill | Correct. A manager or owner PIN is needed |
-| Forgotten PIN | The owner resets it in Staff accounts |
-| Software will not start | Check Windows has .NET Framework 4.8 installed |
+| Staff cannot cancel a bill | That is correct. A manager or owner has to type their PIN |
+| Someone forgot their PIN | The owner resets it in Staff accounts |
 
-### Your data is safe
+### Your information is safe
 
-Everything is stored on this computer at:
-`C:\Users\<your user>\AppData\Local\GroceryPos\grocery.sqlite`
+Everything is kept on this computer, not on the internet.
 
-- The software **never needs the internet**. It works with the line down.
-- Updating the program does **not** touch your data.
-- **Copy that file to a pen drive every week.** It is your entire business —
-  every bill, every customer, every rupee owed to you. If the hard disk dies
-  without a copy, it is all gone.
+- The software **does not need the internet**. It works when the line is down.
+- Updating the software **does not touch your information**.
+- **Copy it to a pen drive every week.**
+
+That last one matters more than anything else in this book. That file is your
+whole business — every bill, every customer, every rupee owed to you. If the
+computer's disk dies and you have no copy, it is all gone.
+
+Ask whoever set the machine up to show you which file to copy, and to write it
+on the inside cover of this book.
 
 ### Things the software will not let you do
 
-These are not faults. They are there on purpose.
+These are not faults. They are deliberate.
 
-- Delete a bill — cancel it instead, so the number series stays unbroken
-- Edit or delete a khata entry — add a correcting entry instead
-- Change stock without a reason being recorded
-- Sell above MRP
-- Change a shift after it is closed
-- Sell counter-weighed goods under 100 g
+- Delete a bill — you cancel it instead, so the numbers stay unbroken
+- Rub out a khata entry — you add a correcting line instead
+- Change stock without giving a reason
+- Sell above the MRP
+- Change a day after you have closed it
+- Weigh and sell less than 100 grams
+
+Every one of these exists to protect you — either from an argument with a
+customer, or from a question from the GST office.
 
 ---
 
-*Guide written for AKIL STORE. Keep it by the counter.*
+*Written for AKIL STORE. Keep it by the counter.*
