@@ -455,7 +455,48 @@ Click **Add a new item** and fill in:
 | **Cost / Selling / MRP** | In rupees. The margin is shown as you type |
 | **Barcodes** | One per line. An item can have several |
 
-For loose goods also set **Tare**, **Round to grams** and **Minimum sale grams**.
+### Pricing goods sold by weight
+
+This is the part people get stuck on, so read it once carefully.
+
+**You do not enter "this much weight costs this much".** You enter **one price
+per kilogram**, and the software works out every weight from it.
+
+Set **Sold by** to `Weight`. The Unit changes to `kg` and the price box
+relabels itself to **Selling /kg**, so you can see what the number means.
+
+Tomatoes at Rs. 40 a kilo:
+
+| Box | Put |
+|---|---|
+| Sold by | `Weight` |
+| Selling /kg | `40` |
+| Cost | what you paid per kilo |
+| MRP | `0` — loose goods have no printed price |
+| Weigh at counter | **ticked** |
+
+Now every weight prices itself:
+
+| Customer takes | Software charges |
+|---|---|
+| 500 g | Rs. 20.00 |
+| 1.240 kg | Rs. 49.60 |
+| 2 kg | Rs. 80.00 |
+
+To change the price when the market moves, edit that one number. Every future
+sale follows it.
+
+### The four weight boxes explained
+
+| Box | What it does | Normal setting |
+|---|---|---|
+| **Weigh at counter** | Lets this item take a reading from your scale with **F4**. Without it, the scale is ignored for this item. | **Tick it** for anything you weigh |
+| **Tare grams** | Weight of the bag or tray, taken off automatically so the customer does not pay for packaging. | `0`, unless you weigh into a tray |
+| **Round to grams** | Your scale can only legally report in 5 g steps, so prices are never finer than that. | `5` |
+| **Min sale grams** | Refuses anything lighter. The scale is not accurate below this and the law does not allow it. | `100` |
+
+These boxes are greyed out for items sold by the piece, because they mean
+nothing for a sealed packet.
 
 ### Two rules the software enforces
 

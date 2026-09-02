@@ -178,6 +178,7 @@ namespace GroceryPos.App
         private TextBox _sku, _name, _printName, _unit, _hsn, _tax, _round, _minSale, _tare;
         private TextBox _cost, _selling, _mrp;
         private Label _marginLabel;
+        private Label _sellingLbl, _weightHint;
         private ComboBox _soldBy;
         private CheckBox _weighAtCounter, _allowDiscount, _isActive;
         private TextBox _barcodes;
@@ -199,6 +200,10 @@ namespace GroceryPos.App
             _soldBy.Items.AddRange(new object[] { "Piece", "Weight", "Volume" });
             _soldBy.SelectedItem = it.SoldBy.ToString();
             Controls.Add(l); Controls.Add(_soldBy); y += 30;
+            // Picking "Weight" must switch the unit to kg and relabel the price,
+            // or the screen keeps saying "pc" and never says the selling price is
+            // per kilo -- which is the one thing the user needs to know here.
+            _soldBy.SelectedIndexChanged += (s, e) => SoldByChanged();
 
             _unit = AddField("Unit", it.Unit ?? "pc", ref y);
             _hsn = AddField("HSN", it.HsnCode, ref y);
@@ -211,7 +216,8 @@ namespace GroceryPos.App
 
             Controls.Add(new Label { Text = "Cost", Left = 12, Top = y + 4, Width = 60 });
             _cost = new TextBox { Left = 80, Top = y, Width = 100, Text = PaiseToRupeeString(it.DefaultCostPaise) };
-            Controls.Add(new Label { Text = "Selling", Left = 200, Top = y + 4, Width = 60 });
+            _sellingLbl = new Label { Text = "Selling", Left = 200, Top = y + 4, Width = 60 };
+            Controls.Add(_sellingLbl);
             _selling = new TextBox { Left = 265, Top = y, Width = 100, Text = PaiseToRupeeString(it.DefaultSellingPaise) };
             Controls.Add(new Label { Text = "MRP", Left = 380, Top = y + 4, Width = 40 });
             _mrp = new TextBox { Left = 420, Top = y, Width = 80, Text = PaiseToRupeeString(it.DefaultMrpPaise) };
@@ -225,7 +231,16 @@ namespace GroceryPos.App
             _selling.TextChanged += (s, e) => UpdateMargin();
             _mrp.TextChanged += (s, e) => UpdateMargin();
             UpdateMargin();
-            y += 26;
+            y += 20;
+
+            // Says what the price is per, which the form otherwise never states.
+            _weightHint = new Label
+            {
+                Left = 80, Top = y, Width = 430, Height = 18, Text = "",
+                ForeColor = System.Drawing.Color.FromArgb(67, 71, 78)
+            };
+            Controls.Add(_weightHint);
+            y += 24;
 
             _tare = AddField("Tare grams", it.TareGrams.ToString(), ref y);
             _round = AddField("Round to grams", it.RoundToGrams.ToString(), ref y);
@@ -243,6 +258,8 @@ namespace GroceryPos.App
             _barcodes = new TextBox { Left = 12, Top = y, Width = 440, Height = 60, Multiline = true };
             if (it.Id != 0) _barcodes.Text = string.Join("\r\n", _ctx.Items.BarcodesFor(it.Id));
             Controls.Add(_barcodes); y += 70;
+
+            SoldByChanged();
 
             var save = new Button { Text = "Save", Left = 260, Top = y, Width = 90 };
             save.Click += (s, e) => Save();
@@ -276,6 +293,40 @@ namespace GroceryPos.App
                                   System.Globalization.CultureInfo.InvariantCulture, out d))
                 throw new Exception("Not a valid amount: " + s);
             return (long)System.Math.Round(d * 100m);
+        }
+
+        /// <summary>
+        /// Keeps the unit, the price caption and the weight boxes in step with how
+        /// the item is sold. A weight item is priced per kilogram, and saying so on
+        /// screen removes the main source of confusion on this form.
+        /// </summary>
+        private void SoldByChanged()
+        {
+            string sold = _soldBy.SelectedItem as string ?? "Piece";
+            bool byWeight = sold == "Weight";
+            bool byVolume = sold == "Volume";
+
+            // Only overwrite the unit when it still holds another mode's default,
+            // so a deliberate entry such as "500g pack" is not wiped out.
+            string u = (_unit.Text ?? "").Trim();
+            if (u.Length == 0 || u == "pc" || u == "kg" || u == "l")
+                _unit.Text = byWeight ? "kg" : byVolume ? "l" : "pc";
+
+            if (_sellingLbl != null)
+                _sellingLbl.Text = byWeight ? "Selling /kg" : byVolume ? "Selling /l" : "Selling";
+
+            if (_weightHint != null)
+                _weightHint.Text = byWeight
+                    ? "Price is per kilogram. 1.240 kg at Rs. 40 comes to Rs. 49.60."
+                    : byVolume ? "Price is per litre."
+                    : "Price is for one piece.";
+
+            // The weight boxes mean nothing for a packet sold by the piece.
+            bool weightBoxes = byWeight || byVolume;
+            if (_tare != null) _tare.Enabled = weightBoxes;
+            if (_round != null) _round.Enabled = weightBoxes;
+            if (_minSale != null) _minSale.Enabled = weightBoxes;
+            if (_weighAtCounter != null) _weighAtCounter.Enabled = weightBoxes;
         }
 
         private void UpdateMargin()

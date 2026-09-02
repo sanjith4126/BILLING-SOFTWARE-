@@ -67,6 +67,21 @@ namespace SeedDemo
             Capture(outDir, "users", () => new GroceryPos.App.UsersForm(ctx));
             Capture(outDir, "customer_khata", () => new GroceryPos.App.CustomerLedgerForm(ctx));
 
+            // A brand new WEIGHT item, to check the unit and price caption follow
+            // the "Sold by" choice.
+            Capture(outDir, "item_new_weight", () =>
+                new GroceryPos.App.ItemEditForm(ctx, new Item
+                {
+                    SoldBy = SoldBy.Weight, Unit = "pc", IsActive = true,
+                    RoundToGrams = 5, MinSaleGrams = 100, AllowDiscount = true
+                }));
+            Capture(outDir, "item_new_piece", () =>
+                new GroceryPos.App.ItemEditForm(ctx, new Item
+                {
+                    SoldBy = SoldBy.Piece, Unit = "pc", IsActive = true,
+                    RoundToGrams = 5, MinSaleGrams = 100, AllowDiscount = true
+                }));
+
             Console.WriteLine("Screens written to " + outDir);
             return 0;
         }
