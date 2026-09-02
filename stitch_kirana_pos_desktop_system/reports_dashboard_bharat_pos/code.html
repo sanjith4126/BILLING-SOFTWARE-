@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bharat POS - Reports Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#edeeef",
+                        "secondary-container": "#d8e1ea",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#000613",
+                        "on-primary-fixed-variant": "#2f486a",
+                        "on-primary-fixed": "#001c3a",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#5b646b",
+                        "on-background": "#191c1d",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#6b3a25",
+                        "on-secondary-fixed-variant": "#3f484f",
+                        "outline-variant": "#c4c6cf",
+                        "surface": "#f8f9fa",
+                        "tertiary": "#110200",
+                        "on-primary-container": "#6f88ad",
+                        "tertiary-container": "#391303",
+                        "surface-variant": "#e1e3e4",
+                        "secondary-fixed-dim": "#bfc8d0",
+                        "on-tertiary-fixed": "#351002",
+                        "background": "#f8f9fa",
+                        "tertiary-fixed-dim": "#fdb69a",
+                        "surface-container-highest": "#e1e3e4",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#d9dadb",
+                        "inverse-surface": "#2e3132",
+                        "surface-tint": "#476083",
+                        "primary-fixed": "#d4e3ff",
+                        "secondary-fixed": "#dbe4ed",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#afc8f0",
+                        "outline": "#74777f",
+                        "on-secondary-fixed": "#141d23",
+                        "on-surface": "#191c1d",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f8f9fa",
+                        "secondary": "#575f67",
+                        "surface-container-high": "#e7e8e9",
+                        "primary-container": "#001f3f",
+                        "on-tertiary-container": "#b5785f",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#f0f1f2",
+                        "on-surface-variant": "#43474e",
+                        "inverse-primary": "#afc8f0",
+                        "surface-container-low": "#f3f4f5",
+                        "tertiary-fixed": "#ffdbce"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "row-height": "32px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "gutter": "12px",
+                        "xs": "4px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "data-sm": ["JetBrains Mono"],
+                        "data-md": ["JetBrains Mono"],
+                        "display-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "data-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "data-md": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "display-sm": ["24px", { "lineHeight": "32px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-background text-on-background h-screen overflow-hidden flex flex-col font-body-md text-body-md select-none">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 w-full h-row-height z-50 flex justify-between items-center px-gutter bg-primary-container text-on-primary-container font-headline-sm text-headline-sm font-label-sm text-label-sm border-b border-outline-variant">
+<div class="flex items-center gap-md">
+<span class="font-headline-sm text-headline-sm font-bold text-on-primary-container tracking-tight">Bharat POS</span>
+<div class="hidden md:flex ml-lg gap-md items-center h-full">
+<!-- Search on left -->
+<div class="relative flex items-center h-full group focus-within:ring-2 focus-within:ring-primary focus-within:-outline-offset-2">
+<span aria-hidden="true" class="material-symbols-outlined absolute left-xs text-[16px] text-on-primary-container opacity-80" data-icon="search">search</span>
+<input class="bg-surface-container-high border-none h-6 pl-lg pr-xs text-data-sm font-data-sm text-on-surface focus:ring-0 w-48 transition-all duration-150" placeholder="Search..." type="text"/>
+</div>
+</div>
+</div>
+<nav class="hidden md:flex gap-md h-full items-center">
+<!-- Tabs mapping not explicitly provided for TopNav in context, using generic terminal links -->
+<a class="h-full flex items-center px-xs text-on-primary-container opacity-80 hover:bg-primary opacity-90 transition-colors duration-150 border-b-2 border-transparent" href="#">Terminal</a>
+<a class="h-full flex items-center px-xs text-on-primary-container border-b-2 border-primary-fixed transition-colors duration-150" href="#">Backoffice</a>
+</nav>
+<div class="flex gap-md items-center h-full">
+<button aria-label="notifications" class="h-full px-xs flex items-center text-on-primary-container opacity-80 hover:bg-primary opacity-90 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary focus:-outline-offset-2">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications">notifications</span>
+</button>
+<button aria-label="settings" class="h-full px-xs flex items-center text-on-primary-container opacity-80 hover:bg-primary opacity-90 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary focus:-outline-offset-2">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings">settings</span>
+</button>
+<button aria-label="person" class="h-full px-xs flex items-center text-on-primary-container opacity-80 hover:bg-primary opacity-90 transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-primary focus:-outline-offset-2">
+<span class="material-symbols-outlined text-[20px]" data-icon="person">person</span>
+</button>
+</div>
+</header>
+<!-- Main Layout Area -->
+<div class="flex-1 flex mt-row-height mb-row-height overflow-hidden">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-row-height h-[calc(100%-64px)] w-64 flex flex-col bg-surface-container text-primary font-label-sm text-label-sm border-r border-outline-variant z-40">
+<div class="p-gutter border-b border-outline-variant flex flex-col gap-xs">
+<span class="font-headline-sm text-headline-sm text-primary tracking-tight">Store #402</span>
+<span class="text-on-surface-variant font-data-sm text-data-sm opacity-80">Shift: Morning</span>
+</div>
+<nav class="flex-1 overflow-y-auto py-xs flex flex-col">
+<a class="flex items-center gap-sm px-gutter h-row-height text-on-surface-variant hover:bg-surface-container-high cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:-outline-offset-2" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+<a class="flex items-center gap-sm px-gutter h-row-height text-on-surface-variant hover:bg-surface-container-high cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:-outline-offset-2" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="receipt_long">receipt_long</span>
+<span>Billing</span>
+</a>
+<a class="flex items-center gap-sm px-gutter h-row-height text-on-surface-variant hover:bg-surface-container-high cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:-outline-offset-2" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="inventory_2">inventory_2</span>
+<span>Inventory</span>
+</a>
+<a class="flex items-center gap-sm px-gutter h-row-height bg-secondary-container text-on-secondary-container border-l-4 border-primary font-bold cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:-outline-offset-2" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="assessment">assessment</span>
+<span>Reports</span>
+</a>
+<a class="flex items-center gap-sm px-gutter h-row-height text-on-surface-variant hover:bg-surface-container-high cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-primary focus:-outline-offset-2" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="admin_panel_settings">admin_panel_settings</span>
+<span>Admin</span>
+</a>
+</nav>
+</aside>
+<!-- Main Content Canvas -->
+<main class="flex-1 ml-64 p-gutter overflow-y-auto bg-surface bg-[linear-gradient(to_right,#e1e3e4_1px,transparent_1px),linear-gradient(to_bottom,#e1e3e4_1px,transparent_1px)] bg-[size:4px_4px]">
+<div class="max-w-7xl mx-auto flex flex-col gap-md">
+<!-- Page Header -->
+<div class="flex justify-between items-end pb-sm border-b border-outline-variant">
+<div>
+<h1 class="font-display-sm text-display-sm text-on-surface tracking-tight">Reports Overview</h1>
+<p class="font-data-sm text-data-sm text-on-surface-variant mt-xs">Data synced: Just now | Date Range: Today (00:00 - 23:59)</p>
+</div>
+<div class="flex gap-sm">
+<button class="h-row-height px-md border border-outline-variant bg-surface-container-lowest text-on-surface font-label-sm text-label-sm rounded focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 flex items-center gap-xs hover:bg-surface-container-high transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="calendar_today">calendar_today</span>
+                            Today
+                        </button>
+<button class="h-row-height px-md border border-primary bg-primary text-on-primary font-label-sm text-label-sm rounded focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-1 flex items-center gap-xs hover:opacity-90 transition-opacity">
+<span class="material-symbols-outlined text-[16px]" data-icon="download">download</span>
+                            Export CSV
+                        </button>
+</div>
+</div>
+<!-- KPI Bento Grid -->
+<div class="grid grid-cols-5 gap-sm">
+<!-- Metric 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-sm flex flex-col gap-xs relative overflow-hidden group hover:border-primary transition-colors cursor-default focus-within:ring-2 focus-within:ring-primary focus-within:-outline-offset-2" tabindex="0">
+<div class="flex justify-between items-start">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Today's Sales</span>
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="payments">payments</span>
+</div>
+<div class="font-data-md text-data-md text-on-surface text-lg mt-xs">₹42,580.00</div>
+<div class="flex items-center gap-1 font-data-sm text-data-sm text-[10px] text-on-primary-container bg-primary-fixed-dim px-1 rounded-sm w-max mt-auto">
+<span class="material-symbols-outlined text-[12px]" data-icon="trending_up">trending_up</span>
+                            +12.4% vs yday
+                        </div>
+</div>
+<!-- Metric 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-sm flex flex-col gap-xs relative overflow-hidden group hover:border-primary transition-colors cursor-default focus-within:ring-2 focus-within:ring-primary focus-within:-outline-offset-2" tabindex="0">
+<div class="flex justify-between items-start">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Bill Count</span>
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="receipt">receipt</span>
+</div>
+<div class="font-data-md text-data-md text-on-surface text-lg mt-xs">142</div>
+<div class="flex items-center gap-1 font-data-sm text-data-sm text-[10px] text-on-surface-variant mt-auto">
+<span>4 voided</span>
+</div>
+</div>
+<!-- Metric 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-sm flex flex-col gap-xs relative overflow-hidden group hover:border-primary transition-colors cursor-default focus-within:ring-2 focus-within:ring-primary focus-within:-outline-offset-2" tabindex="0">
+<div class="flex justify-between items-start">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Avg Bill Value</span>
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="calculate">calculate</span>
+</div>
+<div class="font-data-md text-data-md text-on-surface text-lg mt-xs">₹299.85</div>
+<div class="flex items-center gap-1 font-data-sm text-data-sm text-[10px] text-on-primary-container bg-primary-fixed-dim px-1 rounded-sm w-max mt-auto">
+<span class="material-symbols-outlined text-[12px]" data-icon="trending_up">trending_up</span>
+                            +5.2%
+                        </div>
+</div>
+<!-- Metric 4 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-sm flex flex-col gap-xs relative overflow-hidden group hover:border-primary transition-colors cursor-default focus-within:ring-2 focus-within:ring-primary focus-within:-outline-offset-2" tabindex="0">
+<div class="flex justify-between items-start">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Gross Margin</span>
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="pie_chart">pie_chart</span>
+</div>
+<div class="font-data-md text-data-md text-on-surface text-lg mt-xs">22.4%</div>
+<div class="flex items-center gap-1 font-data-sm text-data-sm text-[10px] text-error bg-error-container px-1 rounded-sm w-max mt-auto">
+<span class="material-symbols-outlined text-[12px]" data-icon="trending_down">trending_down</span>
+                            -1.1%
+                        </div>
+</div>
+<!-- Metric 5 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-sm flex flex-col gap-xs relative overflow-hidden group hover:border-primary transition-colors cursor-default focus-within:ring-2 focus-within:ring-primary focus-within:-outline-offset-2" tabindex="0">
+<div class="flex justify-between items-start">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Cash in Hand</span>
+<span class="material-symbols-outlined text-[16px] text-primary" data-icon="account_balance_wallet">account_balance_wallet</span>
+</div>
+<div class="font-data-md text-data-md text-on-surface text-lg mt-xs">₹12,450.00</div>
+<div class="flex items-center gap-1 font-data-sm text-data-sm text-[10px] text-on-surface-variant mt-auto">
+<span>Last drop: 14:30</span>
+</div>
+</div>
+</div>
+<!-- Lower Section: Chart & Categories List -->
+<div class="grid grid-cols-12 gap-md mt-sm">
+<!-- Chart Area (Bento large span) -->
+<div class="col-span-8 bg-surface-container-lowest border border-outline-variant rounded p-md flex flex-col relative focus-within:ring-2 focus-within:ring-primary focus-within:-outline-offset-2" tabindex="0">
+<div class="flex justify-between items-center mb-md">
+<h3 class="font-label-sm text-label-sm text-on-surface tracking-wider uppercase">Sales Trend (Hourly)</h3>
+<div class="flex gap-xs">
+<!-- Chart Controls -->
+<button class="w-6 h-6 border border-outline-variant flex items-center justify-center hover:bg-surface-container transition-colors focus:outline-none focus:ring-1 focus:ring-primary"><span class="material-symbols-outlined text-[14px]" data-icon="bar_chart">bar_chart</span></button>
+<button class="w-6 h-6 border border-primary bg-primary text-on-primary flex items-center justify-center focus:outline-none focus:ring-1 focus:ring-primary"><span class="material-symbols-outlined text-[14px]" data-icon="show_chart">show_chart</span></button>
+</div>
+</div>
+<!-- Placeholder for Chart -->
+<div class="flex-1 border border-dashed border-outline-variant bg-surface relative min-h-[240px] flex items-end justify-between px-md pb-md pt-lg">
+<!-- Simulated grid lines -->
+<div class="absolute inset-0 flex flex-col justify-between pointer-events-none opacity-20 py-md px-md">
+<div class="border-b border-outline w-full"></div>
+<div class="border-b border-outline w-full"></div>
+<div class="border-b border-outline w-full"></div>
+<div class="border-b border-outline w-full"></div>
+</div>
+<!-- Simulated Line Chart SVG Graphic (CSS representation) -->
+<svg class="absolute inset-0 w-full h-full p-md z-10 overflow-visible" preserveaspectratio="none" viewbox="0 0 100 100">
+<polyline fill="none" points="0,80 10,75 20,60 30,70 40,40 50,45 60,30 70,25 80,35 90,15 100,20" stroke="#001c3a" stroke-width="2"></polyline>
+<polyline fill="none" points="0,85 10,80 20,70 30,65 40,55 50,60 60,50 70,40 80,45 90,30 100,35" stroke="#6f88ad" stroke-dasharray="2,2" stroke-width="1"></polyline>
+</svg>
+<!-- X Axis labels simulated -->
+<div class="absolute bottom-1 left-md right-md flex justify-between font-data-sm text-[9px] text-on-surface-variant">
+<span>08:00</span><span>10:00</span><span>12:00</span><span>14:00</span><span>16:00</span><span>18:00</span>
+</div>
+<!-- Y Axis labels simulated -->
+<div class="absolute top-md bottom-md left-1 flex flex-col justify-between font-data-sm text-[9px] text-on-surface-variant">
+<span>10k</span><span>7.5k</span><span>5k</span><span>2.5k</span><span>0</span>
+</div>
+</div>
+</div>
+<!-- Categories List (Bento small span) -->
+<div class="col-span-4 bg-surface-container-lowest border border-outline-variant rounded flex flex-col focus-within:ring-2 focus-within:ring-primary focus-within:-outline-offset-2" tabindex="0">
+<div class="p-md border-b border-outline-variant bg-surface-container-low flex justify-between items-center h-row-height">
+<h3 class="font-label-sm text-label-sm text-on-surface tracking-wider uppercase">Report Categories</h3>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant" data-icon="folder_open">folder_open</span>
+</div>
+<div class="flex-1 overflow-y-auto">
+<ul class="divide-y divide-outline-variant">
+<!-- Category Item -->
+<li>
+<a class="flex items-center justify-between p-sm hover:bg-surface-container-high transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:-outline-offset-2 group" href="#">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 bg-primary-container text-on-primary-container rounded-sm flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="point_of_sale">point_of_sale</span>
+</div>
+<div>
+<div class="font-label-sm text-label-sm text-on-surface">Sales &amp; Register</div>
+<div class="font-data-sm text-data-sm text-[10px] text-on-surface-variant">Z-Reports, Void Logs, Tenders</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 transition-opacity" data-icon="chevron_right">chevron_right</span>
+</a>
+</li>
+<!-- Category Item -->
+<li>
+<a class="flex items-center justify-between p-sm hover:bg-surface-container-high transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:-outline-offset-2 group" href="#">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 bg-surface-container-highest text-on-surface rounded-sm flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="inventory">inventory</span>
+</div>
+<div>
+<div class="font-label-sm text-label-sm text-on-surface">Inventory Levels</div>
+<div class="font-data-sm text-data-sm text-[10px] text-on-surface-variant">Stock Value, Low Stock, Shrinkage</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 transition-opacity" data-icon="chevron_right">chevron_right</span>
+</a>
+</li>
+<!-- Category Item -->
+<li>
+<a class="flex items-center justify-between p-sm hover:bg-surface-container-high transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:-outline-offset-2 group" href="#">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 bg-surface-container-highest text-on-surface rounded-sm flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="request_quote">request_quote</span>
+</div>
+<div>
+<div class="font-label-sm text-label-sm text-on-surface">Tax &amp; Compliance</div>
+<div class="font-data-sm text-data-sm text-[10px] text-on-surface-variant">GST Summary, HSN/SAC Mapping</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 transition-opacity" data-icon="chevron_right">chevron_right</span>
+</a>
+</li>
+<!-- Category Item -->
+<li>
+<a class="flex items-center justify-between p-sm hover:bg-surface-container-high transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:-outline-offset-2 group" href="#">
+<div class="flex items-center gap-sm">
+<div class="w-8 h-8 bg-surface-container-highest text-on-surface rounded-sm flex items-center justify-center group-hover:bg-primary group-hover:text-on-primary transition-colors">
+<span class="material-symbols-outlined text-[16px]" data-icon="badge">badge</span>
+</div>
+<div>
+<div class="font-label-sm text-label-sm text-on-surface">Staff Performance</div>
+<div class="font-data-sm text-data-sm text-[10px] text-on-surface-variant">Shifts, Cashier Totals, Voids by User</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-[16px] text-outline opacity-0 group-hover:opacity-100 transition-opacity" data-icon="chevron_right">chevron_right</span>
+</a>
+</li>
+</ul>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="fixed bottom-0 left-0 w-full z-50 flex justify-between items-center px-gutter bg-primary text-on-primary font-data-sm text-data-sm h-row-height border-t border-primary">
+<div class="flex gap-md">
+<span>[F1] Help</span>
+<span>[F2] New Bill</span>
+<span>[F5] Print</span>
+<span>[F10] Close Day</span>
+</div>
+<div class="flex gap-md opacity-90">
+<span>System Status: Online</span>
+<span>Station: POS-01</span>
+</div>
+</footer>
+</body></html>

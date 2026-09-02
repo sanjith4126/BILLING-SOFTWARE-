@@ -37,6 +37,7 @@ namespace GroceryPos.App
             Controls.Add(_grid);
             Controls.Add(save);
             Load += (s, e) => Reload();
+            Theme.Retrofit(this);
         }
 
         private void Reload()

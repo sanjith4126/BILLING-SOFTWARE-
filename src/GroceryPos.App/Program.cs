@@ -15,6 +15,18 @@ namespace GroceryPos.App
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
+            // One place to change the look of every dialog and message box.
+            Application.SetUnhandledExceptionMode(UnhandledExceptionMode.CatchException);
+            Application.ThreadException += (s, e) =>
+            {
+                // A raw .NET crash dialog is meaningless to a shop owner.
+                Theme.Error(
+                    "Something went wrong and the last action was not completed.\r\n\r\n" +
+                    "Details: " + e.Exception.Message + "\r\n\r\n" +
+                    "Your saved data is safe. If this keeps happening, note what you " +
+                    "were doing and report it.");
+            };
+
             var dbDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "GroceryPos");
             Directory.CreateDirectory(dbDir);
             var dbPath = Path.Combine(dbDir, "grocery.sqlite");

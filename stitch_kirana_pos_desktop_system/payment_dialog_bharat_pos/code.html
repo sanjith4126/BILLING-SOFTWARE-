@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Payment Dialog - Bharat POS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "tertiary-container": "#391303",
+                    "on-tertiary-container": "#b5785f",
+                    "surface-container": "#edeeef",
+                    "error-container": "#ffdad6",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary": "#ffffff",
+                    "inverse-primary": "#afc8f0",
+                    "background": "#f8f9fa",
+                    "tertiary": "#110200",
+                    "surface-bright": "#f8f9fa",
+                    "secondary-container": "#d8e1ea",
+                    "primary-fixed": "#d4e3ff",
+                    "on-tertiary": "#ffffff",
+                    "error": "#ba1a1a",
+                    "tertiary-fixed": "#ffdbce",
+                    "on-surface": "#191c1d",
+                    "on-primary-fixed-variant": "#2f486a",
+                    "on-secondary-fixed": "#141d23",
+                    "surface-variant": "#e1e3e4",
+                    "surface-dim": "#d9dadb",
+                    "inverse-surface": "#2e3132",
+                    "primary": "#000613",
+                    "on-secondary-fixed-variant": "#3f484f",
+                    "on-background": "#191c1d",
+                    "on-error": "#ffffff",
+                    "secondary-fixed-dim": "#bfc8d0",
+                    "tertiary-fixed-dim": "#fdb69a",
+                    "on-tertiary-fixed-variant": "#6b3a25",
+                    "inverse-on-surface": "#f0f1f2",
+                    "on-error-container": "#93000a",
+                    "surface-tint": "#476083",
+                    "secondary": "#575f67",
+                    "surface": "#f8f9fa",
+                    "primary-fixed-dim": "#afc8f0",
+                    "secondary-fixed": "#dbe4ed",
+                    "surface-container-high": "#e7e8e9",
+                    "surface-container-highest": "#e1e3e4",
+                    "on-surface-variant": "#43474e",
+                    "on-primary": "#ffffff",
+                    "primary-container": "#001f3f",
+                    "on-tertiary-fixed": "#351002",
+                    "on-primary-container": "#6f88ad",
+                    "surface-container-low": "#f3f4f5",
+                    "outline": "#74777f",
+                    "outline-variant": "#c4c6cf",
+                    "on-secondary-container": "#5b646b",
+                    "on-primary-fixed": "#001c3a"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "sm": "8px",
+                    "gutter": "12px",
+                    "lg": "24px",
+                    "md": "16px",
+                    "row-height": "32px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Inter"],
+                    "display-sm": ["Inter"],
+                    "data-sm": ["JetBrains Mono"],
+                    "headline-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "data-md": ["JetBrains Mono"]
+            },
+            "fontSize": {
+                    "label-sm": ["12px", {"lineHeight": "16px", "fontWeight": "600"}],
+                    "display-sm": ["24px", {"lineHeight": "32px", "fontWeight": "700"}],
+                    "data-sm": ["12px", {"lineHeight": "16px", "fontWeight": "400"}],
+                    "headline-sm": ["18px", {"lineHeight": "24px", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                    "data-md": ["14px", {"lineHeight": "20px", "fontWeight": "500"}]
+            }
+          }
+        }
+      }
+    </script>
+</head>
+<body class="bg-background font-body-md text-on-background h-screen flex flex-col overflow-hidden select-none">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 w-full h-row-height z-50 flex justify-between items-center px-gutter bg-primary-container text-on-primary-container font-headline-sm text-headline-sm border-b border-outline-variant">
+<div class="flex items-center gap-md">
+<span class="font-headline-sm text-headline-sm font-bold text-on-primary-container">Bharat POS</span>
+<div class="h-4 w-px bg-outline-variant mx-sm"></div>
+<span class="font-label-sm text-label-sm text-on-primary-container opacity-80">Billing Counter</span>
+</div>
+<div class="flex items-center gap-md">
+<button class="hover:bg-primary opacity-90 transition-colors duration-150 p-xs rounded"><span class="material-symbols-outlined">notifications</span></button>
+<button class="hover:bg-primary opacity-90 transition-colors duration-150 p-xs rounded"><span class="material-symbols-outlined">settings</span></button>
+<button class="hover:bg-primary opacity-90 transition-colors duration-150 p-xs rounded"><span class="material-symbols-outlined">person</span></button>
+</div>
+</header>
+<!-- Main Workspace (Background Context) -->
+<main class="flex-1 mt-row-height mb-row-height bg-surface-container-low flex flex-col relative">
+<!-- Background Overlay -->
+<div class="absolute inset-0 bg-inverse-surface bg-opacity-50 z-40 flex items-center justify-center p-md">
+<!-- Payment Modal -->
+<div aria-labelledby="modal-title" aria-modal="true" class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT w-[800px] shadow-lg flex flex-col" role="dialog">
+<!-- Modal Header -->
+<div class="h-row-height bg-primary-container flex items-center justify-between px-md rounded-t-DEFAULT">
+<h2 class="font-headline-sm text-headline-sm text-on-primary" id="modal-title">Payment Collection</h2>
+<button aria-label="Close dialog [Esc]" class="text-on-primary hover:text-error transition-colors">
+<span class="material-symbols-outlined">close</span>
+</button>
+</div>
+<!-- Warning Banner -->
+<div class="bg-error-container border-l-4 border-error p-sm flex items-start gap-sm mx-md mt-md">
+<span class="material-symbols-outlined text-error" style="font-variation-settings: 'FILL' 1;">warning</span>
+<div class="flex-1">
+<p class="font-label-sm text-label-sm text-on-error-container mb-xs">Credit limit reached for Customer: Ramesh.</p>
+<div class="flex items-center gap-sm">
+<input class="h-row-height bg-surface-container-lowest border border-outline-variant text-on-surface font-data-sm text-data-sm px-sm w-32 focus:outline-none focus:ring-2 focus:ring-primary-container focus:border-transparent" placeholder="Manager PIN" type="password"/>
+<button class="h-row-height bg-surface-container-high border border-outline-variant text-on-surface font-label-sm text-label-sm px-sm hover:bg-surface-variant flex items-center gap-xs">
+<span class="bg-surface-dim text-on-surface-variant px-1 rounded-sm text-[10px]">F9</span>
+                                Override
+                            </button>
+</div>
+</div>
+</div>
+<!-- Modal Body - Split Layout -->
+<div class="flex-1 flex p-md gap-md">
+<!-- Left Column: Payment Methods Grid -->
+<div class="flex-[2] flex flex-col gap-sm border border-outline-variant p-sm bg-surface-container-low">
+<h3 class="font-label-sm text-label-sm text-on-surface-variant mb-xs uppercase tracking-wide">Tender Details</h3>
+<!-- Cash Row -->
+<div class="flex items-center gap-sm h-row-height bg-surface-container-lowest border border-outline-variant p-xs focus-within:ring-2 focus-within:ring-primary-container focus-within:border-transparent">
+<span class="material-symbols-outlined text-on-surface-variant">payments</span>
+<span class="font-label-sm text-label-sm w-24">Cash</span>
+<input class="flex-1 h-full bg-transparent border-none text-right font-data-md text-data-md focus:ring-0" placeholder="0.00" type="number" value="500.00"/>
+</div>
+<!-- UPI Row -->
+<div class="flex items-center gap-sm bg-surface-container-lowest border border-outline-variant p-xs focus-within:ring-2 focus-within:ring-primary-container focus-within:border-transparent">
+<span class="material-symbols-outlined text-on-surface-variant">qr_code_scanner</span>
+<span class="font-label-sm text-label-sm w-24">UPI</span>
+<div class="flex-1 flex flex-col gap-xs">
+<input class="h-row-height bg-transparent border-b border-outline-variant border-dashed text-right font-data-md text-data-md focus:ring-0 focus:border-primary-container" placeholder="Amount (0.00)" type="number"/>
+<input class="h-[24px] bg-surface-container text-on-surface font-data-sm text-data-sm px-sm focus:outline-none focus:ring-1 focus:ring-primary-container placeholder-on-surface-variant placeholder-opacity-50" placeholder="UPI Reference No." type="text"/>
+</div>
+</div>
+<!-- Card Row -->
+<div class="flex items-center gap-sm h-row-height bg-surface-container-lowest border border-outline-variant p-xs focus-within:ring-2 focus-within:ring-primary-container focus-within:border-transparent">
+<span class="material-symbols-outlined text-on-surface-variant">credit_card</span>
+<span class="font-label-sm text-label-sm w-24">Card</span>
+<input class="flex-1 h-full bg-transparent border-none text-right font-data-md text-data-md focus:ring-0 text-on-surface-variant" disabled="" placeholder="0.00" type="number"/>
+</div>
+<!-- Khata Row -->
+<div class="flex items-center gap-sm h-row-height bg-surface-container-lowest border border-outline-variant p-xs focus-within:ring-2 focus-within:ring-primary-container focus-within:border-transparent opacity-50 cursor-not-allowed">
+<span class="material-symbols-outlined text-on-surface-variant">menu_book</span>
+<span class="font-label-sm text-label-sm w-24">Khata</span>
+<input class="flex-1 h-full bg-transparent border-none text-right font-data-md text-data-md focus:ring-0 text-error" disabled="" placeholder="Limit Reached" type="number"/>
+</div>
+</div>
+<!-- Right Column: Summary Display -->
+<div class="flex-[1.2] flex flex-col gap-md">
+<div class="bg-surface-container-lowest border border-outline-variant p-md flex flex-col gap-sm">
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Net Payable</span>
+<span class="font-data-sm text-data-sm line-through text-on-surface-variant opacity-70">Rs. 500.00</span>
+</div>
+<div class="flex justify-between items-end border-b-2 border-primary-container pb-xs">
+<span class="font-headline-sm text-headline-sm text-primary">Total</span>
+<span class="font-display-sm text-display-sm font-data-sm text-primary">472.00</span>
+</div>
+<div class="flex justify-between items-center mt-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Tendered</span>
+<span class="font-data-md text-data-md text-on-surface">500.00</span>
+</div>
+<div class="bg-tertiary-fixed p-sm mt-xs border border-tertiary-fixed-dim">
+<div class="flex justify-between items-center">
+<span class="font-label-sm text-label-sm text-on-tertiary-fixed">Change Due</span>
+<span class="font-display-sm text-display-sm font-data-sm text-on-tertiary-fixed font-bold">28.00</span>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col gap-sm mt-auto">
+<button class="h-row-height w-full bg-primary-container text-on-primary flex items-center justify-center gap-sm hover:bg-primary transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-primary-container outline-none">
+<span class="bg-on-primary-fixed-variant text-on-primary px-1 rounded-sm text-[10px] font-data-sm font-bold opacity-80">F10</span>
+<span class="font-label-sm text-label-sm font-bold uppercase tracking-wider">Confirm Payment</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="fixed bottom-0 left-0 w-full h-row-height z-50 flex justify-between items-center px-gutter bg-primary text-on-primary font-data-sm text-data-sm border-t border-primary">
+<div class="opacity-90">
+<span class="mr-md"><span class="font-bold bg-primary-container px-1 mr-xs rounded text-[10px]">F1</span>Help</span>
+<span class="mr-md"><span class="font-bold bg-primary-container px-1 mr-xs rounded text-[10px]">F2</span>New Bill</span>
+<span class="mr-md"><span class="font-bold bg-primary-container px-1 mr-xs rounded text-[10px]">F5</span>Print</span>
+<span><span class="font-bold bg-primary-container px-1 mr-xs rounded text-[10px]">F10</span>Close Day</span>
+</div>
+<div class="flex gap-md opacity-90">
+<span>System Status: Online</span>
+<span>Station: POS-01</span>
+</div>
+</footer>
+</body></html>

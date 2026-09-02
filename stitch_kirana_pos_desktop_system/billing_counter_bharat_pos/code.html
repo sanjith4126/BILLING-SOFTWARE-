@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Billing Counter - Bharat POS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "tertiary-container": "#391303",
+                      "on-tertiary-container": "#b5785f",
+                      "surface-container": "#edeeef",
+                      "error-container": "#ffdad6",
+                      "surface-container-lowest": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "inverse-primary": "#afc8f0",
+                      "background": "#f8f9fa",
+                      "tertiary": "#110200",
+                      "surface-bright": "#f8f9fa",
+                      "secondary-container": "#d8e1ea",
+                      "primary-fixed": "#d4e3ff",
+                      "on-tertiary": "#ffffff",
+                      "error": "#ba1a1a",
+                      "tertiary-fixed": "#ffdbce",
+                      "on-surface": "#191c1d",
+                      "on-primary-fixed-variant": "#2f486a",
+                      "on-secondary-fixed": "#141d23",
+                      "surface-variant": "#e1e3e4",
+                      "surface-dim": "#d9dadb",
+                      "inverse-surface": "#2e3132",
+                      "primary": "#000613",
+                      "on-secondary-fixed-variant": "#3f484f",
+                      "on-background": "#191c1d",
+                      "on-error": "#ffffff",
+                      "secondary-fixed-dim": "#bfc8d0",
+                      "tertiary-fixed-dim": "#fdb69a",
+                      "on-tertiary-fixed-variant": "#6b3a25",
+                      "inverse-on-surface": "#f0f1f2",
+                      "on-error-container": "#93000a",
+                      "surface-tint": "#476083",
+                      "secondary": "#575f67",
+                      "surface": "#f8f9fa",
+                      "primary-fixed-dim": "#afc8f0",
+                      "secondary-fixed": "#dbe4ed",
+                      "surface-container-high": "#e7e8e9",
+                      "surface-container-highest": "#e1e3e4",
+                      "on-surface-variant": "#43474e",
+                      "on-primary": "#ffffff",
+                      "primary-container": "#001f3f",
+                      "on-tertiary-fixed": "#351002",
+                      "on-primary-container": "#6f88ad",
+                      "surface-container-low": "#f3f4f5",
+                      "outline": "#74777f",
+                      "outline-variant": "#c4c6cf",
+                      "on-secondary-container": "#5b646b",
+                      "on-primary-fixed": "#001c3a"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "xs": "4px",
+                      "sm": "8px",
+                      "gutter": "12px",
+                      "lg": "24px",
+                      "md": "16px",
+                      "row-height": "32px",
+                      "unit": "4px"
+              },
+              "fontFamily": {
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "display-sm": [
+                              "Inter"
+                      ],
+                      "data-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "headline-sm": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "data-md": [
+                              "JetBrains Mono"
+                      ]
+              },
+              "fontSize": {
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "display-sm": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "data-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "headline-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "data-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "500"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        /* Shared Styles */
+        .f-key-chip {
+            background-color: #E1E3E4;
+            color: #191C1D;
+            padding: 2px 6px;
+            border-radius: 2px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            margin-right: 8px;
+            border: 1px solid #C4C6CF;
+        }
+
+        .input-focus-outline:focus-within {
+            outline: 2px solid #001F3F;
+            outline-offset: -2px;
+        }
+
+        .btn-primary {
+            background-color: #001F3F;
+            color: #ffffff;
+        }
+        .btn-primary:focus {
+            outline: 2px solid #001F3F;
+            outline-offset: 2px;
+        }
+
+        .btn-secondary {
+            border: 1px solid #001F3F;
+            color: #001F3F;
+            background-color: transparent;
+        }
+        .btn-secondary:focus {
+            outline: 2px solid #001F3F;
+            outline-offset: 2px;
+        }
+
+        .btn-destructive {
+            background-color: #DC3545;
+            color: #ffffff;
+        }
+        .btn-destructive:focus {
+            outline: 2px solid #DC3545;
+            outline-offset: 2px;
+        }
+
+        /* Base table styles */
+        .pos-table th {
+            background-color: #001F3F;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 0 8px;
+            height: 32px;
+            text-align: left;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        
+        .pos-table td {
+            height: 32px;
+            padding: 0 8px;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            color: #191c1d;
+            border-bottom: 1px solid #e1e3e4;
+        }
+
+        .pos-table tbody tr:nth-child(even) {
+            background-color: #f8f9fa;
+        }
+        .pos-table tbody tr:nth-child(odd) {
+            background-color: #ffffff;
+        }
+
+        .pos-table tbody tr.active-row {
+            background-color: #d4e3ff;
+        }
+
+        .numeric-cell {
+            font-family: 'JetBrains Mono', monospace !important;
+            text-align: right !important;
+        }
+
+        body {
+            background-color: #F8F9FA;
+            color: #191c1d;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background">
+<!-- TopNavBar -->
+<nav class="bg-primary-container text-on-primary-container font-headline-sm text-headline-sm font-label-sm text-label-sm border-b border-outline-variant fixed top-0 left-0 w-full h-row-height z-50 flex justify-between items-center px-gutter transition-colors duration-150">
+<div class="flex items-center gap-4">
+<span class="font-headline-sm text-headline-sm font-bold text-on-primary-container">Bharat POS</span>
+<div class="flex gap-4 border-l border-outline-variant pl-4 ml-4">
+<span class="text-on-primary-container border-b-2 border-primary-fixed cursor-pointer">Billing</span>
+</div>
+</div>
+<div class="flex items-center gap-gutter">
+<div class="flex items-center text-on-primary-container opacity-90 hover:bg-primary px-2 h-full cursor-pointer transition-colors duration-150" title="Notifications">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">notifications</span>
+</div>
+<div class="flex items-center text-on-primary-container opacity-90 hover:bg-primary px-2 h-full cursor-pointer transition-colors duration-150" title="Settings">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">settings</span>
+</div>
+<div class="flex items-center text-on-primary-container opacity-90 hover:bg-primary px-2 h-full cursor-pointer transition-colors duration-150" title="Profile">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">person</span>
+</div>
+</div>
+</nav>
+<!-- Main Layout Container -->
+<main class="flex-1 mt-row-height mb-row-height flex flex-col p-gutter gap-gutter overflow-hidden h-[calc(100vh-64px)]">
+<!-- Top Action Row -->
+<div class="flex gap-gutter h-16 shrink-0">
+<!-- Scan Input -->
+<div class="flex-1 bg-surface-container-lowest border border-outline-variant rounded flex items-center px-md input-focus-outline shadow-sm relative group">
+<span class="f-key-chip absolute left-md top-1/2 -translate-y-1/2 z-10">[F3]</span>
+<input autofocus="" class="w-full h-full pl-12 pr-4 bg-transparent border-none outline-none font-data-md text-data-md text-on-surface" placeholder="Scan Item or Search..." type="text" value="1234567890123"/>
+<span class="material-symbols-outlined text-outline-variant absolute right-md">barcode_scanner</span>
+</div>
+<!-- Customer Panel -->
+<div class="w-64 bg-surface-container-lowest border border-outline-variant rounded p-sm flex flex-col justify-center">
+<div class="flex justify-between items-center mb-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Customer</span>
+<span class="f-key-chip !m-0">[F6]</span>
+</div>
+<div class="flex justify-between items-end">
+<span class="font-body-md text-body-md font-semibold truncate">Cash Sale</span>
+<span class="font-data-sm text-data-sm text-on-surface-variant">Bal: <span class="font-data-md text-data-md text-on-surface">Rs. 0.00</span></span>
+</div>
+</div>
+<!-- Scale Panel -->
+<div class="w-48 bg-surface-container-lowest border border-outline-variant rounded p-sm flex flex-col justify-center items-center">
+<span class="font-label-sm text-label-sm text-on-surface-variant mb-xs w-full text-left">Live Scale</span>
+<div class="flex items-baseline gap-sm">
+<span class="font-display-sm text-display-sm font-data-md text-primary">1.240</span>
+<span class="font-data-sm text-data-sm text-on-surface-variant">kg</span>
+</div>
+<span class="font-label-sm text-[10px] text-green-700 font-bold tracking-wider">STABLE</span>
+</div>
+</div>
+<!-- Middle Content Area -->
+<div class="flex-1 flex gap-gutter min-h-0">
+<!-- Left: Bill Table -->
+<div class="flex-1 bg-surface-container-lowest border border-outline-variant rounded flex flex-col overflow-hidden">
+<div class="flex-1 overflow-auto">
+<table class="w-full pos-table">
+<thead>
+<tr>
+<th class="w-12 text-center">#</th>
+<th>Item Description</th>
+<th class="w-24 numeric-cell">Qty</th>
+<th class="w-32 numeric-cell">Rate</th>
+<th class="w-24 numeric-cell">Disc</th>
+<th class="w-32 numeric-cell">Amount</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="text-center text-on-surface-variant">1</td>
+<td>Aashirvaad Atta 5kg</td>
+<td class="numeric-cell">1.00</td>
+<td class="numeric-cell">210.00</td>
+<td class="numeric-cell">0.00</td>
+<td class="numeric-cell">210.00</td>
+</tr>
+<tr>
+<td class="text-center text-on-surface-variant">2</td>
+<td>Tata Salt 1kg</td>
+<td class="numeric-cell">2.00</td>
+<td class="numeric-cell">24.00</td>
+<td class="numeric-cell">0.00</td>
+<td class="numeric-cell">48.00</td>
+</tr>
+<tr>
+<td class="text-center text-on-surface-variant">3</td>
+<td>Loose Sugar</td>
+<td class="numeric-cell">1.24</td>
+<td class="numeric-cell">45.00</td>
+<td class="numeric-cell">0.00</td>
+<td class="numeric-cell">55.80</td>
+</tr>
+<tr>
+<td class="text-center text-on-surface-variant">4</td>
+<td>Maggi 2-Min Noodles 70g</td>
+<td class="numeric-cell">4.00</td>
+<td class="numeric-cell">14.00</td>
+<td class="numeric-cell">2.00</td>
+<td class="numeric-cell">54.00</td>
+</tr>
+<tr class="active-row">
+<td class="text-center text-on-surface-variant font-bold">5</td>
+<td class="font-semibold">Parle-G Gold 1kg</td>
+<td class="numeric-cell font-bold">1.00</td>
+<td class="numeric-cell font-bold">85.00</td>
+<td class="numeric-cell font-bold">2.80</td>
+<td class="numeric-cell font-bold">82.20</td>
+</tr>
+<!-- Empty rows to fill space -->
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+<tr><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Right: Totals Panel -->
+<div class="w-80 flex flex-col gap-gutter">
+<!-- Summary Card -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-md flex flex-col flex-1">
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-md border-b border-outline-variant pb-xs">Bill Summary</h3>
+<div class="flex flex-col gap-sm flex-1">
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">Items</span>
+<span class="font-data-md text-data-md text-on-surface">5</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">Subtotal</span>
+<span class="font-data-md text-data-md text-on-surface">Rs. 450.00</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">GST (5%)</span>
+<span class="font-data-md text-data-md text-on-surface">Rs. 22.50</span>
+</div>
+<div class="flex justify-between items-center">
+<span class="font-body-md text-body-md text-on-surface-variant">Round-off</span>
+<span class="font-data-md text-data-md text-on-surface">Rs. -0.50</span>
+</div>
+</div>
+<div class="mt-auto border-t-2 border-primary-container pt-md">
+<div class="flex flex-col items-end">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider mb-xs">Net Payable</span>
+<span class="font-display-sm text-display-sm font-data-md text-primary text-4xl">Rs. 472.00</span>
+</div>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col gap-sm shrink-0">
+<button class="btn-primary w-full h-16 rounded flex items-center justify-center text-lg font-bold shadow-sm transition-transform active:scale-95">
+<span class="f-key-chip bg-white/20 text-white border-white/40">[F5]</span>
+                        PAY NOW
+                    </button>
+<div class="flex gap-sm">
+<button class="btn-secondary flex-1 h-row-height rounded flex items-center justify-center text-sm font-semibold transition-colors hover:bg-surface-container-highest">
+<span class="f-key-chip">[F4]</span> Hold
+                        </button>
+<button class="btn-destructive flex-1 h-row-height rounded flex items-center justify-center text-sm font-semibold transition-opacity hover:opacity-90">
+<span class="f-key-chip bg-white/20 text-white border-white/40">[Esc]</span> Cancel
+                        </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Bottom Held Bills Strip -->
+<div class="h-10 bg-surface-container-lowest border border-outline-variant rounded flex items-center px-sm gap-sm shrink-0 overflow-x-auto">
+<span class="font-label-sm text-label-sm text-on-surface-variant whitespace-nowrap mr-sm">Held Bills:</span>
+<div class="flex items-center bg-surface-container-high border border-outline-variant px-sm py-1 rounded cursor-pointer hover:bg-surface-variant transition-colors group">
+<span class="material-symbols-outlined text-[16px] mr-1 text-on-surface-variant">receipt</span>
+<span class="font-data-sm text-data-sm text-on-surface font-semibold">Bill #102</span>
+<span class="font-data-sm text-[10px] text-on-surface-variant ml-2">(Rs. 1,245.00)</span>
+<span class="material-symbols-outlined text-[14px] ml-2 text-on-surface-variant opacity-0 group-hover:opacity-100">close</span>
+</div>
+<div class="flex items-center bg-surface-container-high border border-outline-variant px-sm py-1 rounded cursor-pointer hover:bg-surface-variant transition-colors group">
+<span class="material-symbols-outlined text-[16px] mr-1 text-on-surface-variant">receipt</span>
+<span class="font-data-sm text-data-sm text-on-surface font-semibold">Bill #105</span>
+<span class="font-data-sm text-[10px] text-on-surface-variant ml-2">(Rs. 85.50)</span>
+<span class="material-symbols-outlined text-[14px] ml-2 text-on-surface-variant opacity-0 group-hover:opacity-100">close</span>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="bg-primary text-on-primary font-data-sm text-data-sm border-t border-primary fixed bottom-0 left-0 w-full z-50 flex justify-between items-center px-gutter h-row-height">
+<div>
+<span class="font-data-sm text-data-sm text-on-primary">[F1] Help | [F2] New Bill | [F5] Print | [F10] Close Day</span>
+</div>
+<div class="flex gap-4">
+<span class="text-on-primary opacity-90">System Status: Online</span>
+<span class="text-on-primary opacity-90">Station: POS-01</span>
+</div>
+</footer>
+</body></html>

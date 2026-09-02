@@ -10,11 +10,14 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageReference Include="xunit" Version="2.6.6" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.5.6" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Drawing" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\GroceryPos.Domain\GroceryPos.Domain.csproj" />
     <ProjectReference Include="..\GroceryPos.Data\GroceryPos.Data.csproj" />
     <ProjectReference Include="..\GroceryPos.Printing\GroceryPos.Printing.csproj" />
     <ProjectReference Include="..\GroceryPos.Hardware\GroceryPos.Hardware.csproj" />
+    <ProjectReference Include="..\GroceryPos.App\GroceryPos.App.csproj" />
   </ItemGroup>
 </Project>

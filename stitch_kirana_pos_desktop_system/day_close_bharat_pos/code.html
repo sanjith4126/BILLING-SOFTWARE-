@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Day Close / Cash Tally</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "surface-container": "#edeeef",
+                      "secondary-container": "#d8e1ea",
+                      "on-tertiary": "#ffffff",
+                      "primary": "#000613",
+                      "on-primary-fixed-variant": "#2f486a",
+                      "on-primary-fixed": "#001c3a",
+                      "error-container": "#ffdad6",
+                      "on-secondary-container": "#5b646b",
+                      "on-background": "#191c1d",
+                      "on-error": "#ffffff",
+                      "on-tertiary-fixed-variant": "#6b3a25",
+                      "on-secondary-fixed-variant": "#3f484f",
+                      "outline-variant": "#c4c6cf",
+                      "surface": "#f8f9fa",
+                      "tertiary": "#110200",
+                      "on-primary-container": "#6f88ad",
+                      "tertiary-container": "#391303",
+                      "surface-variant": "#e1e3e4",
+                      "secondary-fixed-dim": "#bfc8d0",
+                      "on-tertiary-fixed": "#351002",
+                      "background": "#f8f9fa",
+                      "tertiary-fixed-dim": "#fdb69a",
+                      "surface-container-highest": "#e1e3e4",
+                      "error": "#ba1a1a",
+                      "surface-dim": "#d9dadb",
+                      "inverse-surface": "#2e3132",
+                      "surface-tint": "#476083",
+                      "primary-fixed": "#d4e3ff",
+                      "secondary-fixed": "#dbe4ed",
+                      "on-secondary": "#ffffff",
+                      "on-error-container": "#93000a",
+                      "primary-fixed-dim": "#afc8f0",
+                      "outline": "#74777f",
+                      "on-secondary-fixed": "#141d23",
+                      "on-surface": "#191c1d",
+                      "surface-container-lowest": "#ffffff",
+                      "surface-bright": "#f8f9fa",
+                      "secondary": "#575f67",
+                      "surface-container-high": "#e7e8e9",
+                      "primary-container": "#001f3f",
+                      "on-tertiary-container": "#b5785f",
+                      "on-primary": "#ffffff",
+                      "inverse-on-surface": "#f0f1f2",
+                      "on-surface-variant": "#43474e",
+                      "inverse-primary": "#afc8f0",
+                      "surface-container-low": "#f3f4f5",
+                      "tertiary-fixed": "#ffdbce"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.125rem",
+                      "lg": "0.25rem",
+                      "xl": "0.5rem",
+                      "full": "0.75rem"
+              },
+              "spacing": {
+                      "lg": "24px",
+                      "row-height": "32px",
+                      "sm": "8px",
+                      "md": "16px",
+                      "gutter": "12px",
+                      "xs": "4px",
+                      "unit": "4px"
+              },
+              "fontFamily": {
+                      "label-sm": [
+                              "Inter"
+                      ],
+                      "headline-sm": [
+                              "Inter"
+                      ],
+                      "body-md": [
+                              "Inter"
+                      ],
+                      "data-sm": [
+                              "JetBrains Mono"
+                      ],
+                      "data-md": [
+                              "JetBrains Mono"
+                      ],
+                      "display-sm": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "label-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-sm": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "data-sm": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "data-md": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "500"
+                              }
+                      ],
+                      "display-sm": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "700"
+                              }
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body {
+            background-color: #F8F9FA;
+        }
+        /* Custom scrollbar for horizontal scrolling tables */
+        ::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #F8F9FA; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #c4c6cf; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #74777f; 
+        }
+        .focus-outline:focus-within {
+            outline: 2px solid #001F3F;
+            outline-offset: 2px;
+        }
+        .grid-bg-pattern {
+            background-image: radial-gradient(#e1e3e4 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background h-screen overflow-hidden flex flex-col font-body-md text-body-md select-none">
+<!-- TopNavBar -->
+<header class="bg-primary-container dark:bg-primary-container text-on-primary-container dark:text-on-primary-container font-headline-sm text-headline-sm font-label-sm text-label-sm docked full-width top-0 border-b border-outline-variant flat no shadows fixed top-0 left-0 w-full h-row-height z-50 flex justify-between items-center px-gutter shrink-0">
+<div class="flex items-center gap-gutter">
+<span class="font-headline-sm text-headline-sm font-bold text-on-primary-container">Bharat POS</span>
+<div class="h-4 w-px bg-outline-variant mx-sm"></div>
+<span class="font-label-sm text-label-sm text-on-primary-container opacity-80 uppercase">Day Close</span>
+</div>
+<div class="flex items-center gap-md">
+<div class="relative bg-surface text-on-surface rounded flex items-center px-sm h-6 border border-outline-variant focus-outline">
+<span class="material-symbols-outlined text-[16px] mr-xs opacity-70">search</span>
+<input class="bg-transparent border-none text-data-sm focus:ring-0 p-0 h-full w-48 font-data-sm placeholder-outline" placeholder="Search operations..." type="text"/>
+</div>
+<div class="flex items-center gap-sm">
+<button class="flex items-center justify-center h-6 w-6 rounded hover:bg-primary opacity-90 transition-colors duration-150 text-on-primary-container">
+<span class="material-symbols-outlined text-[18px]" data-icon="notifications">notifications</span>
+</button>
+<button class="flex items-center justify-center h-6 w-6 rounded hover:bg-primary opacity-90 transition-colors duration-150 text-on-primary-container">
+<span class="material-symbols-outlined text-[18px]" data-icon="settings">settings</span>
+</button>
+<button class="flex items-center justify-center h-6 w-6 rounded hover:bg-primary opacity-90 transition-colors duration-150 text-on-primary-container">
+<span class="material-symbols-outlined text-[18px]" data-icon="person">person</span>
+</button>
+</div>
+</div>
+</header>
+<div class="flex flex-1 pt-row-height pb-row-height overflow-hidden">
+<!-- Main Content Area -->
+<main class="flex-1 flex flex-col md:flex-row gap-gutter p-gutter overflow-auto bg-surface relative grid-bg-pattern">
+<!-- Left Panel: Summary -->
+<div class="w-full md:w-80 flex flex-col gap-gutter shrink-0">
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-md flex flex-col gap-md shadow-sm">
+<h2 class="font-headline-sm text-headline-sm text-primary uppercase pb-sm border-b border-outline-variant">Register Status</h2>
+<div class="flex flex-col gap-sm">
+<div class="flex justify-between items-center py-xs border-b border-surface-variant">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Register ID</span>
+<span class="font-data-md text-data-md text-on-surface">REG-04</span>
+</div>
+<div class="flex justify-between items-center py-xs border-b border-surface-variant">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Cashier</span>
+<span class="font-data-md text-data-md text-on-surface">Amit K.</span>
+</div>
+<div class="flex justify-between items-center py-xs border-b border-surface-variant">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Date/Time</span>
+<span class="font-data-md text-data-md text-on-surface">24 Oct 23, 22:15</span>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant rounded p-md flex flex-col gap-md shadow-sm flex-1">
+<h2 class="font-headline-sm text-headline-sm text-primary uppercase pb-sm border-b border-outline-variant">Cash Summary</h2>
+<div class="flex flex-col gap-sm">
+<div class="flex justify-between items-center py-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Opening Float</span>
+<span class="font-data-md text-data-md text-on-surface text-right">₹ 5,000.00</span>
+</div>
+<div class="flex justify-between items-center py-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Cash Sales</span>
+<span class="font-data-md text-data-md text-success text-right">+ ₹ 42,350.00</span>
+</div>
+<div class="flex justify-between items-center py-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Cash Returns</span>
+<span class="font-data-md text-data-md text-error text-right">- ₹ 1,200.00</span>
+</div>
+<div class="flex justify-between items-center py-sm">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Petty Cash Out</span>
+<span class="font-data-md text-data-md text-error text-right">- ₹ 450.00</span>
+</div>
+<div class="mt-md pt-sm border-t-2 border-primary border-dashed">
+<div class="flex justify-between items-center bg-primary-container p-sm rounded text-on-primary-container">
+<span class="font-headline-sm text-headline-sm uppercase">Expected Cash</span>
+<span class="font-display-sm text-display-sm font-bold text-right" id="expected-cash">₹ 45,700.00</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Center Panel: Denomination Grid -->
+<div class="flex-1 bg-surface-container-lowest border border-outline-variant rounded shadow-sm flex flex-col min-w-[500px]">
+<div class="p-md border-b border-outline-variant flex justify-between items-center bg-surface-bright">
+<h2 class="font-headline-sm text-headline-sm text-primary uppercase">Physical Cash Tally</h2>
+<button class="bg-surface text-primary border border-outline-variant px-sm py-xs rounded flex items-center gap-xs font-label-sm text-label-sm hover:bg-surface-container transition-colors">
+<span class="bg-surface-variant text-on-surface-variant px-1 rounded text-[10px] mr-1 border border-outline-variant shadow-[0_1px_0_0_rgba(0,0,0,0.1)]">F3</span>
+                        Reset Counts
+                    </button>
+</div>
+<div class="flex-1 overflow-auto p-0">
+<table class="w-full text-left border-collapse">
+<thead class="bg-primary-container text-on-primary-container sticky top-0 z-10 shadow-sm">
+<tr>
+<th class="font-label-sm text-label-sm py-2 px-md border-b border-outline-variant uppercase w-1/3">Denomination</th>
+<th class="font-label-sm text-label-sm py-2 px-md border-b border-outline-variant uppercase w-1/3 text-right">Count</th>
+<th class="font-label-sm text-label-sm py-2 px-md border-b border-outline-variant uppercase w-1/3 text-right">Value (₹)</th>
+</tr>
+</thead>
+<tbody class="font-data-md text-data-md">
+<!-- 2000 -->
+<tr class="border-b border-surface-variant hover:bg-surface-container-low transition-colors h-row-height">
+<td class="py-1 px-md text-on-surface">
+<div class="flex items-center gap-2">
+<div class="w-8 h-4 bg-[#D19AAB] rounded-sm opacity-80 border border-outline-variant flex items-center justify-center text-[8px] font-bold text-white">₹2000</div>
+<span>2000</span>
+</div>
+</td>
+<td class="py-1 px-md text-right">
+<div class="focus-outline inline-block rounded">
+<input class="w-20 text-right bg-surface border border-outline-variant rounded px-2 py-1 text-data-md focus:ring-0 focus:border-transparent h-6" min="0" placeholder="0" type="number" value="10"/>
+</div>
+</td>
+<td class="py-1 px-md text-right text-on-surface font-semibold">20,000.00</td>
+</tr>
+<!-- 500 -->
+<tr class="border-b border-surface-variant bg-surface hover:bg-surface-container-low transition-colors h-row-height">
+<td class="py-1 px-md text-on-surface">
+<div class="flex items-center gap-2">
+<div class="w-8 h-4 bg-[#8E9B8A] rounded-sm opacity-80 border border-outline-variant flex items-center justify-center text-[8px] font-bold text-white">₹500</div>
+<span>500</span>
+</div>
+</td>
+<td class="py-1 px-md text-right">
+<div class="focus-outline inline-block rounded">
+<input class="w-20 text-right bg-surface border border-outline-variant rounded px-2 py-1 text-data-md focus:ring-0 focus:border-transparent h-6" min="0" placeholder="0" type="number" value="40"/>
+</div>
+</td>
+<td class="py-1 px-md text-right text-on-surface font-semibold">20,000.00</td>
+</tr>
+<!-- 200 -->
+<tr class="border-b border-surface-variant hover:bg-surface-container-low transition-colors h-row-height">
+<td class="py-1 px-md text-on-surface">
+<div class="flex items-center gap-2">
+<div class="w-8 h-4 bg-[#E0A86E] rounded-sm opacity-80 border border-outline-variant flex items-center justify-center text-[8px] font-bold text-white">₹200</div>
+<span>200</span>
+</div>
+</td>
+<td class="py-1 px-md text-right">
+<div class="focus-outline inline-block rounded">
+<input class="w-20 text-right bg-surface border border-outline-variant rounded px-2 py-1 text-data-md focus:ring-0 focus:border-transparent h-6" min="0" placeholder="0" type="number" value="15"/>
+</div>
+</td>
+<td class="py-1 px-md text-right text-on-surface font-semibold">3,000.00</td>
+</tr>
+<!-- 100 -->
+<tr class="border-b border-surface-variant bg-surface hover:bg-surface-container-low transition-colors h-row-height">
+<td class="py-1 px-md text-on-surface">
+<div class="flex items-center gap-2">
+<div class="w-8 h-4 bg-[#7D7F9B] rounded-sm opacity-80 border border-outline-variant flex items-center justify-center text-[8px] font-bold text-white">₹100</div>
+<span>100</span>
+</div>
+</td>
+<td class="py-1 px-md text-right">
+<div class="focus-outline inline-block rounded">
+<input class="w-20 text-right bg-surface border border-outline-variant rounded px-2 py-1 text-data-md focus:ring-0 focus:border-transparent h-6" min="0" placeholder="0" type="number" value="25"/>
+</div>
+</td>
+<td class="py-1 px-md text-right text-on-surface font-semibold">2,500.00</td>
+</tr>
+<!-- 50 -->
+<tr class="border-b border-surface-variant hover:bg-surface-container-low transition-colors h-row-height">
+<td class="py-1 px-md text-on-surface">
+<div class="flex items-center gap-2">
+<div class="w-8 h-4 bg-[#6EB2B4] rounded-sm opacity-80 border border-outline-variant flex items-center justify-center text-[8px] font-bold text-white">₹50</div>
+<span>50</span>
+</div>
+</td>
+<td class="py-1 px-md text-right">
+<div class="focus-outline inline-block rounded">
+<input class="w-20 text-right bg-surface border border-outline-variant rounded px-2 py-1 text-data-md focus:ring-0 focus:border-transparent h-6" min="0" placeholder="0" type="number" value="2"/>
+</div>
+</td>
+<td class="py-1 px-md text-right text-on-surface font-semibold">100.00</td>
+</tr>
+<!-- 20 -->
+<tr class="border-b border-surface-variant bg-surface hover:bg-surface-container-low transition-colors h-row-height">
+<td class="py-1 px-md text-on-surface">
+<div class="flex items-center gap-2">
+<div class="w-8 h-4 bg-[#B94E51] rounded-sm opacity-80 border border-outline-variant flex items-center justify-center text-[8px] font-bold text-white">₹20</div>
+<span>20</span>
+</div>
+</td>
+<td class="py-1 px-md text-right">
+<div class="focus-outline inline-block rounded">
+<input class="w-20 text-right bg-surface border border-outline-variant rounded px-2 py-1 text-data-md focus:ring-0 focus:border-transparent h-6" min="0" placeholder="0" type="number" value="5"/>
+</div>
+</td>
+<td class="py-1 px-md text-right text-on-surface font-semibold">100.00</td>
+</tr>
+<!-- 10 -->
+<tr class="border-b border-surface-variant hover:bg-surface-container-low transition-colors h-row-height">
+<td class="py-1 px-md text-on-surface">
+<div class="flex items-center gap-2">
+<div class="w-8 h-4 bg-[#A88C78] rounded-sm opacity-80 border border-outline-variant flex items-center justify-center text-[8px] font-bold text-white">₹10</div>
+<span>10</span>
+</div>
+</td>
+<td class="py-1 px-md text-right">
+<div class="focus-outline inline-block rounded">
+<input class="w-20 text-right bg-surface border border-outline-variant rounded px-2 py-1 text-data-md focus:ring-0 focus:border-transparent h-6" min="0" placeholder="0" type="number" value="0"/>
+</div>
+</td>
+<td class="py-1 px-md text-right text-on-surface-variant">0.00</td>
+</tr>
+<!-- Coins -->
+<tr class="border-b border-surface-variant bg-surface hover:bg-surface-container-low transition-colors h-row-height">
+<td class="py-1 px-md text-on-surface">
+<div class="flex items-center gap-2">
+<div class="w-8 h-4 bg-outline-variant rounded-full opacity-80 border border-outline flex items-center justify-center text-[8px] font-bold text-primary">C</div>
+<span>Coins (Total Value)</span>
+</div>
+</td>
+<td class="py-1 px-md text-right">
+<span class="text-on-surface-variant font-label-sm text-label-sm italic">Direct Entry -&gt;</span>
+</td>
+<td class="py-1 px-md text-right">
+<div class="focus-outline inline-block rounded w-32 float-right">
+<input class="w-full text-right bg-surface border border-outline-variant rounded px-2 py-1 text-data-md focus:ring-0 focus:border-transparent h-6 font-semibold text-on-surface" min="0" placeholder="0.00" step="0.50" type="number" value="0.00"/>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- Footer Summary Area inside Denomination Grid -->
+<div class="p-md border-t border-outline-variant bg-surface-container-low flex flex-col gap-sm">
+<div class="flex justify-between items-end border-b border-surface-variant pb-sm">
+<div class="font-headline-sm text-headline-sm text-on-surface uppercase">Total Counted</div>
+<div class="font-display-sm text-display-sm font-bold text-primary" id="total-counted">₹ 45,700.00</div>
+</div>
+<div class="flex justify-between items-center bg-surface-lowest p-sm rounded border border-outline-variant">
+<div class="flex items-center gap-xs">
+<span class="material-symbols-outlined text-success" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="font-headline-sm text-headline-sm text-on-surface uppercase">Variance</span>
+</div>
+<div class="font-display-sm text-display-sm font-bold text-success" id="variance-amount">₹ 0.00</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="bg-primary dark:bg-primary text-on-primary dark:text-on-primary font-data-sm text-data-sm font-data-sm text-data-sm text-on-primary docked full-width bottom-0 h-row-height border-t border-primary flat no shadows none fixed bottom-0 left-0 w-full z-50 flex justify-between items-center px-gutter shrink-0">
+<div class="flex gap-gutter">
+<span>[F1] Help</span>
+<span>[F2] Calculator</span>
+<span>[F3] Reset</span>
+<span class="font-bold">[F10] Finalize Day Close</span>
+</div>
+<div class="flex gap-gutter opacity-90">
+<span>System Status: Online</span>
+<span>Station: POS-04</span>
+</div>
+</footer>
+</body></html>

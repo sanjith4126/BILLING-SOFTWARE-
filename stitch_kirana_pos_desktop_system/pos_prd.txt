@@ -1,0 +1,24 @@
+# POS Application Requirements Document
+
+## Project Overview
+A keyboard-driven, high-density desktop POS for Indian neighbourhood grocery stores. Optimized for 1080p mouse-and-keyboard usage.
+
+## Design Constraints
+- **Language**: English only.
+- **Currency**: "Rs. 00.00" (No symbols).
+- **Weights**: "0.000kg" (3 decimals).
+- **Style**: Professional accounting terminal. No decorations.
+- **Interaction**: Keyboard-first. Visible F-key hints. 2px focus outlines.
+
+## Screen List
+1. **Login**: User picker + numeric PIN.
+2. **Main Menu**: Grid of categorized navigation tiles.
+3. **Billing Counter**: Search bar (always focused), bill table, totals panel, scale panel.
+4. **Payment Dialog**: Multi-mode (Cash, UPI, Card, Khata).
+5. **Item Master**: Searchable list + comprehensive edit form.
+6. **Purchase Entry**: Supplier info + editable line-item table with batch/expiry.
+7. **Stock Take**: Inventory variance table.
+8. **Stock Summary**: Metrics + batch-level filterable table.
+9. **Customer Khata**: Ledger with ageing summary.
+10. **Day Close**: Cash denomination tally.
+11. **Reports Dashboard**: Sales metrics and trends.

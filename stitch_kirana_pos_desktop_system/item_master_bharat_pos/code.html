@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bharat POS - Item Master</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "surface-container": "#edeeef",
+                    "secondary-container": "#d8e1ea",
+                    "on-tertiary": "#ffffff",
+                    "primary": "#000613",
+                    "on-primary-fixed-variant": "#2f486a",
+                    "on-primary-fixed": "#001c3a",
+                    "error-container": "#ffdad6",
+                    "on-secondary-container": "#5b646b",
+                    "on-background": "#191c1d",
+                    "on-error": "#ffffff",
+                    "on-tertiary-fixed-variant": "#6b3a25",
+                    "on-secondary-fixed-variant": "#3f484f",
+                    "outline-variant": "#c4c6cf",
+                    "surface": "#f8f9fa",
+                    "tertiary": "#110200",
+                    "on-primary-container": "#6f88ad",
+                    "tertiary-container": "#391303",
+                    "surface-variant": "#e1e3e4",
+                    "secondary-fixed-dim": "#bfc8d0",
+                    "on-tertiary-fixed": "#351002",
+                    "background": "#f8f9fa",
+                    "tertiary-fixed-dim": "#fdb69a",
+                    "surface-container-highest": "#e1e3e4",
+                    "error": "#ba1a1a",
+                    "surface-dim": "#d9dadb",
+                    "inverse-surface": "#2e3132",
+                    "surface-tint": "#476083",
+                    "primary-fixed": "#d4e3ff",
+                    "secondary-fixed": "#dbe4ed",
+                    "on-secondary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "primary-fixed-dim": "#afc8f0",
+                    "outline": "#74777f",
+                    "on-secondary-fixed": "#141d23",
+                    "on-surface": "#191c1d",
+                    "surface-container-lowest": "#ffffff",
+                    "surface-bright": "#f8f9fa",
+                    "secondary": "#575f67",
+                    "surface-container-high": "#e7e8e9",
+                    "primary-container": "#001f3f",
+                    "on-tertiary-container": "#b5785f",
+                    "on-primary": "#ffffff",
+                    "inverse-on-surface": "#f0f1f2",
+                    "on-surface-variant": "#43474e",
+                    "inverse-primary": "#afc8f0",
+                    "surface-container-low": "#f3f4f5",
+                    "tertiary-fixed": "#ffdbce"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "lg": "24px",
+                    "row-height": "32px",
+                    "sm": "8px",
+                    "md": "16px",
+                    "gutter": "12px",
+                    "xs": "4px",
+                    "unit": "4px"
+            },
+            "fontFamily": {
+                    "label-sm": [
+                            "Inter"
+                    ],
+                    "headline-sm": [
+                            "Inter"
+                    ],
+                    "body-md": [
+                            "Inter"
+                    ],
+                    "data-sm": [
+                            "JetBrains Mono"
+                    ],
+                    "data-md": [
+                            "JetBrains Mono"
+                    ],
+                    "display-sm": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "label-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-sm": [
+                            "18px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "data-sm": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "data-md": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "500"
+                            }
+                    ],
+                    "display-sm": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "700"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+</head>
+<body class="bg-background text-on-background h-full font-body-md text-body-md overflow-hidden flex flex-col">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 w-full h-row-height z-50 flex justify-between items-center px-gutter bg-primary-container dark:bg-primary-container border-b border-outline-variant flat no shadows">
+<div class="flex items-center gap-md">
+<span class="font-headline-sm text-headline-sm font-bold text-on-primary-container">Bharat POS</span>
+<div class="relative flex items-center ml-lg">
+<span class="material-symbols-outlined absolute left-sm text-on-primary-container opacity-80" data-icon="search" style="font-size: 16px;">search</span>
+<input class="pl-[28px] pr-sm h-[24px] bg-primary border-none rounded text-on-primary-container text-label-sm placeholder:text-on-primary-container placeholder:opacity-50 focus:ring-1 focus:ring-primary-fixed focus:outline-none w-[200px]" placeholder="Search (F3)" type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-sm h-full">
+<button class="h-full px-sm flex items-center justify-center text-on-primary-container opacity-80 hover:bg-primary opacity-90 transition-colors duration-150">
+<span class="material-symbols-outlined" data-icon="notifications" style="font-size: 20px;">notifications</span>
+</button>
+<button class="h-full px-sm flex items-center justify-center text-on-primary-container opacity-80 hover:bg-primary opacity-90 transition-colors duration-150">
+<span class="material-symbols-outlined" data-icon="settings" style="font-size: 20px;">settings</span>
+</button>
+<button class="h-full px-sm flex items-center justify-center text-on-primary-container opacity-80 hover:bg-primary opacity-90 transition-colors duration-150">
+<span class="material-symbols-outlined" data-icon="person" style="font-size: 20px;">person</span>
+</button>
+</div>
+</header>
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-row-height h-[calc(100%-64px)] w-64 flex flex-col bg-surface-container dark:bg-surface-container border-r border-outline-variant flat no shadows z-40">
+<div class="p-gutter border-b border-outline-variant">
+<h2 class="font-headline-sm text-headline-sm text-primary font-bold">Store #402</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Shift: Morning</p>
+</div>
+<div class="flex-1 overflow-y-auto py-sm">
+<a class="flex items-center gap-sm px-gutter py-sm text-on-surface-variant hover:bg-surface-container-high cursor-pointer transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-label-sm text-label-sm">Dashboard</span>
+</a>
+<a class="flex items-center gap-sm px-gutter py-sm text-on-surface-variant hover:bg-surface-container-high cursor-pointer transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-label-sm text-label-sm">Billing</span>
+</a>
+<a class="flex items-center gap-sm px-gutter py-sm bg-secondary-container text-on-secondary-container border-l-4 border-primary font-bold hover:bg-surface-container-high cursor-pointer transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="inventory_2" style="font-variation-settings: 'FILL' 1;">inventory_2</span>
+<span class="font-label-sm text-label-sm">Inventory</span>
+</a>
+<a class="flex items-center gap-sm px-gutter py-sm text-on-surface-variant hover:bg-surface-container-high cursor-pointer transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="assessment">assessment</span>
+<span class="font-label-sm text-label-sm">Reports</span>
+</a>
+<a class="flex items-center gap-sm px-gutter py-sm text-on-surface-variant hover:bg-surface-container-high cursor-pointer transition-all" href="#">
+<span class="material-symbols-outlined" data-icon="admin_panel_settings">admin_panel_settings</span>
+<span class="font-label-sm text-label-sm">Admin</span>
+</a>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="fixed top-row-height left-64 w-[calc(100%-256px)] h-[calc(100%-64px)] bg-background flex">
+<!-- Left Panel: Item List -->
+<div class="w-[320px] h-full flex flex-col border-r border-outline-variant bg-surface">
+<!-- Search & Filter -->
+<div class="p-gutter border-b border-outline-variant flex flex-col gap-sm">
+<div class="relative w-full">
+<span class="material-symbols-outlined absolute left-xs top-1/2 -translate-y-1/2 text-on-surface-variant text-[16px]" data-icon="search">search</span>
+<input class="w-full h-[28px] pl-[24px] pr-xs py-0 border border-outline-variant rounded bg-surface-container-lowest text-label-sm focus:ring-0 focus:border-primary focus:outline-1 focus:outline-primary focus:outline-offset-1" placeholder="Search Items..." type="text"/>
+</div>
+<div class="flex gap-xs">
+<button class="flex-1 h-[24px] border border-outline-variant rounded bg-surface-container-lowest text-label-sm text-on-surface-variant hover:bg-surface-container flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-[14px]" data-icon="filter_list">filter_list</span> Category
+                    </button>
+<button class="flex-1 h-[24px] border border-outline-variant rounded bg-surface-container-lowest text-label-sm text-on-surface-variant hover:bg-surface-container flex items-center justify-center gap-xs">
+<span class="material-symbols-outlined text-[14px]" data-icon="sort">sort</span> A-Z
+                    </button>
+</div>
+</div>
+<!-- List -->
+<div class="flex-1 overflow-y-auto">
+<!-- Selected Item -->
+<div class="px-gutter py-sm border-b border-outline-variant bg-secondary-container cursor-pointer outline-[2px] outline-primary outline-offset-[-2px]">
+<div class="flex justify-between items-start">
+<span class="font-label-sm text-label-sm font-bold text-on-secondary-container">Aashirvaad Atta 5kg</span>
+<span class="font-data-sm text-data-sm text-on-secondary-container">₹235.00</span>
+</div>
+<div class="flex justify-between items-end mt-xs">
+<span class="font-data-sm text-data-sm text-on-surface-variant">SKU: 8901725112345</span>
+<span class="font-label-sm text-label-sm text-error">Stk: 4</span>
+</div>
+</div>
+<!-- Other Items -->
+<div class="px-gutter py-sm border-b border-outline-variant hover:bg-surface-container-high cursor-pointer">
+<div class="flex justify-between items-start">
+<span class="font-label-sm text-label-sm text-on-surface">Tata Salt 1kg</span>
+<span class="font-data-sm text-data-sm text-on-surface">₹28.00</span>
+</div>
+<div class="flex justify-between items-end mt-xs">
+<span class="font-data-sm text-data-sm text-on-surface-variant">SKU: 8901131000002</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Stk: 45</span>
+</div>
+</div>
+<div class="px-gutter py-sm border-b border-outline-variant hover:bg-surface-container-high cursor-pointer">
+<div class="flex justify-between items-start">
+<span class="font-label-sm text-label-sm text-on-surface">Maggi Noodles 280g</span>
+<span class="font-data-sm text-data-sm text-on-surface">₹48.00</span>
+</div>
+<div class="flex justify-between items-end mt-xs">
+<span class="font-data-sm text-data-sm text-on-surface-variant">SKU: 8901058000018</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Stk: 120</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Panel: Edit Form -->
+<div class="flex-1 flex flex-col h-full overflow-hidden bg-background">
+<!-- Form Header Actions -->
+<div class="h-row-height bg-surface border-b border-outline-variant flex items-center justify-between px-gutter shrink-0">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary text-[20px]" data-icon="edit_square">edit_square</span>
+<h1 class="font-headline-sm text-headline-sm font-bold text-primary">Edit Item Master</h1>
+<span class="bg-surface-container-highest px-sm py-[2px] rounded font-data-sm text-data-sm text-on-surface-variant border border-outline-variant ml-sm">ID: ITM-0942</span>
+</div>
+<div class="flex items-center gap-sm">
+<button class="h-[24px] px-sm flex items-center justify-center gap-xs border border-outline-variant rounded bg-surface-container text-on-surface-variant hover:bg-surface-container-high font-label-sm text-label-sm">
+<span class="bg-outline-variant text-surface px-[4px] py-[1px] rounded-[2px] font-data-sm text-[10px] leading-none">Del</span> Delete
+                    </button>
+<button class="h-[24px] px-sm flex items-center justify-center gap-xs border border-primary rounded bg-surface-container-lowest text-primary hover:bg-surface-container font-label-sm text-label-sm">
+<span class="bg-surface-container-high text-on-surface-variant px-[4px] py-[1px] rounded-[2px] font-data-sm text-[10px] leading-none border border-outline-variant">Esc</span> Cancel
+                    </button>
+<button class="h-[24px] px-sm flex items-center justify-center gap-xs bg-primary text-on-primary rounded hover:opacity-90 font-label-sm text-label-sm">
+<span class="bg-[#1A365D] text-on-primary px-[4px] py-[1px] rounded-[2px] font-data-sm text-[10px] leading-none border border-[#2F486A]">F10</span> Save Changes
+                    </button>
+</div>
+</div>
+<!-- Form Body (Scrollable) -->
+<div class="flex-1 overflow-y-auto p-lg">
+<div class="max-w-[800px] mx-auto flex flex-col gap-lg pb-lg">
+<!-- Top Error Banner (Contextual) -->
+<div class="bg-error-container border-l-[4px] border-error p-sm flex items-start gap-sm rounded-r">
+<span class="material-symbols-outlined text-error text-[18px] mt-[2px]" data-icon="error">error</span>
+<div>
+<p class="font-label-sm text-label-sm text-on-error-container font-bold">Validation Error in Pricing</p>
+<p class="font-body-md text-body-md text-on-error-container text-[13px]">Selling Price (₹235.00) cannot exceed MRP (₹230.00). Please correct before saving.</p>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-x-lg gap-y-lg">
+<!-- Identity Section -->
+<div class="col-span-2 bg-surface-container-lowest border border-outline-variant rounded p-md">
+<h3 class="font-label-sm text-label-sm text-primary border-b border-outline-variant pb-xs mb-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]" data-icon="badge">badge</span> Identity
+                            </h3>
+<div class="grid grid-cols-12 gap-md">
+<div class="col-span-4 flex flex-col gap-xs">
+<label class="font-label-sm text-label-sm text-on-surface">SKU / Barcode <span class="text-error">*</span></label>
+<div class="relative">
+<input class="w-full h-row-height border border-outline-variant rounded px-sm font-data-md text-data-md text-on-surface focus:outline-[2px] focus:outline-primary focus:outline-offset-[1px]" type="text" value="8901725112345"/>
+<button class="absolute right-xs top-1/2 -translate-y-1/2 p-[2px] text-on-surface-variant hover:text-primary" title="Generate New">
+<span class="material-symbols-outlined text-[16px]" data-icon="autorenew">autorenew</span>
+</button>
+</div>
+</div>
+<div class="col-span-8 flex flex-col gap-xs">
+<label class="font-label-sm text-label-sm text-on-surface">Full Item Name <span class="text-error">*</span></label>
+<input class="w-full h-row-height border border-outline-variant rounded px-sm font-body-md text-body-md text-on-surface focus:outline-[2px] focus:outline-primary focus:outline-offset-[1px]" type="text" value="Aashirvaad Shudh Chakki Atta 5kg"/>
+</div>
+<div class="col-span-12 flex flex-col gap-xs">
+<label class="font-label-sm text-label-sm text-on-surface">Short Print Name (Receipt)</label>
+<input class="w-full h-row-height border border-outline-variant rounded px-sm font-body-md text-body-md text-on-surface focus:outline-[2px] focus:outline-primary focus:outline-offset-[1px]" maxlength="20" type="text" value="Aashirvaad Atta 5kg"/>
+<p class="text-[11px] text-on-surface-variant mt-[-2px]">Max 20 characters for thermal printer formatting.</p>
+</div>
+</div>
+</div>
+<!-- Classification Section -->
+<div class="col-span-2 md:col-span-1 bg-surface-container-lowest border border-outline-variant rounded p-md">
+<h3 class="font-label-sm text-label-sm text-primary border-b border-outline-variant pb-xs mb-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]" data-icon="category">category</span> Classification
+                            </h3>
+<div class="flex flex-col gap-md">
+<div class="flex flex-col gap-xs">
+<label class="font-label-sm text-label-sm text-on-surface">Category</label>
+<select class="w-full h-row-height border border-outline-variant rounded px-sm font-body-md text-body-md text-on-surface bg-surface-container-lowest focus:outline-[2px] focus:outline-primary focus:outline-offset-[1px]">
+<option>Staples &amp; Flours</option>
+<option>Spices</option>
+<option>Snacks</option>
+</select>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<div class="flex flex-col gap-xs">
+<label class="font-label-sm text-label-sm text-on-surface">HSN Code</label>
+<input class="w-full h-row-height border border-outline-variant rounded px-sm font-data-md text-data-md text-on-surface focus:outline-[2px] focus:outline-primary focus:outline-offset-[1px]" type="text" value="1101"/>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-sm text-label-sm text-on-surface">Tax Rate</label>
+<select class="w-full h-row-height border border-outline-variant rounded px-sm font-data-md text-data-md text-on-surface bg-surface-container-lowest focus:outline-[2px] focus:outline-primary focus:outline-offset-[1px]">
+<option>GST 0%</option>
+<option selected="">GST 5%</option>
+<option>GST 12%</option>
+<option>GST 18%</option>
+</select>
+</div>
+</div>
+</div>
+</div>
+<!-- Stock Levels Section -->
+<div class="col-span-2 md:col-span-1 bg-surface-container-lowest border border-outline-variant rounded p-md">
+<h3 class="font-label-sm text-label-sm text-primary border-b border-outline-variant pb-xs mb-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]" data-icon="inventory">inventory</span> Stock &amp; Alerts
+                            </h3>
+<div class="flex flex-col gap-md">
+<div class="flex flex-col gap-xs">
+<label class="font-label-sm text-label-sm text-on-surface">Current Stock (Non-editable)</label>
+<input class="w-full h-row-height border border-surface-variant rounded px-sm font-data-md text-data-md text-on-surface-variant bg-surface-container text-right" disabled="" type="text" value="4.00"/>
+</div>
+<div class="grid grid-cols-2 gap-sm">
+<div class="flex flex-col gap-xs">
+<label class="font-label-sm text-label-sm text-on-surface">Min Level</label>
+<input class="w-full h-row-height border border-outline-variant rounded px-sm font-data-md text-data-md text-on-surface text-right focus:outline-[2px] focus:outline-primary focus:outline-offset-[1px]" type="text" value="10"/>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-sm text-label-sm text-on-surface">Max Level</label>
+<input class="w-full h-row-height border border-outline-variant rounded px-sm font-data-md text-data-md text-on-surface text-right focus:outline-[2px] focus:outline-primary focus:outline-offset-[1px]" type="text" value="50"/>
+</div>
+</div>
+</div>
+</div>
+<!-- Pricing Section (Focus Area) -->
+<div class="col-span-2 bg-surface-container-lowest border-[2px] border-error rounded p-md relative outline-[2px] outline-primary outline-offset-[2px]">
+<h3 class="font-label-sm text-label-sm text-primary border-b border-outline-variant pb-xs mb-sm flex items-center gap-xs">
+<span class="material-symbols-outlined text-[16px]" data-icon="payments">payments</span> Pricing
+                            </h3>
+<div class="grid grid-cols-12 gap-md items-end">
+<div class="col-span-3 flex flex-col gap-xs">
+<label class="font-label-sm text-label-sm text-on-surface">Cost Price (₹)</label>
+<input class="w-full h-row-height border border-outline-variant rounded px-sm font-data-md text-data-md text-on-surface text-right focus:outline-[2px] focus:outline-primary focus:outline-offset-[1px]" type="text" value="210.50"/>
+</div>
+<div class="col-span-3 flex flex-col gap-xs">
+<label class="font-label-sm text-label-sm text-error">Selling Price (₹)</label>
+<div class="relative">
+<input class="w-full h-row-height border border-error rounded px-sm font-data-md text-data-md text-error text-right bg-error-container focus:outline-[2px] focus:outline-error focus:outline-offset-[1px]" type="text" value="235.00"/>
+</div>
+<span class="text-[10px] font-label-sm text-error mt-[-2px]">Exceeds MRP</span>
+</div>
+<div class="col-span-3 flex flex-col gap-xs">
+<label class="font-label-sm text-label-sm text-on-surface">MRP (₹)</label>
+<input class="w-full h-row-height border border-outline-variant rounded px-sm font-data-md text-data-md text-on-surface text-right focus:outline-[2px] focus:outline-primary focus:outline-offset-[1px]" type="text" value="230.00"/>
+</div>
+<div class="col-span-3 flex flex-col gap-xs pb-sm">
+<label class="font-label-sm text-label-sm text-on-surface-variant">Est. Margin %</label>
+<div class="font-data-md text-data-md text-on-surface text-right pr-sm py-[4px] bg-surface-container rounded border border-transparent">
+                                        10.42%
+                                    </div>
+</div>
+</div>
+</div>
+<!-- Loose Goods / Advanced -->
+<div class="col-span-2 bg-surface border border-outline-variant rounded p-sm">
+<details class="group">
+<summary class="font-label-sm text-label-sm text-on-surface cursor-pointer flex items-center gap-xs list-none">
+<span class="material-symbols-outlined text-[16px] group-open:rotate-90 transition-transform" data-icon="chevron_right">chevron_right</span>
+                                    Loose Goods &amp; POS Settings
+                                </summary>
+<div class="pt-sm mt-sm border-t border-outline-variant grid grid-cols-3 gap-md pl-[24px]">
+<div class="flex items-center gap-sm col-span-3">
+<input class="border-outline-variant rounded text-primary focus:ring-primary h-4 w-4" id="loose" type="checkbox"/>
+<label class="font-body-md text-body-md text-on-surface" for="loose">Allow Weighing Scale Input</label>
+</div>
+<div class="flex flex-col gap-xs opacity-50 pointer-events-none">
+<label class="font-label-sm text-label-sm text-on-surface">Tare Weight (kg)</label>
+<input class="w-full h-row-height border border-outline-variant rounded px-sm font-data-md text-data-md text-on-surface text-right" type="text" value="0.000"/>
+</div>
+<div class="flex flex-col gap-xs">
+<label class="font-label-sm text-label-sm text-on-surface">Qty Rounding</label>
+<select class="w-full h-row-height border border-outline-variant rounded px-sm font-data-md text-data-md text-on-surface bg-surface-container-lowest focus:outline-[2px] focus:outline-primary focus:outline-offset-[1px]">
+<option selected="">0.001</option>
+<option>0.010</option>
+<option>1.000</option>
+</select>
+</div>
+</div>
+</details>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="fixed bottom-0 left-0 w-full z-50 flex justify-between items-center px-gutter bg-primary dark:bg-primary border-t border-primary h-row-height flat no shadows">
+<div class="font-data-sm text-data-sm text-on-primary font-bold">
+            [F1] Help | [F2] New Bill | [F5] Print | [F10] Save / Close Day
+        </div>
+<div class="flex gap-md font-data-sm text-data-sm text-on-primary opacity-90">
+<span>System Status: Online</span>
+<span>Station: POS-01</span>
+</div>
+</footer>
+</body></html>

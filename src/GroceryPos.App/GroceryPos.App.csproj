@@ -6,6 +6,7 @@
     <AssemblyName>GroceryPos.App</AssemblyName>
     <RootNamespace>GroceryPos.App</RootNamespace>
     <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System.Windows.Forms" />

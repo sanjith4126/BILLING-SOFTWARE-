@@ -1,5 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Drawing;
+using System.Linq;
 using System.IO;
 using System.Windows.Forms;
 using GroceryPos.Domain;
@@ -12,48 +15,139 @@ namespace GroceryPos.App
         private DataGridView _grid;
         private TextBox _search;
 
+        private Panel _emptyState;
+
         public ItemMasterForm(AppContext ctx)
         {
             _ctx = ctx;
-            Text = "Item Master";
-            Width = 900; Height = 560;
-            StartPosition = FormStartPosition.CenterParent;
+            Theme.ApplyForm(this);
+            Text = "Item master - your product list";
+            Width = 1100; Height = 680;
+            MinimumSize = new System.Drawing.Size(860, 520);
+            StartPosition = FormStartPosition.CenterScreen;
 
-            var top = new Panel { Dock = DockStyle.Top, Height = 40 };
-            var lbl = new Label { Text = "Search:", Left = 8, Top = 12, Width = 60 };
-            _search = new TextBox { Left = 70, Top = 8, Width = 250 };
+            var header = Theme.Header("Item master", "Every product you sell, with its price and tax.");
+
+            var top = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 60,
+                BackColor = Theme.Surface,
+                Padding = new Padding(Theme.Md, Theme.Sm, Theme.Md, Theme.Sm)
+            };
+            var lbl = Theme.FieldLabel("Search by name or code");
+            lbl.SetBounds(Theme.Md, 2, 240, 16);
+            _search = Theme.TextField(300);
+            _search.SetBounds(Theme.Md, 20, 300, Theme.FieldHeight);
             _search.TextChanged += (s, e) => Reload();
-            var newBtn = new Button { Text = "New", Left = 330, Top = 6, Width = 80 };
-            newBtn.Click += (s, e) => EditItem(new Item { SoldBy = SoldBy.Piece, Unit = "pc", IsActive = true, RoundToGrams = 5, MinSaleGrams = 100, AllowDiscount = true });
-            var editBtn = new Button { Text = "Edit", Left = 420, Top = 6, Width = 80 };
+
+            var newBtn = Theme.PrimaryButton("Add a new item");
+            newBtn.SetBounds(340, 20, 150, Theme.ButtonHeight);
+            newBtn.Click += (s, e) => EditItem(new Item
+            {
+                SoldBy = SoldBy.Piece, Unit = "pc", IsActive = true,
+                RoundToGrams = 5, MinSaleGrams = 100, AllowDiscount = true
+            });
+            var editBtn = Theme.SecondaryButton("Edit selected");
+            editBtn.SetBounds(500, 20, 130, Theme.ButtonHeight);
             editBtn.Click += (s, e) => EditSelected();
-            var importBtn = new Button { Text = "Import CSV", Left = 510, Top = 6, Width = 100 };
+            var importBtn = Theme.SecondaryButton("Import from CSV");
+            importBtn.SetBounds(640, 20, 150, Theme.ButtonHeight);
             importBtn.Click += (s, e) => ImportCsv();
+
             top.Controls.AddRange(new Control[] { lbl, _search, newBtn, editBtn, importBtn });
 
-            _grid = new DataGridView { Dock = DockStyle.Fill, ReadOnly = true, AllowUserToAddRows = false,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect, AutoGenerateColumns = false };
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "ID", DataPropertyName = "Id", Width = 50 });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "SKU", DataPropertyName = "Sku", Width = 100 });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Name", DataPropertyName = "Name", Width = 280 });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Sold by", DataPropertyName = "SoldBy", Width = 80 });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Unit", DataPropertyName = "Unit", Width = 60 });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Tax bp", DataPropertyName = "TaxRateBp", Width = 60 });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "HSN", DataPropertyName = "HsnCode", Width = 80 });
+            var body = new Panel { Dock = DockStyle.Fill, Padding = new Padding(Theme.Md), BackColor = Theme.Background };
+            _grid = new DataGridView
+            {
+                Dock = DockStyle.Fill,
+                ReadOnly = true,
+                AllowUserToAddRows = false,
+                AutoGenerateColumns = false
+            };
+            Theme.ApplyGrid(_grid);
+            // The internal id and basis-point tax rate mean nothing to a shopkeeper,
+            // so show the code, the name, and prices in rupees instead.
+            _grid.Columns.Add(Theme.TextColumn("Sku", "Code", 120));
+            var nameCol = Theme.TextColumn("Name", "Item name", 300);
+            nameCol.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            nameCol.MinimumWidth = 200;
+            _grid.Columns.Add(nameCol);
+            _grid.Columns.Add(Theme.TextColumn("SoldByText", "Sold by", 90));
+            _grid.Columns.Add(Theme.NumberColumn("SellingText", "Selling", 100));
+            _grid.Columns.Add(Theme.NumberColumn("MrpText", "MRP", 100));
+            _grid.Columns.Add(Theme.NumberColumn("TaxText", "GST", 70));
+            _grid.Columns.Add(Theme.TextColumn("HsnCode", "HSN", 90));
+            _grid.Columns.Add(Theme.TextColumn("StatusText", "Status", 80));
             _grid.CellDoubleClick += (s, e) => EditSelected();
 
-            Controls.Add(_grid);
+            _emptyState = Theme.EmptyState(
+                "No items match that search.\r\n\r\nClear the search box, or add a new item.",
+                "Add a new item",
+                () => EditItem(new Item
+                {
+                    SoldBy = SoldBy.Piece, Unit = "pc", IsActive = true,
+                    RoundToGrams = 5, MinSaleGrams = 100, AllowDiscount = true
+                }));
+
+            body.Controls.Add(_grid);
+            body.Controls.Add(_emptyState);
+
+            Controls.Add(body);
             Controls.Add(top);
+            Controls.Add(header);
             Reload();
         }
 
-        private void Reload() { _grid.DataSource = _ctx.Items.Search(_search.Text); }
+        private void Reload()
+        {
+            var items = _ctx.Items.Search(_search.Text);
+            var view = items.Select(i => new ItemRow
+            {
+                Id = i.Id,
+                Sku = i.Sku,
+                Name = i.Name,
+                SoldByText = i.SoldBy == SoldBy.Weight ? "Weight"
+                           : i.SoldBy == SoldBy.Volume ? "Volume" : "Piece",
+                SellingText = new Money(i.DefaultSellingPaise).ToString(),
+                MrpText = new Money(i.DefaultMrpPaise).ToString(),
+                TaxText = (i.TaxRateBp / 100m).ToString("0.##") + "%",
+                HsnCode = i.HsnCode,
+                StatusText = i.IsActive ? "Active" : "Inactive"
+            }).ToList();
+
+            _grid.DataSource = new BindingList<ItemRow>(view);
+            bool empty = view.Count == 0;
+            _emptyState.Visible = empty;
+            _grid.Visible = !empty;
+            if (empty) _emptyState.BringToFront();
+        }
+
+        /// <summary>Display shape for the list; the real Item is loaded on edit.</summary>
+        private class ItemRow
+        {
+            public long Id { get; set; }
+            public string Sku { get; set; }
+            public string Name { get; set; }
+            public string SoldByText { get; set; }
+            public string SellingText { get; set; }
+            public string MrpText { get; set; }
+            public string TaxText { get; set; }
+            public string HsnCode { get; set; }
+            public string StatusText { get; set; }
+        }
 
         private void EditSelected()
         {
-            if (_grid.CurrentRow == null) return;
-            var it = (Item)_grid.CurrentRow.DataBoundItem;
-            var full = _ctx.Items.FindById(it.Id);
+            if (_grid.CurrentRow == null)
+            {
+                Theme.Warn("Select an item in the list first.");
+                return;
+            }
+            var row = _grid.CurrentRow.DataBoundItem as ItemRow;
+            if (row == null) return;
+            var full = _ctx.Items.FindById(row.Id);
+            if (full == null) { Theme.Warn("That item could no longer be found."); Reload(); return; }
             EditItem(full);
         }
 
@@ -154,6 +248,7 @@ namespace GroceryPos.App
             save.Click += (s, e) => Save();
             var cancel = new Button { Text = "Cancel", Left = 360, Top = y, Width = 90, DialogResult = DialogResult.Cancel };
             Controls.Add(save); Controls.Add(cancel);
+            Theme.Retrofit(this);
         }
 
         private TextBox AddField(string label, string val, ref int y)
@@ -212,10 +307,18 @@ namespace GroceryPos.App
                 _it.SoldBy = (SoldBy)Enum.Parse(typeof(SoldBy), (string)_soldBy.SelectedItem);
                 _it.Unit = _unit.Text.Trim();
                 _it.HsnCode = _hsn.Text.Trim();
-                _it.TaxRateBp = int.Parse(_tax.Text);
-                _it.TareGrams = int.Parse(_tare.Text);
-                _it.RoundToGrams = int.Parse(_round.Text);
-                _it.MinSaleGrams = int.Parse(_minSale.Text);
+
+                // Every numeric field is validated with a plain message rather than
+                // letting int.Parse throw "Input string was not in a correct format".
+                int tax, tare, round, minSale;
+                if (!ReadWhole(_tax, "Tax rate", 0, 10000, out tax)) return;
+                if (!ReadWhole(_tare, "Tare grams", 0, 100000, out tare)) return;
+                if (!ReadWhole(_round, "Round to grams", 1, 1000, out round)) return;
+                if (!ReadWhole(_minSale, "Minimum sale grams", 0, 100000, out minSale)) return;
+                _it.TaxRateBp = tax;
+                _it.TareGrams = tare;
+                _it.RoundToGrams = round;
+                _it.MinSaleGrams = minSale;
                 _it.WeighAtCounter = _weighAtCounter.Checked;
                 _it.AllowDiscount = _allowDiscount.Checked;
                 _it.IsActive = _isActive.Checked;
@@ -223,7 +326,43 @@ namespace GroceryPos.App
                 _it.DefaultSellingPaise = RupeeStringToPaise(_selling.Text);
                 _it.DefaultMrpPaise = RupeeStringToPaise(_mrp.Text);
 
-                if (string.IsNullOrWhiteSpace(_it.Name)) throw new Exception("Name is required");
+                if (string.IsNullOrWhiteSpace(_it.Name))
+                {
+                    Theme.Warn("Enter the item name.");
+                    _name.Focus();
+                    return;
+                }
+                if (string.IsNullOrWhiteSpace(_it.Sku))
+                {
+                    Theme.Warn("Enter a code (SKU) for this item.\r\n" +
+                               "It is how the item is found when a barcode does not scan.");
+                    _sku.Focus();
+                    return;
+                }
+
+                // Business rule 6: selling price may never exceed MRP. Previously
+                // this was only a coloured label, so an over-MRP price could be saved.
+                if (_it.DefaultMrpPaise > 0 && _it.DefaultSellingPaise > _it.DefaultMrpPaise)
+                {
+                    Theme.Warn(
+                        "The selling price cannot be more than the MRP.\r\n" +
+                        "Selling: Rs. " + new Money(_it.DefaultSellingPaise) + "\r\n" +
+                        "MRP:     Rs. " + new Money(_it.DefaultMrpPaise) + "\r\n\r\n" +
+                        "Selling above the printed MRP is not allowed.");
+                    _selling.Focus();
+                    return;
+                }
+                if (_it.DefaultCostPaise > 0 && _it.DefaultSellingPaise > 0 &&
+                    _it.DefaultSellingPaise < _it.DefaultCostPaise)
+                {
+                    if (!Theme.Confirm(
+                        "The selling price is below what the item costs you.\r\n" +
+                        "Cost:    Rs. " + new Money(_it.DefaultCostPaise) + "\r\n" +
+                        "Selling: Rs. " + new Money(_it.DefaultSellingPaise) + "\r\n\r\n" +
+                        "Every sale would lose money. Save anyway?", "Check the price"))
+                        return;
+                }
+
                 long id = _ctx.Items.Save(_it, _ctx.CurrentUser.Id);
                 // Rewrite barcodes: naive — add new ones only, skip existing
                 var existing = new HashSet<string>(_ctx.Items.BarcodesFor(id));
@@ -236,7 +375,38 @@ namespace GroceryPos.App
                 DialogResult = DialogResult.OK;
                 Close();
             }
-            catch (Exception ex) { MessageBox.Show(ex.Message); }
+            catch (Exception ex)
+            {
+                if (ex.Message.IndexOf("UNIQUE", StringComparison.OrdinalIgnoreCase) >= 0)
+                {
+                    Theme.Warn("Another item already uses the code \"" + _it.Sku + "\"." + Environment.NewLine + Environment.NewLine +
+                               "Give this item a different code.");
+                    return;
+                }
+                Theme.Error(ex.Message);
+            }
+        }
+
+        /// <summary>Reads a whole number, or explains what is wrong and returns false.</summary>
+        private bool ReadWhole(TextBox box, string fieldName, int min, int max, out int value)
+        {
+            string s = (box.Text ?? "").Trim();
+            if (s.Length == 0) s = "0";
+            if (!int.TryParse(s, out value))
+            {
+                Theme.Warn(fieldName + " must be a whole number, such as " + min + ".");
+                box.Focus();
+                box.SelectAll();
+                return false;
+            }
+            if (value < min || value > max)
+            {
+                Theme.Warn(fieldName + " must be between " + min + " and " + max + ".");
+                box.Focus();
+                box.SelectAll();
+                return false;
+            }
+            return true;
         }
     }
 

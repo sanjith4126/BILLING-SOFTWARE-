@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<html class="h-full" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login - Bharat POS</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "tertiary-container": "#391303",
+                        "on-tertiary-container": "#b5785f",
+                        "surface-container": "#edeeef",
+                        "error-container": "#ffdad6",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary": "#ffffff",
+                        "inverse-primary": "#afc8f0",
+                        "background": "#f8f9fa",
+                        "tertiary": "#110200",
+                        "surface-bright": "#f8f9fa",
+                        "secondary-container": "#d8e1ea",
+                        "primary-fixed": "#d4e3ff",
+                        "on-tertiary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "tertiary-fixed": "#ffdbce",
+                        "on-surface": "#191c1d",
+                        "on-primary-fixed-variant": "#2f486a",
+                        "on-secondary-fixed": "#141d23",
+                        "surface-variant": "#e1e3e4",
+                        "surface-dim": "#d9dadb",
+                        "inverse-surface": "#2e3132",
+                        "primary": "#000613",
+                        "on-secondary-fixed-variant": "#3f484f",
+                        "on-background": "#191c1d",
+                        "on-error": "#ffffff",
+                        "secondary-fixed-dim": "#bfc8d0",
+                        "tertiary-fixed-dim": "#fdb69a",
+                        "on-tertiary-fixed-variant": "#6b3a25",
+                        "inverse-on-surface": "#f0f1f2",
+                        "on-error-container": "#93000a",
+                        "surface-tint": "#476083",
+                        "secondary": "#575f67",
+                        "surface": "#f8f9fa",
+                        "primary-fixed-dim": "#afc8f0",
+                        "secondary-fixed": "#dbe4ed",
+                        "surface-container-high": "#e7e8e9",
+                        "surface-container-highest": "#e1e3e4",
+                        "on-surface-variant": "#43474e",
+                        "on-primary": "#ffffff",
+                        "primary-container": "#001f3f",
+                        "on-tertiary-fixed": "#351002",
+                        "on-primary-container": "#6f88ad",
+                        "surface-container-low": "#f3f4f5",
+                        "outline": "#74777f",
+                        "outline-variant": "#c4c6cf",
+                        "on-secondary-container": "#5b646b",
+                        "on-primary-fixed": "#001c3a"
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    spacing: {
+                        "xs": "4px",
+                        "sm": "8px",
+                        "gutter": "12px",
+                        "lg": "24px",
+                        "md": "16px",
+                        "row-height": "32px",
+                        "unit": "4px"
+                    },
+                    fontFamily: {
+                        "label-sm": ["Inter"],
+                        "display-sm": ["Inter"],
+                        "data-sm": ["JetBrains Mono"],
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "data-md": ["JetBrains Mono"]
+                    },
+                    fontSize: {
+                        "label-sm": ["12px", { lineHeight: "16px", fontWeight: "600" }],
+                        "display-sm": ["24px", { lineHeight: "32px", fontWeight: "700" }],
+                        "data-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }],
+                        "headline-sm": ["18px", { lineHeight: "24px", fontWeight: "600" }],
+                        "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+                        "data-md": ["14px", { lineHeight: "20px", fontWeight: "500" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        /* Custom styles for POS aesthetic */
+        .pos-focus:focus-within {
+            outline: 2px solid #001F3F;
+            outline-offset: 2px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background h-full w-full flex flex-col items-center justify-center p-gutter">
+<!-- Main Container -->
+<main class="w-full max-w-[480px] bg-surface-container-lowest border border-outline-variant shadow-sm rounded">
+<!-- Header -->
+<header class="bg-primary-container text-on-primary border-b border-outline-variant p-md flex flex-col items-center justify-center rounded-t">
+<h1 class="font-display-sm text-display-sm tracking-tight">Bharat POS</h1>
+<p class="font-body-md text-body-md text-on-primary-container mt-xs">Bharat Groceries</p>
+</header>
+<!-- Login Form -->
+<form class="p-lg flex flex-col gap-md" onsubmit="event.preventDefault();">
+<!-- User Selection -->
+<div class="flex flex-col gap-xs pos-focus rounded">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" for="user-select">Select User</label>
+<div class="relative">
+<select class="w-full h-row-height border border-outline-variant bg-surface-container-lowest font-body-md text-body-md px-sm rounded-none appearance-none focus:outline-none focus:ring-0 focus:border-primary-container cursor-pointer" id="user-select">
+<option value="admin">Admin</option>
+<option value="manager">Manager</option>
+<option value="cashier01">Cashier 01</option>
+<option value="cashier02">Cashier 02</option>
+</select>
+<div class="absolute inset-y-0 right-0 flex items-center px-sm pointer-events-none text-on-surface-variant">
+<span class="material-symbols-outlined" style="font-size: 20px;">expand_more</span>
+</div>
+</div>
+</div>
+<!-- PIN Entry -->
+<div class="flex flex-col gap-xs pos-focus rounded mt-sm">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider" for="pin-entry">Enter PIN</label>
+<div class="relative flex items-center border border-outline-variant bg-surface-container-lowest h-row-height">
+<span class="material-symbols-outlined pl-sm text-on-surface-variant" style="font-size: 18px;">lock</span>
+<input autocomplete="off" autofocus="" class="w-full h-full border-none bg-transparent font-data-md text-data-md px-sm rounded-none focus:outline-none focus:ring-0 tracking-widest text-center" id="pin-entry" maxlength="4" placeholder="••••" type="password"/>
+</div>
+<!-- Inline Error Example (Hidden by default) -->
+<!-- <span class="font-label-sm text-label-sm text-error mt-xs">Invalid PIN</span> -->
+</div>
+<!-- Action Area -->
+<div class="mt-lg flex flex-col gap-sm">
+<button class="w-full h-row-height bg-primary-container text-on-primary font-label-sm text-label-sm flex items-center justify-center gap-sm rounded hover:bg-primary transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2" type="submit">
+<span>Login</span>
+<span class="material-symbols-outlined" style="font-size: 18px;">arrow_forward</span>
+</button>
+<div class="flex items-center justify-center text-on-surface-variant font-data-sm text-data-sm mt-xs opacity-80">
+<span class="bg-surface-container-high border border-outline-variant px-xs rounded mr-xs">[Enter]</span> to Login
+                </div>
+</div>
+</form>
+<!-- Footer / System Info -->
+<footer class="border-t border-outline-variant p-sm flex justify-between items-center bg-surface-container font-data-sm text-data-sm text-on-surface-variant rounded-b">
+<span>Terminal: POS-01</span>
+<span class="flex items-center gap-xs">
+<span class="w-2 h-2 rounded-full bg-[#198754]"></span> Online
+            </span>
+</footer>
+</main>
+<script>
+        // Simple auto-focus logic and enter key handling
+        document.addEventListener('DOMContentLoaded', () => {
+            const pinInput = document.getElementById('pin-entry');
+            if (pinInput) {
+                pinInput.focus();
+            }
+
+            // Global enter key handling for the form
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    // Trigger login visual state or actual login
+                    const btn = document.querySelector('button[type="submit"]');
+                    if(btn) {
+                        btn.classList.add('bg-primary');
+                        setTimeout(() => btn.classList.remove('bg-primary'), 150);
+                    }
+                }
+            });
+        });
+    </script>
+</body></html>

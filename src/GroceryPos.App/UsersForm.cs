@@ -51,6 +51,7 @@ namespace GroceryPos.App
             Controls.Add(panel);
 
             Load += (s, e) => Refresh();
+            Theme.Retrofit(this);
         }
 
         private new void Refresh()

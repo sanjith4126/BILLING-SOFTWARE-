@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Bharat POS - Stock Take</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#edeeef",
+                        "secondary-container": "#d8e1ea",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#000613",
+                        "on-primary-fixed-variant": "#2f486a",
+                        "on-primary-fixed": "#001c3a",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#5b646b",
+                        "on-background": "#191c1d",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#6b3a25",
+                        "on-secondary-fixed-variant": "#3f484f",
+                        "outline-variant": "#c4c6cf",
+                        "surface": "#f8f9fa",
+                        "tertiary": "#110200",
+                        "on-primary-container": "#6f88ad",
+                        "tertiary-container": "#391303",
+                        "surface-variant": "#e1e3e4",
+                        "secondary-fixed-dim": "#bfc8d0",
+                        "on-tertiary-fixed": "#351002",
+                        "background": "#f8f9fa",
+                        "tertiary-fixed-dim": "#fdb69a",
+                        "surface-container-highest": "#e1e3e4",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#d9dadb",
+                        "inverse-surface": "#2e3132",
+                        "surface-tint": "#476083",
+                        "primary-fixed": "#d4e3ff",
+                        "secondary-fixed": "#dbe4ed",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#afc8f0",
+                        "outline": "#74777f",
+                        "on-secondary-fixed": "#141d23",
+                        "on-surface": "#191c1d",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f8f9fa",
+                        "secondary": "#575f67",
+                        "surface-container-high": "#e7e8e9",
+                        "primary-container": "#001f3f",
+                        "on-tertiary-container": "#b5785f",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#f0f1f2",
+                        "on-surface-variant": "#43474e",
+                        "inverse-primary": "#afc8f0",
+                        "surface-container-low": "#f3f4f5",
+                        "tertiary-fixed": "#ffdbce",
+                        "success": "#198754",
+                        "danger": "#DC3545"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "row-height": "32px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "gutter": "12px",
+                        "xs": "4px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "data-sm": ["JetBrains Mono"],
+                        "data-md": ["JetBrains Mono"],
+                        "display-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "data-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "data-md": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "display-sm": ["24px", { "lineHeight": "32px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined[data-weight="fill"] {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        /* Table specific styles for strict 32px rows */
+        .table-row-dense {
+            height: 32px;
+        }
+        .table-row-dense td, .table-row-dense th {
+            padding-top: 0;
+            padding-bottom: 0;
+            vertical-align: middle;
+        }
+        
+        /* Custom scrollbar for high density */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: theme('colors.surface'); 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: theme('colors.outline-variant'); 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.outline'); 
+        }
+
+        /* Focus state for keyboard navigation */
+        .keyboard-focus-ring:focus-within {
+            outline: 2px solid theme('colors.primary-container');
+            outline-offset: -2px;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-background font-body-md min-h-screen overflow-hidden flex flex-col pt-row-height pb-row-height">
+<!-- TopNavBar -->
+<header class="fixed top-0 left-0 w-full h-row-height z-50 flex justify-between items-center px-gutter bg-primary-container dark:bg-primary-container text-on-primary-container dark:text-on-primary-container font-headline-sm text-headline-sm font-label-sm text-label-sm border-b border-outline-variant flat no shadows transition-colors duration-150 docked full-width top-0">
+<div class="flex items-center gap-4">
+<span class="font-headline-sm text-headline-sm font-bold text-on-primary-container">Bharat POS</span>
+<div class="h-4 w-px bg-outline-variant mx-2"></div>
+<span class="font-label-sm text-label-sm opacity-80 uppercase tracking-wide">STOCK TAKE MODULE</span>
+</div>
+<div class="flex-1 max-w-md mx-8 flex items-center">
+<div class="relative w-full h-6 bg-surface-container-high rounded text-on-surface-variant flex items-center px-2 focus-within:ring-2 focus-within:ring-primary">
+<span class="material-symbols-outlined text-[16px] mr-2">search</span>
+<input class="bg-transparent border-none p-0 h-full w-full text-[12px] focus:ring-0 placeholder-on-surface-variant" placeholder="Search items, batches..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<button class="hover:bg-primary opacity-90 p-1 rounded flex items-center justify-center transition-colors duration-150">
+<span class="material-symbols-outlined text-[20px]" data-icon="notifications">notifications</span>
+</button>
+<button class="hover:bg-primary opacity-90 p-1 rounded flex items-center justify-center transition-colors duration-150">
+<span class="material-symbols-outlined text-[20px]" data-icon="settings">settings</span>
+</button>
+<button class="hover:bg-primary opacity-90 p-1 rounded flex items-center justify-center transition-colors duration-150">
+<span class="material-symbols-outlined text-[20px]" data-icon="person">person</span>
+</button>
+</div>
+</header>
+<!-- SideNavBar & Main Content Wrapper -->
+<div class="flex flex-1 overflow-hidden">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-row-height h-[calc(100%-64px)] w-64 flex flex-col bg-surface-container dark:bg-surface-container text-primary dark:text-primary-fixed font-label-sm text-label-sm border-r border-outline-variant flat no shadows docked left-0 h-full w-64 z-40">
+<div class="px-gutter py-3 border-b border-outline-variant">
+<h2 class="font-headline-sm text-headline-sm text-primary font-bold">Store #402</h2>
+<p class="text-[11px] text-on-surface-variant mt-1">Shift: Morning</p>
+</div>
+<ul class="flex flex-col mt-2 px-2 gap-1 flex-1 overflow-y-auto">
+<li>
+<a class="flex items-center gap-3 px-3 py-1.5 rounded-sm cursor-pointer transition-all text-on-surface-variant hover:bg-surface-container-high" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="dashboard">dashboard</span>
+<span>Dashboard</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-1.5 rounded-sm cursor-pointer transition-all text-on-surface-variant hover:bg-surface-container-high" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="receipt_long">receipt_long</span>
+<span>Billing</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-1.5 rounded-sm cursor-pointer transition-all bg-secondary-container text-on-secondary-container border-l-4 border-primary font-bold" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="inventory_2" data-weight="fill">inventory_2</span>
+<span>Inventory</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-1.5 rounded-sm cursor-pointer transition-all text-on-surface-variant hover:bg-surface-container-high" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="assessment">assessment</span>
+<span>Reports</span>
+</a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-3 py-1.5 rounded-sm cursor-pointer transition-all text-on-surface-variant hover:bg-surface-container-high" href="#">
+<span class="material-symbols-outlined text-[18px]" data-icon="admin_panel_settings">admin_panel_settings</span>
+<span>Admin</span>
+</a>
+</li>
+</ul>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-64 flex flex-col bg-background relative overflow-hidden">
+<!-- Contextual Toolbar -->
+<div class="h-[48px] px-lg border-b border-outline-variant flex items-center justify-between bg-surface shrink-0">
+<div class="flex items-center gap-4">
+<h1 class="font-display-sm text-display-sm m-0">Stock Take: Aisle 4</h1>
+<span class="px-2 py-0.5 bg-secondary-container text-on-secondary-container font-data-sm text-data-sm rounded border border-outline-variant">Audit ID: #402-88X</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="px-3 h-8 bg-surface border border-primary text-primary font-label-sm text-label-sm flex items-center gap-2 hover:bg-surface-container transition-colors focus:outline-none focus:ring-2 focus:ring-primary-container focus:ring-offset-1 rounded-sm">
+<span class="bg-surface-container px-1 py-0.5 rounded text-[10px] border border-outline-variant text-on-surface-variant mr-1">[F5]</span>
+                        Save Draft
+                    </button>
+<button class="px-3 h-8 bg-primary text-on-primary font-label-sm text-label-sm flex items-center gap-2 hover:bg-primary-fixed hover:text-on-primary-fixed transition-colors focus:outline-none focus:ring-2 focus:ring-primary-container focus:ring-offset-1 rounded-sm shadow-sm">
+<span class="bg-primary-fixed-dim px-1 py-0.5 rounded text-[10px] text-primary border border-primary-fixed-dim mr-1 opacity-80">[F10]</span>
+                        Complete Audit
+                    </button>
+</div>
+</div>
+<!-- Stats Ribbon -->
+<div class="h-10 px-lg bg-surface flex items-center gap-6 border-b border-outline-variant font-data-sm text-data-sm shrink-0">
+<div class="flex items-center gap-2">
+<span class="text-on-surface-variant">Items Scanned:</span>
+<span class="font-data-md text-data-md font-bold">142/450</span>
+</div>
+<div class="w-px h-4 bg-outline-variant"></div>
+<div class="flex items-center gap-2">
+<span class="text-on-surface-variant">Discrepancies:</span>
+<span class="font-data-md text-data-md font-bold text-danger">12</span>
+</div>
+<div class="w-px h-4 bg-outline-variant"></div>
+<div class="flex items-center gap-2">
+<span class="text-on-surface-variant">Est. Variance Value:</span>
+<span class="font-data-md text-data-md font-bold text-danger">-₹1,450.00</span>
+</div>
+</div>
+<!-- Data Table Container -->
+<div class="flex-1 overflow-auto bg-surface-lowest relative">
+<table class="w-full text-left border-collapse">
+<thead class="sticky top-0 z-10 bg-primary-container text-on-primary font-label-sm text-label-sm">
+<tr class="table-row-dense shadow-sm">
+<th class="px-3 font-semibold border-b border-outline-variant w-10 text-center">#</th>
+<th class="px-3 font-semibold border-b border-outline-variant min-w-[200px]">Item Name</th>
+<th class="px-3 font-semibold border-b border-outline-variant w-32">Batch Code</th>
+<th class="px-3 font-semibold border-b border-outline-variant w-24">Expiry</th>
+<th class="px-3 font-semibold border-b border-outline-variant w-28 text-right">Expected Qty</th>
+<th class="px-3 font-semibold border-b border-outline-variant w-32 text-right">Counted Qty</th>
+<th class="px-3 font-semibold border-b border-outline-variant w-24 text-right">Variance</th>
+</tr>
+</thead>
+<tbody class="font-data-sm text-data-sm bg-surface">
+<!-- Row 1 -->
+<tr class="table-row-dense border-b border-surface-variant hover:bg-surface-container-high transition-colors">
+<td class="px-3 text-on-surface-variant text-center">1</td>
+<td class="px-3 truncate">Aashirvaad Atta 5kg</td>
+<td class="px-3 text-on-surface-variant">BCH-2023-A1</td>
+<td class="px-3 text-on-surface-variant">12/24</td>
+<td class="px-3 text-right">45</td>
+<td class="px-3 text-right">
+<input class="w-full h-6 text-right px-1 bg-transparent border border-transparent focus:border-primary focus:ring-0 font-data-sm text-data-sm rounded-sm" readonly="" type="number" value="45"/>
+</td>
+<td class="px-3 text-right text-on-surface-variant">0</td>
+</tr>
+<!-- Row 2 -->
+<tr class="table-row-dense bg-surface-container-low border-b border-surface-variant hover:bg-surface-container-high transition-colors">
+<td class="px-3 text-on-surface-variant text-center">2</td>
+<td class="px-3 truncate">Tata Salt 1kg</td>
+<td class="px-3 text-on-surface-variant">TS-992-X</td>
+<td class="px-3 text-on-surface-variant">06/25</td>
+<td class="px-3 text-right">120</td>
+<td class="px-3 text-right">
+<input class="w-full h-6 text-right px-1 bg-transparent border border-transparent focus:border-primary focus:ring-0 font-data-sm text-data-sm rounded-sm" readonly="" type="number" value="118"/>
+</td>
+<td class="px-3 text-right text-danger font-medium">-2</td>
+</tr>
+<!-- Row 3 - ACTIVE FOCUS STATE -->
+<tr class="table-row-dense border-b border-surface-variant bg-surface-bright relative z-0">
+<td class="px-3 text-on-surface-variant text-center font-bold text-primary">3</td>
+<td class="px-3 truncate font-semibold">Maggi 2-Minute Noodles 140g</td>
+<td class="px-3 text-on-surface-variant">MG-045-B</td>
+<td class="px-3 text-on-surface-variant">08/24</td>
+<td class="px-3 text-right">86</td>
+<td class="px-3 text-right p-0 relative keyboard-focus-ring">
+<div class="absolute inset-y-1 inset-x-1 border-2 border-primary-container pointer-events-none z-10 rounded-sm"></div>
+<input autofocus="" class="w-full h-full text-right px-2 bg-surface border-none focus:ring-0 font-data-md text-data-md font-bold text-primary" style="height: 30px;" type="number" value="90"/>
+</td>
+<td class="px-3 text-right text-success font-bold bg-success/10">+4</td>
+</tr>
+<!-- Row 4 -->
+<tr class="table-row-dense bg-surface-container-low border-b border-surface-variant hover:bg-surface-container-high transition-colors">
+<td class="px-3 text-on-surface-variant text-center">4</td>
+<td class="px-3 truncate">Amul Butter 500g</td>
+<td class="px-3 text-on-surface-variant">AMB-77-D</td>
+<td class="px-3 text-on-surface-variant">03/24</td>
+<td class="px-3 text-right">24</td>
+<td class="px-3 text-right">
+<input class="w-full h-6 text-right px-1 bg-transparent border border-transparent focus:border-primary focus:ring-0 font-data-sm text-data-sm rounded-sm" readonly="" type="number" value="24"/>
+</td>
+<td class="px-3 text-right text-on-surface-variant">0</td>
+</tr>
+<!-- Row 5 -->
+<tr class="table-row-dense border-b border-surface-variant hover:bg-surface-container-high transition-colors">
+<td class="px-3 text-on-surface-variant text-center">5</td>
+<td class="px-3 truncate">Saffola Gold Oil 5L</td>
+<td class="px-3 text-on-surface-variant">SAF-5L-23</td>
+<td class="px-3 text-on-surface-variant">11/24</td>
+<td class="px-3 text-right">15</td>
+<td class="px-3 text-right">
+<input class="w-full h-6 text-right px-1 bg-transparent border border-dashed border-outline-variant focus:border-solid focus:border-primary focus:ring-0 font-data-sm text-data-sm rounded-sm" placeholder="-" type="number" value=""/>
+</td>
+<td class="px-3 text-right text-on-surface-variant">-</td>
+</tr>
+<!-- Row 6 -->
+<tr class="table-row-dense bg-surface-container-low border-b border-surface-variant hover:bg-surface-container-high transition-colors">
+<td class="px-3 text-on-surface-variant text-center">6</td>
+<td class="px-3 truncate">Everest Garam Masala 100g</td>
+<td class="px-3 text-on-surface-variant">EVG-100-F</td>
+<td class="px-3 text-on-surface-variant">05/25</td>
+<td class="px-3 text-right">48</td>
+<td class="px-3 text-right">
+<input class="w-full h-6 text-right px-1 bg-transparent border border-dashed border-outline-variant focus:border-solid focus:border-primary focus:ring-0 font-data-sm text-data-sm rounded-sm" placeholder="-" type="number" value=""/>
+</td>
+<td class="px-3 text-right text-on-surface-variant">-</td>
+</tr>
+<!-- Generate filler rows to show density -->
+<script>
+                            for(let i=7; i<=30; i++) {
+                                document.write(`
+                                <tr class="table-row-dense ${i%2===0 ? 'bg-surface-container-low' : 'bg-surface'} border-b border-surface-variant hover:bg-surface-container-high transition-colors">
+                                    <td class="px-3 text-on-surface-variant text-center">${i}</td>
+                                    <td class="px-3 truncate text-on-surface-variant">Pending Item Scan...</td>
+                                    <td class="px-3 text-on-surface-variant">-</td>
+                                    <td class="px-3 text-on-surface-variant">-</td>
+                                    <td class="px-3 text-right">-</td>
+                                    <td class="px-3 text-right">
+                                        <input type="number" disabled class="w-full h-6 text-right px-1 bg-transparent border-none font-data-sm text-data-sm">
+                                    </td>
+                                    <td class="px-3 text-right text-on-surface-variant">-</td>
+                                </tr>
+                                `);
+                            }
+                        </script>
+</tbody>
+</table>
+</div>
+<!-- Quick Entry Bar (Bottom of Main Content) -->
+<div class="h-12 bg-surface-container border-t border-outline-variant shrink-0 flex items-center px-lg gap-4">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Quick Entry:</span>
+<div class="flex items-center flex-1 max-w-lg bg-surface border border-outline rounded-sm p-1 focus-within:border-primary focus-within:ring-1 focus-within:ring-primary h-8">
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant mx-1">barcode_scanner</span>
+<input class="bg-transparent border-none w-full h-full text-body-md focus:ring-0 px-2" placeholder="Scan barcode or enter batch..." type="text"/>
+<button class="bg-primary-container text-on-primary-container px-3 h-full font-label-sm text-label-sm rounded-[2px] ml-1 flex items-center">
+                        Add <span class="text-[10px] ml-1 opacity-70">[Enter]</span>
+</button>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="fixed bottom-0 left-0 w-full z-50 flex justify-between items-center px-gutter bg-primary dark:bg-primary text-on-primary dark:text-on-primary font-data-sm text-data-sm border-t border-primary flat no shadows docked full-width bottom-0 h-row-height">
+<div>
+            [F1] Help | [F2] New Bill | [F5] Print | [F10] Close Day
+        </div>
+<div class="flex gap-6">
+<span>System Status: Online</span>
+<span>Station: POS-01</span>
+</div>
+</footer>
+</body></html>

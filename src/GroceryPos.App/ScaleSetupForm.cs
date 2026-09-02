@@ -55,6 +55,7 @@ namespace GroceryPos.App
             Controls.Add(tabs);
 
             FormClosed += (s, e) => { StopLiveDump(); };
+            Theme.Retrofit(this);
         }
 
         // ---------- Device tab ----------

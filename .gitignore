@@ -9,3 +9,6 @@ obj/
 *.sqlite-*
 packages/
 .claude/settings.local.json
+
+# Local screenshot renders from tools/SeedDemo
+render/

@@ -50,6 +50,7 @@ namespace GroceryPos.App
 
             Load += (s, e) => Reload();
             _cardsPanel.Resize += (s, e) => LayoutCards();
+            Theme.Retrofit(this);
         }
 
         private long _salesToday, _billCount, _avgBill, _grossMargin, _cashInHand;
@@ -191,6 +192,7 @@ namespace GroceryPos.App
             _grid = new DataGridView { Dock = DockStyle.Fill, ReadOnly = true, RowHeadersVisible = false };
             Controls.Add(_grid);
             Load += (s, e) => Reload();
+            Theme.Retrofit(this);
         }
 
         private void Reload()
@@ -248,6 +250,7 @@ namespace GroceryPos.App
             flow.Controls.Add(Btn("Export GSTR-3B CSV", () => Export(x => new ExportService(_ctx.Db).Gstr3b(DateTime.Today.AddMonths(-1), DateTime.Today, x), "gstr3b.csv")));
             flow.Controls.Add(Btn("Export Tally daybook CSV", () => Export(x => new ExportService(_ctx.Db).Tally(DateTime.Today.AddMonths(-1), DateTime.Today, x), "tally.csv")));
             Controls.Add(flow);
+            Theme.Retrofit(this);
         }
 
         private Button Btn(string t, Action a)

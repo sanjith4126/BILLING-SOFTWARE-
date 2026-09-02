@@ -24,6 +24,7 @@ namespace GroceryPos.App
         private DataGridView _grid;
         private Label _lblSubtotal, _lblTax, _lblNet, _lblCustomer, _lblScale;
         private ListBox _heldList;
+        private Panel _emptyBill;
         private Bill _bill;
         private readonly List<Bill> _held = new List<Bill>();
         private readonly BindingList<BillLineView> _linesView = new BindingList<BillLineView>();
@@ -34,75 +35,327 @@ namespace GroceryPos.App
         public BillingForm(AppContext ctx)
         {
             _ctx = ctx;
-            Text = "Billing counter — F2 hold  F3 recall  F4 weigh  F5 discount  F9 pay  Del remove  Esc clear";
-            Width = 1100; Height = 680;
+            Theme.ApplyForm(this);
+            Text = "Billing counter";
+            Width = 1280; Height = 800;
+            MinimumSize = new Size(1024, 640);
             StartPosition = FormStartPosition.CenterScreen;
+            WindowState = FormWindowState.Maximized;
             KeyPreview = true;
 
-            var top = new Panel { Dock = DockStyle.Top, Height = 60 };
-            var lblScan = new Label { Text = "Scan / search:", Left = 8, Top = 20, Width = 100 };
-            _scan = new TextBox { Left = 110, Top = 16, Width = 380, Font = new Font("Consolas", 12) };
-            _scan.KeyDown += Scan_KeyDown;
-            _lblCustomer = new Label { Left = 500, Top = 8, Width = 300, Height = 24, Text = "Customer: (walk-in) [Ctrl+K]" };
-            _lblScale = new Label { Left = 500, Top = 32, Width = 300, Height = 20, Text = "Scale: manual" };
-            var btnCust = new Button { Text = "Customer (Ctrl+K)", Left = 810, Top = 12, Width = 130 };
-            btnCust.Click += (s, e) => LookupCustomer();
-            top.Controls.AddRange(new Control[] { lblScan, _scan, _lblCustomer, _lblScale, btnCust });
+            // Everything is docked rather than positioned with pixel literals, so
+            // the layout survives a different screen size or Windows text scaling.
+            var top = BuildScanBar();
+            var right = BuildTotalsPanel();
+            var held = BuildHeldPanel();
+            var centre = BuildLineGrid();
+            var keys = BuildKeyHintBar();
 
-            _grid = new DataGridView
-            {
-                Left = 8, Top = 66, Width = 720, Height = 460,
-                AllowUserToAddRows = false, ReadOnly = true, AutoGenerateColumns = false,
-                SelectionMode = DataGridViewSelectionMode.FullRowSelect,
-                Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Bottom
-            };
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "#", DataPropertyName = "LineNo", Width = 40 });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Item", DataPropertyName = "ItemName", Width = 250 });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Qty", DataPropertyName = "Qty", Width = 90 });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Rate", DataPropertyName = "Rate", Width = 80 });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Disc", DataPropertyName = "Disc", Width = 60 });
-            _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Amount", DataPropertyName = "Amount", Width = 100 });
-            _grid.DataSource = _linesView;
-
-            var right = new Panel { Left = 740, Top = 66, Width = 340, Height = 460,
-                Anchor = AnchorStyles.Top | AnchorStyles.Right | AnchorStyles.Bottom, BorderStyle = BorderStyle.FixedSingle };
-            _lblSubtotal = new Label { Left = 12, Top = 12, Width = 320, Text = "Subtotal: 0.00", Font = new Font("Segoe UI", 11) };
-            _lblTax = new Label { Left = 12, Top = 40, Width = 320, Text = "Tax: 0.00", Font = new Font("Segoe UI", 11) };
-            _lblNet = new Label { Left = 12, Top = 80, Width = 320, Text = "NET: Rs. 0.00", Font = new Font("Segoe UI", 18, FontStyle.Bold), ForeColor = Color.DarkGreen };
-            var btnPay = new Button { Left = 12, Top = 140, Width = 300, Height = 40, Text = "PAY (F9)", Font = new Font("Segoe UI", 12, FontStyle.Bold) };
-            btnPay.Click += (s, e) => OpenPayment();
-            var btnDisc = new Button { Left = 12, Top = 190, Width = 145, Height = 32, Text = "Discount (F5)" };
-            btnDisc.Click += (s, e) => ApplyDiscount();
-            var btnDel = new Button { Left = 167, Top = 190, Width = 145, Height = 32, Text = "Remove (Del)" };
-            btnDel.Click += (s, e) => RemoveSelectedLine();
-            var btnHold = new Button { Left = 12, Top = 230, Width = 145, Height = 32, Text = "Hold (F2)" };
-            btnHold.Click += (s, e) => HoldCurrent();
-            var btnRecall = new Button { Left = 167, Top = 230, Width = 145, Height = 32, Text = "Recall (F3)" };
-            btnRecall.Click += (s, e) => RecallHeld();
-            var btnClear = new Button { Left = 12, Top = 270, Width = 300, Height = 32, Text = "Clear bill (Esc)" };
-            btnClear.Click += (s, e) => ClearBill(true);
-            var btnCancel = new Button { Left = 12, Top = 310, Width = 300, Height = 32, Text = "Cancel a bill (manager PIN)" };
-            btnCancel.Click += (s, e) => CancelBill();
-            var btnWeigh = new Button { Left = 12, Top = 350, Width = 300, Height = 32, Text = "Weigh selected (F4)" };
-            btnWeigh.Click += (s, e) => WeighSelected();
-            right.Controls.AddRange(new Control[] { _lblSubtotal, _lblTax, _lblNet, btnPay, btnDisc, btnDel, btnHold, btnRecall, btnClear, btnCancel, btnWeigh });
-
-            var heldPanel = new Panel { Left = 8, Top = 530, Width = 1070, Height = 110,
-                Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Bottom, BorderStyle = BorderStyle.FixedSingle };
-            heldPanel.Controls.Add(new Label { Text = "Held bills (F3 to recall):", Left = 6, Top = 4, Width = 200 });
-            _heldList = new ListBox { Left = 6, Top = 24, Width = 1050, Height = 80,
-                Anchor = AnchorStyles.Left | AnchorStyles.Right | AnchorStyles.Top | AnchorStyles.Bottom };
-            heldPanel.Controls.Add(_heldList);
-
-            Controls.Add(_grid);
-            Controls.Add(right);
-            Controls.Add(heldPanel);
-            Controls.Add(top);
+            Controls.Add(centre);   // Fill  — added first so it is sized last
+            Controls.Add(right);    // Right
+            Controls.Add(held);     // Bottom
+            Controls.Add(keys);     // Bottom (below held)
+            Controls.Add(top);      // Top
 
             ClearBill(false);
             KeyDown += BillingForm_KeyDown;
             Shown += (s, e) => { _scan.Focus(); EnsureShiftOpen(); };
             UpdateScaleLabel();
+        }
+
+        private Panel BuildScanBar()
+        {
+            var top = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 74,
+                BackColor = Theme.Surface,
+                Padding = new Padding(Theme.Md, Theme.Sm, Theme.Md, Theme.Sm)
+            };
+
+            var lblScan = new Label
+            {
+                Text = "Scan barcode or type an item name",
+                Font = Theme.Label,
+                ForeColor = Theme.Muted,
+                AutoSize = false,
+                Left = Theme.Md, Top = 6, Width = 320, Height = 16,
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            _scan = new TextBox
+            {
+                Left = Theme.Md, Top = 24,
+                Width = 460, Height = 34,
+                Font = new Font(Theme.Data.FontFamily, 13f),
+                BorderStyle = BorderStyle.FixedSingle
+            };
+            _scan.KeyDown += Scan_KeyDown;
+
+            _lblCustomer = new Label
+            {
+                Left = 500, Top = 8, Width = 380, Height = 24,
+                Text = "Customer: walk-in",
+                Font = Theme.BodyBold,
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            _lblScale = new Label
+            {
+                Left = 500, Top = 34, Width = 380, Height = 22,
+                Text = "Scale: manual",
+                Font = Theme.Data,
+                ForeColor = Theme.Muted,
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+
+            var btnCust = Theme.SecondaryButton("Customer  [Ctrl+K]");
+            btnCust.Width = 170;
+            btnCust.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            btnCust.Click += (s, e) => LookupCustomer();
+
+            top.Controls.AddRange(new Control[] { lblScan, _scan, _lblCustomer, _lblScale, btnCust });
+            top.Resize += (s, e) =>
+            {
+                btnCust.Left = top.ClientSize.Width - btnCust.Width - Theme.Md;
+                btnCust.Top = 22;
+            };
+            return top;
+        }
+
+        private Panel BuildLineGrid()
+        {
+            var host = new Panel
+            {
+                Dock = DockStyle.Fill,
+                Padding = new Padding(Theme.Md, Theme.Sm, Theme.Sm, Theme.Sm),
+                BackColor = Theme.Background
+            };
+
+            _grid = new DataGridView
+            {
+                Dock = DockStyle.Fill,
+                AllowUserToAddRows = false,
+                ReadOnly = true,
+                AutoGenerateColumns = false
+            };
+            Theme.ApplyGrid(_grid);
+            _grid.Columns.Add(Theme.NumberColumn("LineNo", "#", 46));
+            var nameCol = Theme.TextColumn("ItemName", "Item", 300);
+            nameCol.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;   // takes the slack
+            nameCol.MinimumWidth = 180;
+            _grid.Columns.Add(nameCol);
+            _grid.Columns.Add(Theme.NumberColumn("Qty", "Qty", 110));
+            _grid.Columns.Add(Theme.NumberColumn("Rate", "Rate", 90));
+            _grid.Columns.Add(Theme.NumberColumn("Disc", "Disc", 80));
+            var amt = Theme.NumberColumn("Amount", "Amount", 110);
+            amt.DefaultCellStyle.Font = Theme.DataBold;
+            _grid.Columns.Add(amt);
+            _grid.DataSource = _linesView;
+
+            _emptyBill = Theme.EmptyState(
+                "No items yet.\r\n\r\nScan a barcode, or type part of an item name and press Enter.",
+                null, null);
+            _linesView.ListChanged += (s, e) => UpdateEmptyBill();
+
+            host.Controls.Add(_grid);
+            host.Controls.Add(_emptyBill);
+            return host;
+        }
+
+        private void UpdateEmptyBill()
+        {
+            if (_emptyBill == null) return;
+            bool empty = _linesView.Count == 0;
+            _emptyBill.Visible = empty;
+            _grid.Visible = !empty;
+            if (empty) _emptyBill.BringToFront();
+        }
+
+        private Panel BuildTotalsPanel()
+        {
+            var right = new Panel
+            {
+                Dock = DockStyle.Right,
+                Width = 360,
+                BackColor = Theme.Surface,
+                Padding = new Padding(Theme.Md)
+            };
+
+            // Actions sit at the bottom, totals fill above — so the NET figure can
+            // never be clipped by a short window the way the fixed layout was.
+            var actions = new Panel { Dock = DockStyle.Bottom, Height = 250, BackColor = Theme.Surface };
+
+            var btnPay = Theme.PrimaryButton("PAY   [F9]");
+            btnPay.Dock = DockStyle.Top;
+            btnPay.Height = 56;
+            btnPay.Font = new Font(Theme.BodyBold.FontFamily, 13f, FontStyle.Bold);
+            btnPay.Click += (s, e) => OpenPayment();
+
+            var gap = new Panel { Dock = DockStyle.Top, Height = Theme.Sm, BackColor = Theme.Surface };
+
+            var rowA = TwoUp(
+                Btn("Discount  [F5]", () => ApplyDiscount()),
+                Btn("Remove  [Del]", () => RemoveSelectedLine()));
+            var rowB = TwoUp(
+                Btn("Hold  [F2]", () => HoldCurrent()),
+                Btn("Recall  [F3]", () => RecallHeld()));
+            var rowC = TwoUp(
+                Btn("Weigh  [F4]", () => WeighSelected()),
+                Btn("Clear bill  [Esc]", () => ClearBill(true)));
+
+            var btnCancel = Theme.SecondaryButton("Cancel a past bill  (manager PIN)");
+            btnCancel.Dock = DockStyle.Top;
+            btnCancel.ForeColor = Theme.Danger;
+            btnCancel.FlatAppearance.BorderColor = Theme.Danger;
+            btnCancel.Click += (s, e) => CancelBill();
+
+            // Docked children stack in reverse order of addition.
+            actions.Controls.Add(btnCancel);
+            actions.Controls.Add(rowC);
+            actions.Controls.Add(rowB);
+            actions.Controls.Add(rowA);
+            actions.Controls.Add(gap);
+            actions.Controls.Add(btnPay);
+
+            var totals = new Panel { Dock = DockStyle.Fill, BackColor = Theme.Surface };
+
+            _lblNet = new Label
+            {
+                Dock = DockStyle.Bottom,
+                Height = 54,                       // explicit, so a 20pt face always fits
+                Text = "Rs. 0.00",
+                Font = Theme.DataLarge,
+                ForeColor = Theme.Primary,
+                TextAlign = ContentAlignment.MiddleRight,
+                AutoSize = false
+            };
+            var netCaption = new Label
+            {
+                Dock = DockStyle.Bottom,
+                Height = 20,
+                Text = "NET PAYABLE",
+                Font = Theme.Label,
+                ForeColor = Theme.Muted,
+                TextAlign = ContentAlignment.MiddleRight
+            };
+            var rule = new Panel { Dock = DockStyle.Bottom, Height = 2, BackColor = Theme.Primary, Margin = new Padding(0, Theme.Sm, 0, 0) };
+
+            _lblTax = new Label
+            {
+                Dock = DockStyle.Top,
+                Height = 44,
+                Text = "Tax: 0.00",
+                Font = Theme.Data,
+                ForeColor = Theme.Muted,
+                TextAlign = ContentAlignment.TopLeft
+            };
+            _lblSubtotal = new Label
+            {
+                Dock = DockStyle.Top,
+                Height = 26,
+                Text = "Subtotal: 0.00",
+                Font = Theme.Data,
+                ForeColor = Theme.OnSurface,
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            var title = new Label
+            {
+                Dock = DockStyle.Top,
+                Height = 30,
+                Text = "Bill summary",
+                Font = Theme.Headline,
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+
+            // The net block is one unit pinned to the bottom: rule, caption, figure.
+            // Building it as its own panel avoids relying on docked stacking order.
+            var netBlock = new Panel { Dock = DockStyle.Bottom, Height = 80, BackColor = Theme.Surface };
+            rule.Dock = DockStyle.Top;
+            netCaption.Dock = DockStyle.Top;
+            _lblNet.Dock = DockStyle.Fill;
+            netBlock.Controls.Add(_lblNet);
+            netBlock.Controls.Add(netCaption);
+            netBlock.Controls.Add(rule);
+
+            totals.Controls.Add(_lblTax);
+            totals.Controls.Add(_lblSubtotal);
+            totals.Controls.Add(title);
+            totals.Controls.Add(netBlock);
+
+            right.Controls.Add(totals);
+            right.Controls.Add(actions);
+            return right;
+        }
+
+        private Button Btn(string text, Action onClick)
+        {
+            var b = Theme.SecondaryButton(text);
+            b.Click += (s, e) => onClick();
+            return b;
+        }
+
+        /// <summary>Two equal buttons side by side, resizing with the panel.</summary>
+        private static Panel TwoUp(Button left, Button right)
+        {
+            var p = new Panel { Dock = DockStyle.Top, Height = Theme.ButtonHeight + Theme.Xs, BackColor = Theme.Surface };
+            left.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            right.Anchor = AnchorStyles.Top | AnchorStyles.Right;
+            p.Controls.Add(left);
+            p.Controls.Add(right);
+            EventHandler place = (s, e) =>
+            {
+                int half = (p.ClientSize.Width - Theme.Xs) / 2;
+                left.SetBounds(0, 0, half, Theme.ButtonHeight);
+                right.SetBounds(half + Theme.Xs, 0, p.ClientSize.Width - half - Theme.Xs, Theme.ButtonHeight);
+            };
+            p.Resize += place;
+            place(null, EventArgs.Empty);
+            return p;
+        }
+
+        private Panel BuildHeldPanel()
+        {
+            var p = new Panel
+            {
+                Dock = DockStyle.Bottom,
+                Height = 104,
+                BackColor = Theme.Surface,
+                Padding = new Padding(Theme.Md, Theme.Sm, Theme.Md, Theme.Sm)
+            };
+            p.Controls.Add(new Label
+            {
+                Text = "Bills on hold  -  press F3 to bring one back",
+                Dock = DockStyle.Top,
+                Height = 20,
+                Font = Theme.Label,
+                ForeColor = Theme.Muted,
+                TextAlign = ContentAlignment.MiddleLeft
+            });
+            _heldList = new ListBox
+            {
+                Dock = DockStyle.Fill,
+                Font = Theme.Data,
+                BorderStyle = BorderStyle.FixedSingle,
+                IntegralHeight = false
+            };
+            p.Controls.Add(_heldList);
+            _heldList.BringToFront();
+            return p;
+        }
+
+        /// <summary>The always-visible key legend, as in the design's footer strip.</summary>
+        private Panel BuildKeyHintBar()
+        {
+            var p = new Panel { Dock = DockStyle.Bottom, Height = 26, BackColor = Theme.Primary };
+            p.Controls.Add(new Label
+            {
+                Text = "  [F2] Hold    [F3] Recall    [F4] Weigh    [F5] Discount    "
+                     + "[F9] Pay    [Del] Remove line    [Esc] Clear bill",
+                Dock = DockStyle.Fill,
+                Font = Theme.Data,
+                ForeColor = Color.FromArgb(200, 216, 240),
+                TextAlign = ContentAlignment.MiddleLeft
+            });
+            return p;
         }
 
         private void EnsureShiftOpen()
@@ -318,10 +571,11 @@ namespace GroceryPos.App
                     Disc = new Money(l.DiscountPaise).ToString(),
                     Amount = new Money(l.AmountPaise).ToString()
                 });
-            _lblSubtotal.Text = "Subtotal: " + new Money(_bill.TaxablePaise).ToString();
-            _lblTax.Text = "Tax (CGST+SGST): " + new Money(_bill.CgstPaise + _bill.SgstPaise).ToString()
-                           + "   Round-off: " + new Money(_bill.RoundOffPaise).ToString();
-            _lblNet.Text = "NET: Rs. " + new Money(_bill.NetPaise).ToString();
+            _lblSubtotal.Text = "Subtotal            Rs. " + new Money(_bill.TaxablePaise);
+            _lblTax.Text = "CGST + SGST         Rs. " + new Money(_bill.CgstPaise + _bill.SgstPaise)
+                           + Environment.NewLine + "Round-off           Rs. " + new Money(_bill.RoundOffPaise);
+            _lblNet.Text = "Rs. " + new Money(_bill.NetPaise) + "  ";
+            UpdateEmptyBill();
         }
 
         private void RemoveSelectedLine()
@@ -617,6 +871,7 @@ namespace GroceryPos.App
             ok.Click += (s, e) => { if (lb.SelectedIndex >= 0) { Chosen = items[lb.SelectedIndex]; DialogResult = DialogResult.OK; Close(); } };
             lb.DoubleClick += (s, e) => { if (lb.SelectedIndex >= 0) { Chosen = items[lb.SelectedIndex]; DialogResult = DialogResult.OK; Close(); } };
             Controls.Add(lb); Controls.Add(ok);
+            Theme.Retrofit(this);
         }
     }
 
@@ -632,6 +887,7 @@ namespace GroceryPos.App
             ok.Click += (s, e) => { try { Paise = Money.ParseRupees(t.Text).Paise; DialogResult = DialogResult.OK; Close(); } catch (Exception ex) { MessageBox.Show(ex.Message); } };
             AcceptButton = ok;
             Controls.AddRange(new Control[] { l, t, ok });
+            Theme.Retrofit(this);
         }
     }
 
@@ -671,6 +927,7 @@ namespace GroceryPos.App
             };
             AcceptButton = ok;
             Controls.AddRange(new Control[] { l, t, l2, ok });
+            Theme.Retrofit(this);
         }
     }
 
@@ -703,6 +960,7 @@ namespace GroceryPos.App
             _card.TextChanged += (s, e) => Recalc(); _khata.TextChanged += (s, e) => Recalc();
             _cash.Text = new Money(bill.NetPaise).ToString();
             _cash.SelectAll(); _cash.Focus();
+            Theme.Retrofit(this);
         }
 
         private void AddRow(string label, out TextBox tb, ref int y, string def)
@@ -790,6 +1048,7 @@ namespace GroceryPos.App
             var cancel = new Button { Text = "Refuse", Left = 305, Top = 220, Width = 80, DialogResult = DialogResult.Cancel };
             AcceptButton = ok; CancelButton = cancel;
             Controls.AddRange(new Control[] { l, l1, _user, l2, _pin, l3, _reason, ok, cancel });
+            Theme.Retrofit(this);
         }
 
         private void Try()
@@ -839,6 +1098,7 @@ namespace GroceryPos.App
             Controls.AddRange(new Control[] { _search, _list, ok, newBtn, cancel });
             Reload();
             _search.Focus();
+            Theme.Retrofit(this);
         }
 
         private void Reload()
@@ -912,6 +1172,7 @@ namespace GroceryPos.App
             };
             AcceptButton = ok; CancelButton = cancel;
             Controls.AddRange(new Control[] { lName, tName, lPhone, tPhone, lAddr, tAddr, cCredit, lLimit, tLimit, ok, cancel });
+            Theme.Retrofit(this);
         }
     }
 
@@ -939,6 +1200,7 @@ namespace GroceryPos.App
             AcceptButton = ok;
             Controls.AddRange(new Control[] { l1, t, lErr, ok });
             t.Focus();
+            Theme.Retrofit(this);
         }
     }
 }

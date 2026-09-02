@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Printing;
 using System.IO;
@@ -82,6 +83,7 @@ namespace GroceryPos.App
             _grid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "By", DataPropertyName = "By", Width = 80 });
             _grid.CellDoubleClick += (s, e) => DrillReference();
             Controls.Add(_grid);
+            Theme.Retrofit(this);
         }
 
         private void Lookup()
@@ -300,6 +302,7 @@ namespace GroceryPos.App
             var save = new Button { Text = "Save", Left = 100, Top = y + 10, Width = 120 };
             save.Click += (s, e) => Save();
             Controls.Add(save);
+            Theme.Retrofit(this);
         }
 
         private void Save()
@@ -349,6 +352,7 @@ namespace GroceryPos.App
                 s.AppendLine(p.Mode + " Rs. " + new Money(p.AmountPaise) + " ref=" + p.Reference);
             txt.Text = s.ToString();
             Controls.Add(txt);
+            Theme.Retrofit(this);
         }
     }
 
@@ -406,6 +410,7 @@ namespace GroceryPos.App
             save.Click += (s, e) => Save();
             Controls.Add(save);
             Load += (s, e) => LoadOpen();
+            Theme.Retrofit(this);
         }
 
         private void LoadOpen()
@@ -529,6 +534,7 @@ namespace GroceryPos.App
             Controls.Add(open);
             _log = new TextBox { Dock = DockStyle.Fill, Multiline = true, ReadOnly = true, ScrollBars = ScrollBars.Vertical, Font = new Font("Consolas", 9F) };
             Controls.Add(_log);
+            Theme.Retrofit(this);
         }
 
         private void Pick()
@@ -618,6 +624,7 @@ namespace GroceryPos.App
                 }
                 grid.DataSource = rows;
             };
+            Theme.Retrofit(this);
         }
     }
 
@@ -631,8 +638,25 @@ namespace GroceryPos.App
         private DataGridView _denomGrid;
         private Label _summary;
 
-        private static readonly long[] Denoms = new long[] { 200000, 50000, 20000, 10000, 5000, 2000, 1000, 500, 200, 100, 1000, 500, 200, 100 };
-        // 2000, 500, 200, 100, 50, 20, 10, 5, 2, 1 notes; 10, 5, 2, 1 coins
+        /// <summary>
+        /// Indian currency actually in circulation, largest first. Value and label
+        /// are paired in one table so the two can never drift out of step — they
+        /// were previously two parallel arrays, which is easy to break silently.
+        /// </summary>
+        private static readonly Tuple<long, string>[] Denoms =
+        {
+            Tuple.Create(50000L, "500 note"),
+            Tuple.Create(20000L, "200 note"),
+            Tuple.Create(10000L, "100 note"),
+            Tuple.Create(5000L,  "50 note"),
+            Tuple.Create(2000L,  "20 note"),
+            Tuple.Create(1000L,  "10 note"),
+            Tuple.Create(2000L,  "20 coin"),
+            Tuple.Create(1000L,  "10 coin"),
+            Tuple.Create(500L,   "5 coin"),
+            Tuple.Create(200L,   "2 coin"),
+            Tuple.Create(100L,   "1 coin"),
+        };
 
         public ShiftForm(AppContext ctx)
         {
@@ -641,32 +665,102 @@ namespace GroceryPos.App
             Width = 700; Height = 620;
             StartPosition = FormStartPosition.CenterParent;
 
-            _status = new Label { Dock = DockStyle.Top, Height = 40, Font = new Font("Segoe UI", 10F) };
-            Controls.Add(_status);
+            Theme.ApplyForm(this);
+            Width = 820; Height = 720;
+            MinimumSize = new Size(680, 560);
+            StartPosition = FormStartPosition.CenterScreen;
 
-            var openBtn = new Button { Text = "Open shift (opening float)", Dock = DockStyle.Top, Height = 36 };
+            var header = Theme.Header("Shift and day close",
+                "Count the cash drawer note by note, then close the day.");
+
+            var top = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 96,
+                BackColor = Theme.Surface,
+                Padding = new Padding(Theme.Md, Theme.Sm, Theme.Md, Theme.Sm)
+            };
+            _status = new Label
+            {
+                Dock = DockStyle.Top,
+                Height = 44,
+                Font = Theme.Body,
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            var buttons = new Panel { Dock = DockStyle.Top, Height = 40, BackColor = Theme.Surface };
+            var openBtn = Theme.SecondaryButton("Open a shift");
+            openBtn.SetBounds(0, 0, 170, Theme.ButtonHeight);
             openBtn.Click += (s, e) => OpenShift();
-            Controls.Add(openBtn);
-
-            var pettyBtn = new Button { Text = "Record petty cash", Dock = DockStyle.Top, Height = 36 };
+            var pettyBtn = Theme.SecondaryButton("Record petty cash");
+            pettyBtn.SetBounds(180, 0, 170, Theme.ButtonHeight);
             pettyBtn.Click += (s, e) => new PettyCashForm(_ctx).ShowDialog(this);
-            Controls.Add(pettyBtn);
+            buttons.Controls.Add(openBtn);
+            buttons.Controls.Add(pettyBtn);
+            top.Controls.Add(buttons);
+            top.Controls.Add(_status);
 
-            _denomGrid = new DataGridView { Dock = DockStyle.Fill, AutoGenerateColumns = false, RowHeadersVisible = false };
-            _denomGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Denom (Rs)", DataPropertyName = "Denom", Width = 100, ReadOnly = true });
-            _denomGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Count", DataPropertyName = "Count", Width = 100 });
-            _denomGrid.Columns.Add(new DataGridViewTextBoxColumn { HeaderText = "Total (Rs)", DataPropertyName = "Total", Width = 120, ReadOnly = true });
-            _denomGrid.CellEndEdit += (s, e) => RefreshTotals();
-            Controls.Add(_denomGrid);
+            var body = new Panel { Dock = DockStyle.Fill, Padding = new Padding(Theme.Md, Theme.Sm, Theme.Md, Theme.Sm), BackColor = Theme.Background };
+            _denomGrid = new DataGridView
+            {
+                Dock = DockStyle.Fill,
+                AutoGenerateColumns = false,
+                AllowUserToAddRows = false,
+                AllowUserToDeleteRows = false
+            };
+            Theme.ApplyGrid(_denomGrid);
+            var dCol = Theme.TextColumn("Denom", "Note or coin", 180);
+            dCol.ReadOnly = true;
+            _denomGrid.Columns.Add(dCol);
+            var cCol = Theme.NumberColumn("Count", "How many", 130);
+            Theme.MarkEditable(cCol);
+            _denomGrid.Columns.Add(cCol);
+            var tCol = Theme.NumberColumn("Total", "Value (Rs.)", 150);
+            tCol.ReadOnly = true;
+            tCol.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;
+            _denomGrid.Columns.Add(tCol);
+            // Recalculate as the cashier types, not only when the cell loses focus.
+            _denomGrid.CellValueChanged += (s, e) => RefreshTotals();
+            _denomGrid.CellValidating += DenomGrid_CellValidating;
+            body.Controls.Add(_denomGrid);
 
-            _summary = new Label { Dock = DockStyle.Bottom, Height = 60, Font = new Font("Segoe UI", 10F) };
-            Controls.Add(_summary);
-
-            var closeBtn = new Button { Text = "Close shift (writes Z report)", Dock = DockStyle.Bottom, Height = 40 };
+            var footer = new Panel
+            {
+                Dock = DockStyle.Bottom,
+                Height = 132,
+                BackColor = Theme.Surface,
+                Padding = new Padding(Theme.Md, Theme.Sm, Theme.Md, Theme.Sm)
+            };
+            _summary = new Label
+            {
+                Dock = DockStyle.Top,
+                Height = 76,
+                Font = Theme.Data,
+                TextAlign = ContentAlignment.TopLeft
+            };
+            var closeBtn = Theme.PrimaryButton("Close the shift and print the Z report");
+            closeBtn.Dock = DockStyle.Bottom;
+            closeBtn.Height = 44;
             closeBtn.Click += (s, e) => CloseShift();
-            Controls.Add(closeBtn);
+            footer.Controls.Add(_summary);
+            footer.Controls.Add(closeBtn);
+
+            // Fill first, then the edges, so nothing is hidden underneath.
+            Controls.Add(body);
+            Controls.Add(footer);
+            Controls.Add(top);
+            Controls.Add(header);
 
             Load += (s, e) => Reload();
+        }
+
+        private void DenomGrid_CellValidating(object sender, DataGridViewCellValidatingEventArgs e)
+        {
+            if (_denomGrid.Columns[e.ColumnIndex].DataPropertyName != "Count") return;
+            string s = (e.FormattedValue ?? "").ToString().Trim();
+            int v;
+            if (s.Length == 0 || (int.TryParse(s, out v) && v >= 0)) return;
+            Theme.Warn("Enter how many notes or coins you counted, as a whole number.");
+            e.Cancel = true;
         }
 
         private void OpenShift()
@@ -686,40 +780,72 @@ namespace GroceryPos.App
             var sh = _ctx.Shifts.OpenShiftFor(1);
             if (sh == null)
             {
-                _status.Text = "No open shift on counter 1.";
+                _status.Text = "No shift is open.\r\n" +
+                               "Press \"Open a shift\" and enter the cash you are starting the day with.";
                 _denomGrid.DataSource = null;
+                _currentRows = null;
                 _summary.Text = "";
+                _summary.ForeColor = Theme.Muted;
                 return;
             }
-            _status.Text = "Shift #" + sh.Id + " opened " + sh.OpenedAt.ToString("dd/MM/yy HH:mm") +
-                " by user " + sh.UserId + " — float Rs. " + new Money(sh.OpeningFloatPaise);
-            var labels = new[] { "2000 note", "500 note", "200 note", "100 note", "50 note", "20 note", "10 note", "5 note", "2 note", "1 note", "10 coin", "5 coin", "2 coin", "1 coin" };
+            _status.Text = "Shift #" + sh.Id + " open since " + sh.OpenedAt.ToString("dd/MM/yy HH:mm") +
+                "\r\nStarting cash in the drawer: Rs. " + new Money(sh.OpeningFloatPaise);
             var rows = new List<DenomRow>();
-            for (int i = 0; i < Denoms.Length; i++)
-                rows.Add(new DenomRow { DenomPaise = Denoms[i], Denom = labels[i], Count = 0, Total = "0.00" });
-            _denomGrid.DataSource = rows;
+            foreach (var d in Denoms)
+                rows.Add(new DenomRow { DenomPaise = d.Item1, Denom = d.Item2, Count = 0, Total = "0.00" });
+            _denomGrid.DataSource = new BindingList<DenomRow>(rows);
             _currentRows = rows;
-            var nc = _ctx.Shifts.NonCashTotals(sh.Id, 1);
-            long expected = _ctx.Shifts.ExpectedCash(sh.Id, 1);
-            _summary.Text = "Expected cash: Rs. " + new Money(expected) +
-                "   |   UPI: Rs. " + new Money(nc["upi"]) +
-                "   |   Card: Rs. " + new Money(nc["card"]) +
-                "   |   Khata: Rs. " + new Money(nc["khata"]);
+            _nonCash = _ctx.Shifts.NonCashTotals(sh.Id, 1);
+            _expectedCash = _ctx.Shifts.ExpectedCash(sh.Id, 1);
+            RefreshTotals();
         }
 
         private List<DenomRow> _currentRows;
 
+        private long _expectedCash;
+        private System.Collections.Generic.IDictionary<string, long> _nonCash;
+
         private void RefreshTotals()
         {
-            long tot = 0;
-            foreach (var r in _currentRows) { r.Total = new Money(r.DenomPaise * r.Count).ToString(); tot += r.DenomPaise * r.Count; }
+            if (_currentRows == null) return;
+
+            long counted = 0;
+            foreach (var r in _currentRows)
+            {
+                long lineValue = r.DenomPaise * r.Count;
+                r.Total = new Money(lineValue).ToString();
+                counted += lineValue;
+            }
             _denomGrid.Refresh();
+
+            long diff = counted - _expectedCash;
+            string diffWord = diff == 0 ? "matches exactly"
+                            : diff > 0 ? "OVER by Rs. " + new Money(Math.Abs(diff))
+                            : "SHORT by Rs. " + new Money(Math.Abs(diff));
+
+            var sb = new System.Text.StringBuilder();
+            sb.AppendLine("Expected in the drawer : Rs. " + new Money(_expectedCash));
+            sb.AppendLine("You counted            : Rs. " + new Money(counted) + "   -   " + diffWord);
+            if (_nonCash != null)
+            {
+                sb.Append("Not cash: UPI Rs. " + new Money(_nonCash["upi"]) +
+                          "   Card Rs. " + new Money(_nonCash["card"]) +
+                          "   Khata Rs. " + new Money(_nonCash["khata"]));
+            }
+            _summary.Text = sb.ToString();
+            _summary.ForeColor = diff == 0 ? Theme.Success : Theme.Danger;
         }
 
         private void CloseShift()
         {
             var sh = _ctx.Shifts.OpenShiftFor(1);
-            if (sh == null) { MessageBox.Show("No open shift"); return; }
+            if (sh == null)
+            {
+                Theme.Warn("There is no open shift to close.");
+                return;
+            }
+            if (_currentRows == null) return;
+
             var list = new List<Tuple<long, int>>();
             long counted = 0;
             foreach (var r in _currentRows)
@@ -727,6 +853,23 @@ namespace GroceryPos.App
                 list.Add(Tuple.Create(r.DenomPaise, r.Count));
                 counted += r.DenomPaise * r.Count;
             }
+
+            long diff = counted - _expectedCash;
+            string diffLine = diff == 0
+                ? "The drawer matches exactly."
+                : diff > 0
+                    ? "There is Rs. " + new Money(Math.Abs(diff)) + " MORE than expected."
+                    : "There is Rs. " + new Money(Math.Abs(diff)) + " LESS than expected.";
+
+            // Closing is final, so say plainly what it means before doing it.
+            if (!Theme.Confirm(
+                    "Expected: Rs. " + new Money(_expectedCash) + "\r\n" +
+                    "Counted:  Rs. " + new Money(counted) + "\r\n\r\n" +
+                    diffLine + "\r\n\r\n" +
+                    "Once the shift is closed it cannot be changed. Close it now?",
+                    "Close the shift"))
+                return;
+
             try
             {
                 _ctx.Shifts.Close(sh.Id, list, _ctx.CurrentUser.Id);
@@ -795,6 +938,7 @@ namespace GroceryPos.App
                 catch (Exception ex) { MessageBox.Show(ex.Message); }
             };
             Controls.Add(save);
+            Theme.Retrofit(this);
         }
     }
 
@@ -828,6 +972,7 @@ namespace GroceryPos.App
                 catch (Exception ex) { MessageBox.Show(ex.Message); }
             };
             Controls.Add(save);
+            Theme.Retrofit(this);
         }
     }
 
@@ -862,6 +1007,7 @@ namespace GroceryPos.App
                 catch (Exception ex) { MessageBox.Show(ex.Message); }
             };
             Controls.Add(save);
+            Theme.Retrofit(this);
         }
     }
 }

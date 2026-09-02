@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Customer Khata</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=JetBrains+Mono:wght@400;500&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-container": "#edeeef",
+                        "secondary-container": "#d8e1ea",
+                        "on-tertiary": "#ffffff",
+                        "primary": "#000613",
+                        "on-primary-fixed-variant": "#2f486a",
+                        "on-primary-fixed": "#001c3a",
+                        "error-container": "#ffdad6",
+                        "on-secondary-container": "#5b646b",
+                        "on-background": "#191c1d",
+                        "on-error": "#ffffff",
+                        "on-tertiary-fixed-variant": "#6b3a25",
+                        "on-secondary-fixed-variant": "#3f484f",
+                        "outline-variant": "#c4c6cf",
+                        "surface": "#f8f9fa",
+                        "tertiary": "#110200",
+                        "on-primary-container": "#6f88ad",
+                        "tertiary-container": "#391303",
+                        "surface-variant": "#e1e3e4",
+                        "secondary-fixed-dim": "#bfc8d0",
+                        "on-tertiary-fixed": "#351002",
+                        "background": "#f8f9fa",
+                        "tertiary-fixed-dim": "#fdb69a",
+                        "surface-container-highest": "#e1e3e4",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#d9dadb",
+                        "inverse-surface": "#2e3132",
+                        "surface-tint": "#476083",
+                        "primary-fixed": "#d4e3ff",
+                        "secondary-fixed": "#dbe4ed",
+                        "on-secondary": "#ffffff",
+                        "on-error-container": "#93000a",
+                        "primary-fixed-dim": "#afc8f0",
+                        "outline": "#74777f",
+                        "on-secondary-fixed": "#141d23",
+                        "on-surface": "#191c1d",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-bright": "#f8f9fa",
+                        "secondary": "#575f67",
+                        "surface-container-high": "#e7e8e9",
+                        "primary-container": "#001f3f",
+                        "on-tertiary-container": "#b5785f",
+                        "on-primary": "#ffffff",
+                        "inverse-on-surface": "#f0f1f2",
+                        "on-surface-variant": "#43474e",
+                        "inverse-primary": "#afc8f0",
+                        "surface-container-low": "#f3f4f5",
+                        "tertiary-fixed": "#ffdbce"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "row-height": "32px",
+                        "sm": "8px",
+                        "md": "16px",
+                        "gutter": "12px",
+                        "xs": "4px",
+                        "unit": "4px"
+                    },
+                    "fontFamily": {
+                        "label-sm": ["Inter"],
+                        "headline-sm": ["Inter"],
+                        "body-md": ["Inter"],
+                        "data-sm": ["JetBrains Mono"],
+                        "data-md": ["JetBrains Mono"],
+                        "display-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-sm": ["12px", { "lineHeight": "16px", "fontWeight": "600" }],
+                        "headline-sm": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "body-md": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "data-sm": ["12px", { "lineHeight": "16px", "fontWeight": "400" }],
+                        "data-md": ["14px", { "lineHeight": "20px", "fontWeight": "500" }],
+                        "display-sm": ["24px", { "lineHeight": "32px", "fontWeight": "700" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #F8F9FA; color: #191c1d; font-family: 'Inter', sans-serif; overflow: hidden; margin: 0; padding: 0; }
+        .focus-outline:focus-within { outline: 2px solid #001F3F; outline-offset: 2px; }
+        /* Scrollbar styles for data tables */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #edeeef; }
+        ::-webkit-scrollbar-thumb { background: #c4c6cf; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #74777f; }
+    </style>
+</head>
+<body class="flex flex-col h-screen antialiased bg-background text-on-background">
+<!-- TopNavBar -->
+<nav class="fixed top-0 left-0 w-full h-row-height z-50 flex justify-between items-center px-gutter bg-primary-container dark:bg-primary-container border-b border-outline-variant flat no shadows transition-colors duration-150">
+<div class="flex items-center space-x-md">
+<span class="font-headline-sm text-headline-sm font-bold text-on-primary-container">Bharat POS</span>
+<div class="flex space-x-sm">
+<!-- Navigation Items based on JSON, context is irrelevant to Khata specifically, but maintaining layout -->
+<a class="px-sm py-[4px] font-label-sm text-label-sm text-on-primary-container opacity-80 hover:bg-primary opacity-90 rounded" href="#">Store</a>
+</div>
+</div>
+<div class="flex items-center space-x-sm">
+<div class="relative focus-outline">
+<span class="material-symbols-outlined absolute left-2 top-1/2 transform -translate-y-1/2 text-on-primary-container text-[16px]">search</span>
+<input class="pl-8 pr-2 py-1 h-6 bg-surface-container rounded-DEFAULT text-on-surface font-label-sm text-label-sm border-none focus:ring-0 w-48" placeholder="Search" type="text"/>
+</div>
+<button aria-label="Notifications" class="text-on-primary-container hover:bg-primary p-1 rounded-DEFAULT transition-colors duration-150">
+<span class="material-symbols-outlined text-[20px]">notifications</span>
+</button>
+<button aria-label="Settings" class="text-on-primary-container hover:bg-primary p-1 rounded-DEFAULT transition-colors duration-150">
+<span class="material-symbols-outlined text-[20px]">settings</span>
+</button>
+<button aria-label="Profile" class="text-on-primary-container hover:bg-primary p-1 rounded-DEFAULT transition-colors duration-150">
+<span class="material-symbols-outlined text-[20px]">person</span>
+</button>
+</div>
+</nav>
+<div class="flex pt-row-height h-full pb-row-height w-full overflow-hidden">
+<!-- SideNavBar -->
+<aside class="fixed left-0 top-row-height h-[calc(100%-64px)] w-64 flex flex-col bg-surface-container dark:bg-surface-container border-r border-outline-variant flat no shadows">
+<div class="p-md border-b border-outline-variant">
+<h2 class="font-headline-sm text-headline-sm text-primary font-bold">Store #402</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant">Shift: Morning</p>
+</div>
+<nav class="flex-1 py-sm">
+<!-- Using Dashboard as inactive, as we are in a sub-view, but retaining structure -->
+<a class="flex items-center px-md py-sm font-label-sm text-label-sm text-on-surface-variant hover:bg-surface-container-high cursor-pointer transition-all" href="#">
+<span class="material-symbols-outlined mr-3 text-[18px]">dashboard</span>Dashboard
+                </a>
+<a class="flex items-center px-md py-sm font-label-sm text-label-sm bg-secondary-container text-on-secondary-container border-l-4 border-primary font-bold hover:bg-surface-container-high cursor-pointer transition-all" href="#">
+<span class="material-symbols-outlined mr-3 text-[18px]">receipt_long</span>Billing
+                </a>
+<a class="flex items-center px-md py-sm font-label-sm text-label-sm text-on-surface-variant hover:bg-surface-container-high cursor-pointer transition-all" href="#">
+<span class="material-symbols-outlined mr-3 text-[18px]">inventory_2</span>Inventory
+                </a>
+<a class="flex items-center px-md py-sm font-label-sm text-label-sm text-on-surface-variant hover:bg-surface-container-high cursor-pointer transition-all" href="#">
+<span class="material-symbols-outlined mr-3 text-[18px]">assessment</span>Reports
+                </a>
+<a class="flex items-center px-md py-sm font-label-sm text-label-sm text-on-surface-variant hover:bg-surface-container-high cursor-pointer transition-all" href="#">
+<span class="material-symbols-outlined mr-3 text-[18px]">admin_panel_settings</span>Admin
+                </a>
+</nav>
+</aside>
+<!-- Main Content Area -->
+<main class="ml-64 flex-1 flex flex-col h-full bg-background p-md overflow-hidden gap-md">
+<!-- Header Profile -->
+<header class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT p-md flex items-start justify-between shadow-sm">
+<div class="flex items-center gap-md">
+<div class="w-16 h-16 rounded-full bg-primary-fixed flex items-center justify-center text-primary-container font-display-sm text-display-sm">
+                        RK
+                    </div>
+<div>
+<h1 class="font-display-sm text-display-sm text-primary mb-1">Ramesh Kumar</h1>
+<p class="font-body-md text-body-md text-on-surface-variant flex items-center gap-2">
+<span class="material-symbols-outlined text-[16px]">call</span> +91 98765 43210
+                            <span class="text-outline-variant mx-1">|</span>
+<span class="material-symbols-outlined text-[16px]">location_on</span> Sector 14, Market
+                        </p>
+<div class="mt-2 flex gap-sm">
+<button class="bg-primary text-on-primary font-label-sm text-label-sm px-3 py-1 rounded-DEFAULT flex items-center gap-1 focus-outline hover:bg-primary-container transition-colors">
+<span class="material-symbols-outlined text-[14px]">payments</span> Record Payment
+                            </button>
+<button class="border border-primary text-primary font-label-sm text-label-sm px-3 py-1 rounded-DEFAULT flex items-center gap-1 focus-outline hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[14px]">receipt</span> New Bill
+                            </button>
+</div>
+</div>
+</div>
+<div class="flex gap-lg">
+<div class="text-right">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Total Outstanding</p>
+<p class="font-data-md text-data-md text-error text-xl font-bold mt-1 font-data-md text-[20px]">₹ 42,500.00</p>
+</div>
+<div class="text-right">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Credit Limit</p>
+<p class="font-data-md text-data-md text-on-surface mt-1 text-[16px]">₹ 50,000.00</p>
+</div>
+<div class="text-right">
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider">Oldest Bill</p>
+<p class="font-data-md text-data-md text-error mt-1 text-[16px] font-bold">114 Days</p>
+</div>
+</div>
+</header>
+<div class="flex-1 flex gap-md min-h-0">
+<!-- Ledger Table Container -->
+<div class="flex-1 bg-surface-container-lowest border border-outline-variant rounded-DEFAULT flex flex-col overflow-hidden shadow-sm">
+<div class="bg-primary text-on-primary px-md py-sm font-label-sm text-label-sm flex justify-between items-center shrink-0">
+<span>Ledger Statement</span>
+<div class="flex gap-sm">
+<span class="bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded text-[10px] uppercase font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">filter_list</span> Filter
+                            </span>
+<span class="bg-surface-variant text-on-surface-variant px-2 py-0.5 rounded text-[10px] uppercase font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[12px]">download</span> Export
+                            </span>
+</div>
+</div>
+<div class="flex-1 overflow-auto">
+<table class="w-full text-left border-collapse whitespace-nowrap">
+<thead class="sticky top-0 bg-primary-container text-on-primary-container z-10 shadow-sm font-label-sm text-label-sm">
+<tr>
+<th class="px-3 h-row-height font-semibold">Date</th>
+<th class="px-3 h-row-height font-semibold">Type</th>
+<th class="px-3 h-row-height font-semibold">Ref #</th>
+<th class="px-3 h-row-height font-semibold">Description</th>
+<th class="px-3 h-row-height text-right font-semibold">Debit (₹)</th>
+<th class="px-3 h-row-height text-right font-semibold">Credit (₹)</th>
+<th class="px-3 h-row-height text-right font-semibold pr-md">Balance (₹)</th>
+</tr>
+</thead>
+<tbody class="font-body-md text-body-md text-on-surface divide-y divide-surface-variant">
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low transition-colors h-row-height">
+<td class="px-3 font-data-sm text-data-sm text-on-surface-variant">10-May-24</td>
+<td class="px-3"><span class="px-1.5 py-0.5 bg-error-container text-on-error-container text-[10px] font-bold rounded">SALE</span></td>
+<td class="px-3 font-data-sm text-data-sm text-primary hover:underline cursor-pointer font-bold">#INV-2024-892</td>
+<td class="px-3 text-ellipsis overflow-hidden max-w-[200px]" title="Monthly Groceries - Rice, Dal, Oil">Monthly Groceries</td>
+<td class="px-3 text-right font-data-sm text-data-sm">12,500.00</td>
+<td class="px-3 text-right font-data-sm text-data-sm text-on-surface-variant">-</td>
+<td class="px-3 text-right font-data-sm text-data-sm pr-md font-medium text-error">42,500.00 Dr</td>
+</tr>
+<!-- Row 2 -->
+<tr class="bg-surface hover:bg-surface-container-low transition-colors h-row-height">
+<td class="px-3 font-data-sm text-data-sm text-on-surface-variant">02-May-24</td>
+<td class="px-3"><span class="px-1.5 py-0.5 bg-primary-fixed text-on-primary-fixed text-[10px] font-bold rounded">PAYMENT</span></td>
+<td class="px-3 font-data-sm text-data-sm text-primary hover:underline cursor-pointer font-bold">#RCP-4412</td>
+<td class="px-3 text-ellipsis overflow-hidden max-w-[200px]" title="UPI Transfer">UPI Transfer</td>
+<td class="px-3 text-right font-data-sm text-data-sm text-on-surface-variant">-</td>
+<td class="px-3 text-right font-data-sm text-data-sm">10,000.00</td>
+<td class="px-3 text-right font-data-sm text-data-sm pr-md font-medium">30,000.00 Dr</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low transition-colors h-row-height">
+<td class="px-3 font-data-sm text-data-sm text-on-surface-variant">15-Apr-24</td>
+<td class="px-3"><span class="px-1.5 py-0.5 bg-error-container text-on-error-container text-[10px] font-bold rounded">SALE</span></td>
+<td class="px-3 font-data-sm text-data-sm text-primary hover:underline cursor-pointer font-bold">#INV-2024-715</td>
+<td class="px-3 text-ellipsis overflow-hidden max-w-[200px]">Festival Supplies</td>
+<td class="px-3 text-right font-data-sm text-data-sm">15,000.00</td>
+<td class="px-3 text-right font-data-sm text-data-sm text-on-surface-variant">-</td>
+<td class="px-3 text-right font-data-sm text-data-sm pr-md font-medium text-error">40,000.00 Dr</td>
+</tr>
+<!-- Row 4 -->
+<tr class="bg-surface hover:bg-surface-container-low transition-colors h-row-height">
+<td class="px-3 font-data-sm text-data-sm text-on-surface-variant">01-Apr-24</td>
+<td class="px-3"><span class="px-1.5 py-0.5 bg-error-container text-on-error-container text-[10px] font-bold rounded">SALE</span></td>
+<td class="px-3 font-data-sm text-data-sm text-primary hover:underline cursor-pointer font-bold">#INV-2024-650</td>
+<td class="px-3 text-ellipsis overflow-hidden max-w-[200px]">Monthly Staples</td>
+<td class="px-3 text-right font-data-sm text-data-sm">5,000.00</td>
+<td class="px-3 text-right font-data-sm text-data-sm text-on-surface-variant">-</td>
+<td class="px-3 text-right font-data-sm text-data-sm pr-md font-medium text-error">25,000.00 Dr</td>
+</tr>
+<!-- Row 5 -->
+<tr class="hover:bg-surface-container-low transition-colors h-row-height">
+<td class="px-3 font-data-sm text-data-sm text-on-surface-variant">15-Feb-24</td>
+<td class="px-3"><span class="px-1.5 py-0.5 bg-primary-fixed text-on-primary-fixed text-[10px] font-bold rounded">PAYMENT</span></td>
+<td class="px-3 font-data-sm text-data-sm text-primary hover:underline cursor-pointer font-bold">#RCP-3901</td>
+<td class="px-3 text-ellipsis overflow-hidden max-w-[200px]">Cash Deposit</td>
+<td class="px-3 text-right font-data-sm text-data-sm text-on-surface-variant">-</td>
+<td class="px-3 text-right font-data-sm text-data-sm">10,000.00</td>
+<td class="px-3 text-right font-data-sm text-data-sm pr-md font-medium">20,000.00 Dr</td>
+</tr>
+<!-- Row 6 (Oldest Bill simulation) -->
+<tr class="bg-surface hover:bg-surface-container-low transition-colors h-row-height">
+<td class="px-3 font-data-sm text-data-sm text-on-surface-variant">12-Jan-24</td>
+<td class="px-3"><span class="px-1.5 py-0.5 bg-error-container text-on-error-container text-[10px] font-bold rounded">SALE</span></td>
+<td class="px-3 font-data-sm text-data-sm text-primary hover:underline cursor-pointer font-bold">#INV-2024-112</td>
+<td class="px-3 text-ellipsis overflow-hidden max-w-[200px]">Bulk Order - Wheat</td>
+<td class="px-3 text-right font-data-sm text-data-sm">30,000.00</td>
+<td class="px-3 text-right font-data-sm text-data-sm text-on-surface-variant">-</td>
+<td class="px-3 text-right font-data-sm text-data-sm pr-md font-medium text-error">30,000.00 Dr</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<!-- Right Side Panel: Ageing Summary -->
+<div class="w-72 flex-shrink-0 flex flex-col gap-md">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT flex flex-col shadow-sm">
+<div class="bg-primary text-on-primary px-md py-sm font-label-sm text-label-sm rounded-t-DEFAULT">
+                            Ageing Summary
+                        </div>
+<div class="p-md flex flex-col gap-sm">
+<div class="flex justify-between items-center py-1 border-b border-surface-variant">
+<span class="font-label-sm text-label-sm text-on-surface">Current (0-30 days)</span>
+<span class="font-data-md text-data-md">12,500.00</span>
+</div>
+<div class="flex justify-between items-center py-1 border-b border-surface-variant">
+<span class="font-label-sm text-label-sm text-on-surface">31-60 days</span>
+<span class="font-data-md text-data-md">15,000.00</span>
+</div>
+<div class="flex justify-between items-center py-1 border-b border-surface-variant">
+<span class="font-label-sm text-label-sm text-on-surface">61-90 days</span>
+<span class="font-data-md text-data-md text-on-surface-variant">-</span>
+</div>
+<div class="flex justify-between items-center py-1 bg-error-container -mx-md px-md rounded-sm border-l-4 border-error">
+<span class="font-label-sm text-label-sm text-error font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-[14px]">warning</span> 90+ days
+                                </span>
+<span class="font-data-md text-data-md text-error font-bold">15,000.00</span>
+</div>
+<div class="flex justify-between items-center pt-2 mt-2 border-t border-outline-variant">
+<span class="font-label-sm text-label-sm text-on-surface uppercase font-bold">Total Due</span>
+<span class="font-data-md text-data-md text-primary font-bold">42,500.00</span>
+</div>
+</div>
+</div>
+<!-- Quick Actions / Notes panel -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-DEFAULT p-md shadow-sm flex-1 flex flex-col">
+<div class="font-label-sm text-label-sm text-on-surface-variant mb-2 uppercase tracking-wider">Internal Notes</div>
+<textarea class="w-full flex-1 border border-outline-variant rounded bg-surface p-2 font-body-md text-body-md focus:ring-0 focus:border-primary resize-none" placeholder="Add remarks about payment promises or reminders..."></textarea>
+<button class="mt-2 w-full border border-primary text-primary font-label-sm text-label-sm py-1.5 rounded-DEFAULT hover:bg-surface-container transition-colors">Save Note</button>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="fixed bottom-0 left-0 w-full z-50 flex justify-between items-center px-gutter bg-primary dark:bg-primary border-t border-primary flat no shadows h-row-height">
+<div class="font-data-sm text-data-sm text-on-primary dark:text-on-primary">
+<span class="bg-surface-variant text-on-surface-variant px-1 rounded mr-1 inline-block">[F1]</span> Help |
+            <span class="bg-surface-variant text-on-surface-variant px-1 rounded mr-1 inline-block">[F2]</span> New Bill |
+            <span class="bg-surface-variant text-on-surface-variant px-1 rounded mr-1 inline-block">[F5]</span> Print |
+            <span class="bg-surface-variant text-on-surface-variant px-1 rounded mr-1 inline-block">[F10]</span> Close Day
+        </div>
+<div class="font-data-sm text-data-sm text-on-primary dark:text-on-primary flex gap-md">
+<span>System Status: Online</span>
+<span>Station: POS-01</span>
+</div>
+</footer>
+</body></html>
