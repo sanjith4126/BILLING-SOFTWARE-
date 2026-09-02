@@ -138,7 +138,11 @@ namespace GroceryPos.App
                 // read-only so a cashier cannot rename an item on the bill.
                 ReadOnly = false,
                 AutoGenerateColumns = false,
-                EditMode = DataGridViewEditMode.EditOnKeystrokeOrF2
+                // EditOnKeystrokeOrF2 would start an edit on ANY key, which
+                // swallowed Del before it could remove the line. Editing now
+                // starts on F2, a double-click, or typing a digit -- see
+                // Grid_KeyDown below.
+                EditMode = DataGridViewEditMode.EditOnF2
             };
             Theme.ApplyGrid(_grid);
             var lineNoCol = Theme.NumberColumn("LineNo", "#", 46);
@@ -167,6 +171,7 @@ namespace GroceryPos.App
 
             _grid.CellEndEdit += Grid_CellEndEdit;
             _grid.DataError += (s, e) => { e.ThrowException = false; };
+            _grid.KeyDown += Grid_KeyDown;
 
             _emptyBill = Theme.EmptyState(
                 "No items yet.\r\n\r\nScan a barcode, or type part of an item name and press Enter.",
@@ -274,6 +279,29 @@ namespace GroceryPos.App
             SelectLine(e.RowIndex);
         }
 
+        /// <summary>
+        /// Typing a digit on an editable cell starts an edit, the way a
+        /// spreadsheet does. Del is deliberately NOT an edit trigger, so it
+        /// still removes the whole line.
+        /// </summary>
+        private void Grid_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (_grid.IsCurrentCellInEditMode) return;
+            if (_grid.CurrentCell == null || _grid.CurrentCell.ReadOnly) return;
+
+            bool digit = (e.KeyCode >= Keys.D0 && e.KeyCode <= Keys.D9)
+                      || (e.KeyCode >= Keys.NumPad0 && e.KeyCode <= Keys.NumPad9);
+
+            if (digit)
+            {
+                _grid.BeginEdit(true);
+                // Replace the old figure rather than appending to it, which is
+                // what someone correcting a quantity expects.
+                var editor = _grid.EditingControl as TextBox;
+                if (editor != null) editor.Text = "";
+            }
+        }
+
         /// <summary>Keeps the highlight on a line after the grid is rebuilt.</summary>
         private void SelectLine(int index)
         {
@@ -320,7 +348,7 @@ namespace GroceryPos.App
 
             var rowA = TwoUp(
                 Btn("Discount  [F5]", () => ApplyDiscount()),
-                Btn("Remove  [Del]", () => RemoveSelectedLine()));
+                Btn("Remove item  [Del]", () => RemoveSelectedLine()));
             var rowB = TwoUp(
                 Btn("Hold  [F2]", () => HoldCurrent()),
                 Btn("Recall  [F3]", () => RecallHeld()));
@@ -475,7 +503,7 @@ namespace GroceryPos.App
             p.Controls.Add(new Label
             {
                 Text = "  [F2] Hold    [F3] Recall    [F4] Weigh    [F5] Discount    "
-                     + "[F9] Pay    [Del] Remove line    [Esc] Clear bill",
+                     + "[F9] Pay    [Del] Remove item    [Esc] Clear whole bill",
                 Dock = DockStyle.Fill,
                 Font = Theme.Data,
                 ForeColor = Color.FromArgb(200, 216, 240),
@@ -743,12 +771,48 @@ namespace GroceryPos.App
             UpdateEmptyBill();
         }
 
+        /// <summary>
+        /// Takes the selected line off the bill. If the line holds several of the
+        /// same item, ask whether to drop one or the lot -- with merged lines a
+        /// silent "remove all" would quietly delete goods the customer is buying.
+        /// </summary>
         private void RemoveSelectedLine()
         {
-            if (_grid.CurrentRow == null) return;
+            if (_grid.CurrentRow == null)
+            {
+                if (_bill.Lines.Count > 0)
+                    Theme.Warn("Click the line you want to remove first.");
+                return;
+            }
+
             int idx = _grid.CurrentRow.Index;
             if (idx < 0 || idx >= _bill.Lines.Count) return;
-            _bill.Lines.RemoveAt(idx);
+
+            var line = _bill.Lines[idx];
+
+            // A merged line of, say, 5 packets: usually one was scanned by
+            // mistake, not all five.
+            if (line.QtyUnits > 1)
+            {
+                using (var ask = new RemoveQuantityDialog(line.ItemName, line.QtyUnits))
+                {
+                    if (ask.ShowDialog(this) != DialogResult.OK) { _scan.Focus(); return; }
+
+                    if (ask.RemoveAll || ask.Quantity >= line.QtyUnits)
+                    {
+                        _bill.Lines.RemoveAt(idx);
+                    }
+                    else
+                    {
+                        line.QtyUnits -= ask.Quantity;
+                    }
+                }
+            }
+            else
+            {
+                _bill.Lines.RemoveAt(idx);
+            }
+
             for (int i = 0; i < _bill.Lines.Count; i++) _bill.Lines[i].LineNo = i + 1;
             RefreshView();
             _scan.Focus();
@@ -1293,6 +1357,80 @@ namespace GroceryPos.App
                     Close();
                 }
             }
+        }
+    }
+
+    /// <summary>
+    /// Asked when removing a line that holds more than one of the same item:
+    /// take one off, or drop the whole line.
+    /// </summary>
+    public class RemoveQuantityDialog : Form
+    {
+        private readonly NumericUpDown _qty;
+        public int Quantity { get { return (int)_qty.Value; } }
+        public bool RemoveAll { get; private set; }
+
+        public RemoveQuantityDialog(string itemName, int onBill)
+        {
+            Theme.ApplyForm(this);
+            Text = "Remove from bill";
+            Width = 430; Height = 260;
+            FormBorderStyle = FormBorderStyle.FixedDialog;
+            MaximizeBox = false; MinimizeBox = false;
+            StartPosition = FormStartPosition.CenterParent;
+
+            var body = new Panel { Dock = DockStyle.Fill, BackColor = Theme.Surface, Padding = new Padding(Theme.Lg) };
+
+            var what = new Label
+            {
+                Text = itemName,
+                Font = Theme.BodyBold,
+                AutoSize = false,
+                TextAlign = ContentAlignment.MiddleLeft
+            };
+            what.SetBounds(Theme.Lg, 12, 360, 22);
+
+            var howMany = new Label
+            {
+                Text = "There are " + onBill + " on the bill. How many do you want to take off?",
+                Font = Theme.Body,
+                ForeColor = Theme.Muted,
+                AutoSize = false,
+                TextAlign = ContentAlignment.TopLeft
+            };
+            howMany.SetBounds(Theme.Lg, 38, 360, 36);
+
+            _qty = new NumericUpDown
+            {
+                Minimum = 1,
+                Maximum = onBill,
+                Value = 1,
+                Font = new Font(Theme.Data.FontFamily, 14f),
+                TextAlign = HorizontalAlignment.Center
+            };
+            _qty.SetBounds(Theme.Lg, 80, 110, 34);
+
+            var takeOff = Theme.PrimaryButton("Take these off");
+            takeOff.SetBounds(Theme.Lg, 128, 170, 40);
+            takeOff.Click += (s, e) => { RemoveAll = false; DialogResult = DialogResult.OK; Close(); };
+
+            var all = Theme.SecondaryButton("Remove the whole line");
+            all.SetBounds(Theme.Lg + 182, 128, 178, 40);
+            all.Click += (s, e) => { RemoveAll = true; DialogResult = DialogResult.OK; Close(); };
+
+            body.Controls.AddRange(new Control[] { what, howMany, _qty, takeOff, all });
+
+            var footer = new Panel { Dock = DockStyle.Bottom, Height = 52, Padding = new Padding(Theme.Md, Theme.Sm, Theme.Md, Theme.Sm) };
+            var cancel = Theme.SecondaryButton("Cancel");
+            cancel.Width = 110; cancel.Dock = DockStyle.Right;
+            cancel.Click += (s, e) => { DialogResult = DialogResult.Cancel; Close(); };
+            footer.Controls.Add(cancel);
+
+            Controls.Add(body);
+            Controls.Add(footer);
+            AcceptButton = takeOff;
+            CancelButton = cancel;
+            Shown += (s, e) => { _qty.Focus(); _qty.Select(0, _qty.Text.Length); };
         }
     }
 

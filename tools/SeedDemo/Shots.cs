@@ -75,6 +75,8 @@ namespace SeedDemo
                     SoldBy = SoldBy.Weight, Unit = "pc", IsActive = true,
                     RoundToGrams = 5, MinSaleGrams = 100, AllowDiscount = true
                 }));
+            Capture(outDir, "remove_qty", () =>
+                new GroceryPos.App.RemoveQuantityDialog("Tata Salt 1kg", 5));
             Capture(outDir, "item_new_piece", () =>
                 new GroceryPos.App.ItemEditForm(ctx, new Item
                 {
