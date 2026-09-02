@@ -89,16 +89,18 @@ def convert(md_path: Path, docx_path: Path) -> None:
             continue
 
         # Headings
+        #
+        # Use real Word heading styles rather than hand-bolded text, so the
+        # document gets a working navigation pane and Word can build a table of
+        # contents from it. A 60-page counter manual is unusable without that.
         m = re.match(r"^(#{1,6})\s+(.+)$", line)
         if m:
             level = len(m.group(1))
             text = m.group(2).strip()
-            p = doc.add_paragraph()
-            r = p.add_run(text)
-            r.bold = True
-            r.font.size = Pt({1: 20, 2: 16, 3: 13}.get(level, 12))
+            para = doc.add_paragraph(style="Heading %d" % min(level, 4))
+            add_runs(para, text)
             if level == 1:
-                p.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
+                para.alignment = WD_PARAGRAPH_ALIGNMENT.CENTER
             i += 1
             continue
 
