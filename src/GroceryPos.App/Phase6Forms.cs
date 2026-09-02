@@ -17,7 +17,7 @@ namespace GroceryPos.App
     public class DashboardForm : Form
     {
         private readonly AppContext _ctx;
-        private Label _cards;
+        private Panel _cardsPanel;
         private Panel _chartPanel;
         private long[] _sales7 = new long[7];
         private DateTime[] _days7 = new DateTime[7];
@@ -26,16 +26,33 @@ namespace GroceryPos.App
         {
             _ctx = ctx;
             Text = "Dashboard";
-            Width = 900; Height = 600;
+            Width = 1000; Height = 640;
             StartPosition = FormStartPosition.CenterParent;
+            BackColor = Color.FromArgb(245, 247, 250);
+            WindowState = FormWindowState.Maximized;
 
-            _cards = new Label { Dock = DockStyle.Top, Height = 100, Font = new Font("Segoe UI", 10F) };
-            Controls.Add(_cards);
-            _chartPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.White };
+            var header = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = Color.FromArgb(30, 60, 100) };
+            header.Controls.Add(new Label
+            {
+                Text = "Dashboard  ·  " + DateTime.Today.ToString("dd MMM yyyy"),
+                ForeColor = Color.White,
+                Font = new Font("Segoe UI", 16F, FontStyle.Bold),
+                Left = 20, Top = 14, Width = 500, Height = 32
+            });
+            Controls.Add(header);
+
+            _cardsPanel = new Panel { Dock = DockStyle.Top, Height = 130, BackColor = Color.FromArgb(245, 247, 250) };
+            Controls.Add(_cardsPanel);
+
+            _chartPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(10) };
             _chartPanel.Paint += (s, e) => DrawChart(e.Graphics);
             Controls.Add(_chartPanel);
+
             Load += (s, e) => Reload();
+            _cardsPanel.Resize += (s, e) => LayoutCards();
         }
+
+        private long _salesToday, _billCount, _avgBill, _grossMargin, _cashInHand;
 
         private void Reload()
         {
@@ -43,25 +60,21 @@ namespace GroceryPos.App
             {
                 string todayFrom = DateTime.Today.ToString("yyyy-MM-dd 00:00:00");
                 string todayTo = DateTime.Today.ToString("yyyy-MM-dd 23:59:59");
-                long salesToday = c.ExecuteScalar<long>("SELECT COALESCE(SUM(net_paise),0) FROM bills WHERE status='completed' AND billed_at BETWEEN @f AND @t",
+                _salesToday = c.ExecuteScalar<long>("SELECT COALESCE(SUM(net_paise),0) FROM bills WHERE status='completed' AND billed_at BETWEEN @f AND @t",
                     new { f = todayFrom, t = todayTo });
-                long billCount = c.ExecuteScalar<long>("SELECT COUNT(*) FROM bills WHERE status='completed' AND billed_at BETWEEN @f AND @t",
+                _billCount = c.ExecuteScalar<long>("SELECT COUNT(*) FROM bills WHERE status='completed' AND billed_at BETWEEN @f AND @t",
                     new { f = todayFrom, t = todayTo });
-                long avg = billCount == 0 ? 0 : salesToday / billCount;
-                long grossMargin = c.ExecuteScalar<long>(@"
+                _avgBill = _billCount == 0 ? 0 : _salesToday / _billCount;
+                _grossMargin = c.ExecuteScalar<long>(@"
                     SELECT COALESCE(SUM(bl.amount_paise - bl.tax_paise
                         - (SELECT cost_paise FROM batches ba WHERE ba.id=bl.batch_id) * (bl.qty_units + bl.qty_grams/1000)),0)
                     FROM bill_lines bl JOIN bills b ON b.id=bl.bill_id
                     WHERE b.status='completed' AND b.billed_at BETWEEN @f AND @t",
                     new { f = todayFrom, t = todayTo });
-                long cashInHand = c.ExecuteScalar<long>(@"
+                _cashInHand = c.ExecuteScalar<long>(@"
                     SELECT COALESCE(SUM(p.amount_paise),0) FROM payments p JOIN bills b ON b.id=p.bill_id
                     WHERE p.mode='cash' AND b.status='completed' AND b.billed_at BETWEEN @f AND @t",
                     new { f = todayFrom, t = todayTo });
-                _cards.Text = "Sales today: Rs. " + new Money(salesToday) +
-                    "\r\nBills today: " + billCount + "   |   Avg bill: Rs. " + new Money(avg) +
-                    "\r\nGross margin today: Rs. " + new Money(grossMargin) +
-                    "   |   Cash in hand (today sales): Rs. " + new Money(cashInHand);
 
                 for (int i = 6; i >= 0; i--)
                 {
@@ -72,7 +85,54 @@ namespace GroceryPos.App
                         new { f = d.ToString("yyyy-MM-dd 00:00:00"), t = d.ToString("yyyy-MM-dd 23:59:59") });
                 }
                 _chartPanel.Invalidate();
+                LayoutCards();
             }
+        }
+
+        private void LayoutCards()
+        {
+            _cardsPanel.Controls.Clear();
+            var cards = new[]
+            {
+                Card("Sales today", "Rs. " + new Money(_salesToday), Color.FromArgb(30, 130, 76)),
+                Card("Bills", _billCount.ToString(), Color.FromArgb(60, 100, 160)),
+                Card("Average bill", "Rs. " + new Money(_avgBill), Color.FromArgb(220, 130, 40)),
+                Card("Gross margin", "Rs. " + new Money(_grossMargin), Color.FromArgb(90, 60, 140)),
+                Card("Cash in hand", "Rs. " + new Money(_cashInHand), Color.FromArgb(30, 130, 76))
+            };
+            int w = 200, gap = 10;
+            int total = cards.Length * w + (cards.Length - 1) * gap;
+            int left = Math.Max(10, (_cardsPanel.ClientSize.Width - total) / 2);
+            for (int i = 0; i < cards.Length; i++)
+            {
+                cards[i].Left = left + i * (w + gap);
+                cards[i].Top = 15;
+                cards[i].Width = w;
+                cards[i].Height = 100;
+                _cardsPanel.Controls.Add(cards[i]);
+            }
+        }
+
+        private Panel Card(string title, string value, Color color)
+        {
+            var p = new Panel { BackColor = color };
+            var t = new Label
+            {
+                Text = title, ForeColor = Color.FromArgb(230, 240, 250),
+                Font = new Font("Segoe UI", 10F),
+                Left = 12, Top = 12, Width = 176, Height = 20,
+                BackColor = Color.FromArgb(0, 0, 0, 0)
+            };
+            var v = new Label
+            {
+                Text = value, ForeColor = Color.White,
+                Font = new Font("Segoe UI", 18F, FontStyle.Bold),
+                Left = 12, Top = 36, Width = 176, Height = 50,
+                BackColor = Color.FromArgb(0, 0, 0, 0)
+            };
+            p.Controls.Add(t);
+            p.Controls.Add(v);
+            return p;
         }
 
         private void DrawChart(Graphics g)

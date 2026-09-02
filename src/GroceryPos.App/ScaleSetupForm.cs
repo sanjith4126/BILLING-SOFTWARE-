@@ -38,7 +38,9 @@ namespace GroceryPos.App
         public const string KeyRegex = "scale.regex";
         public const string KeyPoll = "scale.poll_cmd";
 
-        public const string DefaultRegex = @"(?<status>ST|US)?[,\s]*(?:GS|NT)?[,\s]*(?<sign>[+-])?\s*(?<value>\d+(?:\.\d+)?)\s*(?<unit>kg|g)?";
+        // Matches the ES 510 frame format captured on-site: NNN.NNN\r\n.
+        // Also matches typical continuous scales that send just the decimal weight.
+        public const string DefaultRegex = @"(?<value>\d+\.\d+)";
 
         public ScaleSetupForm(AppContext ctx)
         {
@@ -147,27 +149,34 @@ namespace GroceryPos.App
 
         private void LoadSettings()
         {
-            _mode.Text = _ctx.Settings.Get(KeyMode, "Manual");
-            _port.Text = _ctx.Settings.Get(KeyPort, "COM1");
-            _baud.Text = _ctx.Settings.Get(KeyBaud, "9600");
-            _data.Text = _ctx.Settings.Get(KeyDataBits, "8");
-            _parity.Text = _ctx.Settings.Get(KeyParity, "None");
-            _stop.Text = _ctx.Settings.Get(KeyStopBits, "1");
-            _regex.Text = _ctx.Settings.Get(KeyRegex, DefaultRegex);
-            _poll.Text = _ctx.Settings.Get(KeyPoll, "");
+            _mode.Text = NonEmpty(_ctx.Settings.Get(KeyMode, ""), "Manual");
+            _port.Text = NonEmpty(_ctx.Settings.Get(KeyPort, ""), "COM1");
+            _baud.Text = NonEmpty(_ctx.Settings.Get(KeyBaud, ""), "9600");
+            _data.Text = NonEmpty(_ctx.Settings.Get(KeyDataBits, ""), "8");
+            _parity.Text = NonEmpty(_ctx.Settings.Get(KeyParity, ""), "None");
+            _stop.Text = NonEmpty(_ctx.Settings.Get(KeyStopBits, ""), "1");
+            _regex.Text = NonEmpty(_ctx.Settings.Get(KeyRegex, ""), DefaultRegex);
+            _poll.Text = _ctx.Settings.Get(KeyPoll, "") ?? "";
+        }
+
+        private static string NonEmpty(string v, string fallback)
+        {
+            return string.IsNullOrWhiteSpace(v) ? fallback : v;
         }
 
         private void SaveSettings()
         {
-            _ctx.Settings.Set(KeyMode, _mode.Text);
-            _ctx.Settings.Set(KeyPort, _port.Text);
-            _ctx.Settings.Set(KeyBaud, _baud.Text);
-            _ctx.Settings.Set(KeyDataBits, _data.Text);
-            _ctx.Settings.Set(KeyParity, _parity.Text);
-            _ctx.Settings.Set(KeyStopBits, _stop.Text);
-            _ctx.Settings.Set(KeyRegex, _regex.Text);
-            _ctx.Settings.Set(KeyPoll, _poll.Text);
-            MessageBox.Show("Scale settings saved. Restart the app for the new source to take effect.", "Saved");
+            _ctx.Settings.Set(KeyMode, NonEmpty(_mode.Text, "Manual"));
+            _ctx.Settings.Set(KeyPort, NonEmpty(_port.Text, "COM1"));
+            _ctx.Settings.Set(KeyBaud, NonEmpty(_baud.Text, "9600"));
+            _ctx.Settings.Set(KeyDataBits, NonEmpty(_data.Text, "8"));
+            _ctx.Settings.Set(KeyParity, NonEmpty(_parity.Text, "None"));
+            _ctx.Settings.Set(KeyStopBits, NonEmpty(_stop.Text, "1"));
+            _ctx.Settings.Set(KeyRegex, NonEmpty(_regex.Text, DefaultRegex));
+            _ctx.Settings.Set(KeyPoll, _poll.Text ?? "");
+            StopLiveDump();
+            _ctx.RebuildWeightSource();
+            MessageBox.Show("Scale settings saved and applied. F4 on the billing screen will now read from the scale.", "Saved");
         }
 
         // ---------- Detect ----------

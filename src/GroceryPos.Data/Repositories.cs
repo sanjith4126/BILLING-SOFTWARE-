@@ -225,7 +225,10 @@ namespace GroceryPos.Data
             track_batch AS TrackBatch, track_expiry AS TrackExpiry,
             allow_discount AS AllowDiscount, weigh_at_counter AS WeighAtCounter,
             tare_grams AS TareGrams, round_to_grams AS RoundToGrams,
-            min_sale_grams AS MinSaleGrams, is_active AS IsActive";
+            min_sale_grams AS MinSaleGrams, is_active AS IsActive,
+            default_cost_paise AS DefaultCostPaise,
+            default_selling_paise AS DefaultSellingPaise,
+            default_mrp_paise AS DefaultMrpPaise";
 
         // Use a raw dynamic and map to work around sold_by enum
         public Item FindById(long id)
@@ -286,11 +289,13 @@ namespace GroceryPos.Data
                         INSERT INTO items(sku, name, print_name, category_id, brand, rack, sold_by, unit,
                           tax_rate_bp, hsn_code, reorder_level, max_level, default_supplier_id,
                           track_batch, track_expiry, allow_discount, weigh_at_counter,
-                          tare_grams, round_to_grams, min_sale_grams, is_active)
+                          tare_grams, round_to_grams, min_sale_grams, is_active,
+                          default_cost_paise, default_selling_paise, default_mrp_paise)
                         VALUES(@Sku,@Name,@PrintName,@CategoryId,@Brand,@Rack,@SoldBy,@Unit,
                           @TaxRateBp,@HsnCode,@ReorderLevel,@MaxLevel,@DefaultSupplierId,
                           @TrackBatch,@TrackExpiry,@AllowDiscount,@WeighAtCounter,
-                          @TareGrams,@RoundToGrams,@MinSaleGrams,@IsActive);
+                          @TareGrams,@RoundToGrams,@MinSaleGrams,@IsActive,
+                          @DefaultCostPaise,@DefaultSellingPaise,@DefaultMrpPaise);
                         SELECT last_insert_rowid();",
                         BindParams(it), transaction: tx);
                     _audit.WriteWithConnection(c, tx, userId, "create", "item", id, null, it);
@@ -310,6 +315,9 @@ namespace GroceryPos.Data
                         allow_discount=@AllowDiscount, weigh_at_counter=@WeighAtCounter,
                         tare_grams=@TareGrams, round_to_grams=@RoundToGrams,
                         min_sale_grams=@MinSaleGrams, is_active=@IsActive,
+                        default_cost_paise=@DefaultCostPaise,
+                        default_selling_paise=@DefaultSellingPaise,
+                        default_mrp_paise=@DefaultMrpPaise,
                         updated_at=datetime('now') WHERE id=@Id",
                         BindParams(it, id), transaction: tx);
                     _audit.WriteWithConnection(c, tx, userId, "update", "item", id, before, it);
@@ -359,7 +367,10 @@ namespace GroceryPos.Data
                 it.TareGrams,
                 it.RoundToGrams,
                 it.MinSaleGrams,
-                IsActive = it.IsActive ? 1 : 0
+                IsActive = it.IsActive ? 1 : 0,
+                it.DefaultCostPaise,
+                it.DefaultSellingPaise,
+                it.DefaultMrpPaise
             };
         }
 
@@ -396,15 +407,20 @@ namespace GroceryPos.Data
                 TareGrams = (int)(long)r.TareGrams,
                 RoundToGrams = (int)(long)r.RoundToGrams,
                 MinSaleGrams = (int)(long)r.MinSaleGrams,
-                IsActive = ((long)r.IsActive) != 0
+                IsActive = ((long)r.IsActive) != 0,
+                DefaultCostPaise = (long)r.DefaultCostPaise,
+                DefaultSellingPaise = (long)r.DefaultSellingPaise,
+                DefaultMrpPaise = (long)r.DefaultMrpPaise
             };
         }
     }
 
     public static class ItemGuards
     {
-        // We store MRP on batches; here we allow saving item without an MRP check
-        // (batch save enforces MRP >= selling elsewhere).
-        public static bool SellingExceedsMrp(this Item it) { return false; }
+        /// <summary>MRP guard: block selling above MRP when both are set.</summary>
+        public static bool SellingExceedsMrp(this Item it)
+        {
+            return it.DefaultMrpPaise > 0 && it.DefaultSellingPaise > it.DefaultMrpPaise;
+        }
     }
 }

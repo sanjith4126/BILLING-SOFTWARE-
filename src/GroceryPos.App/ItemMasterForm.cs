@@ -82,6 +82,8 @@ namespace GroceryPos.App
         private readonly AppContext _ctx;
         private readonly Item _it;
         private TextBox _sku, _name, _printName, _unit, _hsn, _tax, _round, _minSale, _tare;
+        private TextBox _cost, _selling, _mrp;
+        private Label _marginLabel;
         private ComboBox _soldBy;
         private CheckBox _weighAtCounter, _allowDiscount, _isActive;
         private TextBox _barcodes;
@@ -90,7 +92,7 @@ namespace GroceryPos.App
         {
             _ctx = ctx; _it = it;
             Text = it.Id == 0 ? "New item" : "Edit item";
-            Width = 480; Height = 560;
+            Width = 520; Height = 680;
             StartPosition = FormStartPosition.CenterParent;
 
             int y = 12;
@@ -99,7 +101,7 @@ namespace GroceryPos.App
             _printName = AddField("Print name", it.PrintName, ref y);
 
             var l = new Label { Text = "Sold by", Left = 12, Top = y + 4, Width = 100 };
-            _soldBy = new ComboBox { Left = 120, Top = y, Width = 320, DropDownStyle = ComboBoxStyle.DropDownList };
+            _soldBy = new ComboBox { Left = 120, Top = y, Width = 360, DropDownStyle = ComboBoxStyle.DropDownList };
             _soldBy.Items.AddRange(new object[] { "Piece", "Weight", "Volume" });
             _soldBy.SelectedItem = it.SoldBy.ToString();
             Controls.Add(l); Controls.Add(_soldBy); y += 30;
@@ -107,6 +109,30 @@ namespace GroceryPos.App
             _unit = AddField("Unit", it.Unit ?? "pc", ref y);
             _hsn = AddField("HSN", it.HsnCode, ref y);
             _tax = AddField("Tax rate (bp, e.g. 1800=18%)", it.TaxRateBp.ToString(), ref y);
+
+            // Prices — all in rupees on screen, converted to paise on save.
+            var priceHeader = new Label { Text = "Prices (Rs.)", Left = 12, Top = y, Width = 200,
+                Font = new System.Drawing.Font("Segoe UI", 9F, System.Drawing.FontStyle.Bold) };
+            Controls.Add(priceHeader); y += 22;
+
+            Controls.Add(new Label { Text = "Cost", Left = 12, Top = y + 4, Width = 60 });
+            _cost = new TextBox { Left = 80, Top = y, Width = 100, Text = PaiseToRupeeString(it.DefaultCostPaise) };
+            Controls.Add(new Label { Text = "Selling", Left = 200, Top = y + 4, Width = 60 });
+            _selling = new TextBox { Left = 265, Top = y, Width = 100, Text = PaiseToRupeeString(it.DefaultSellingPaise) };
+            Controls.Add(new Label { Text = "MRP", Left = 380, Top = y + 4, Width = 40 });
+            _mrp = new TextBox { Left = 420, Top = y, Width = 80, Text = PaiseToRupeeString(it.DefaultMrpPaise) };
+            Controls.Add(_cost); Controls.Add(_selling); Controls.Add(_mrp);
+            y += 26;
+
+            _marginLabel = new Label { Left = 80, Top = y, Width = 400,
+                ForeColor = System.Drawing.Color.DarkGreen, Text = "" };
+            Controls.Add(_marginLabel);
+            _cost.TextChanged += (s, e) => UpdateMargin();
+            _selling.TextChanged += (s, e) => UpdateMargin();
+            _mrp.TextChanged += (s, e) => UpdateMargin();
+            UpdateMargin();
+            y += 26;
+
             _tare = AddField("Tare grams", it.TareGrams.ToString(), ref y);
             _round = AddField("Round to grams", it.RoundToGrams.ToString(), ref y);
             _minSale = AddField("Min sale grams", it.MinSaleGrams.ToString(), ref y);
@@ -133,10 +159,47 @@ namespace GroceryPos.App
         private TextBox AddField(string label, string val, ref int y)
         {
             var l = new Label { Text = label, Left = 12, Top = y + 4, Width = 100 };
-            var t = new TextBox { Left = 120, Top = y, Width = 320, Text = val ?? "" };
+            var t = new TextBox { Left = 120, Top = y, Width = 360, Text = val ?? "" };
             Controls.Add(l); Controls.Add(t);
             y += 30;
             return t;
+        }
+
+        private static string PaiseToRupeeString(long paise)
+        {
+            if (paise == 0) return "";
+            long rupees = paise / 100;
+            long pp = paise % 100;
+            return rupees + "." + pp.ToString("00");
+        }
+
+        private static long RupeeStringToPaise(string s)
+        {
+            if (string.IsNullOrWhiteSpace(s)) return 0;
+            decimal d;
+            if (!decimal.TryParse(s.Trim(), System.Globalization.NumberStyles.Any,
+                                  System.Globalization.CultureInfo.InvariantCulture, out d))
+                throw new Exception("Not a valid amount: " + s);
+            return (long)System.Math.Round(d * 100m);
+        }
+
+        private void UpdateMargin()
+        {
+            try
+            {
+                long cost = RupeeStringToPaise(_cost.Text);
+                long selling = RupeeStringToPaise(_selling.Text);
+                long mrp = RupeeStringToPaise(_mrp.Text);
+                if (selling == 0 || cost == 0) { _marginLabel.Text = ""; return; }
+                decimal margin = (decimal)(selling - cost) / selling * 100m;
+                string txt = "Margin " + margin.ToString("0.0") + "%";
+                if (mrp > 0 && selling > mrp) txt += "   WARNING: selling above MRP";
+                _marginLabel.Text = txt;
+                _marginLabel.ForeColor = (mrp > 0 && selling > mrp)
+                    ? System.Drawing.Color.Red
+                    : System.Drawing.Color.DarkGreen;
+            }
+            catch { _marginLabel.Text = ""; }
         }
 
         private void Save()
@@ -156,6 +219,9 @@ namespace GroceryPos.App
                 _it.WeighAtCounter = _weighAtCounter.Checked;
                 _it.AllowDiscount = _allowDiscount.Checked;
                 _it.IsActive = _isActive.Checked;
+                _it.DefaultCostPaise = RupeeStringToPaise(_cost.Text);
+                _it.DefaultSellingPaise = RupeeStringToPaise(_selling.Text);
+                _it.DefaultMrpPaise = RupeeStringToPaise(_mrp.Text);
 
                 if (string.IsNullOrWhiteSpace(_it.Name)) throw new Exception("Name is required");
                 long id = _ctx.Items.Save(_it, _ctx.CurrentUser.Id);

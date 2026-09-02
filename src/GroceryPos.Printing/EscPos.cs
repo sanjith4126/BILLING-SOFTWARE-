@@ -7,7 +7,15 @@ namespace GroceryPos.Printing
     /// <summary>Assembles ESC/POS byte streams. CP437 encoded. Every line terminated LF.</summary>
     public static class EscPos
     {
-        public static readonly byte[] Init = new byte[] { 0x1B, 0x40 };
+        // ESC @ (reset) + GS L 0 0 (left margin = 0 dots) + GS W ... (print width max).
+        // Explicit margin/width so a previous job or driver default doesn't leave the
+        // receipt indented on the paper.
+        public static readonly byte[] Init = new byte[]
+        {
+            0x1B, 0x40,                     // ESC @  reset
+            0x1D, 0x4C, 0x00, 0x00,         // GS L nL nH  left margin 0
+            0x1D, 0x57, 0x80, 0x02          // GS W nL nH  print width 640 dots (80mm)
+        };
         public static readonly byte[] AlignLeft = new byte[] { 0x1B, 0x61, 0x00 };
         public static readonly byte[] AlignCenter = new byte[] { 0x1B, 0x61, 0x01 };
         public static readonly byte[] BoldOn = new byte[] { 0x1B, 0x45, 0x01 };
@@ -30,14 +38,28 @@ namespace GroceryPos.Printing
 
         public static byte[] Build(IList<string> textLines, bool cut, bool drawerKick, int drawerPin)
         {
+            var rich = new List<ReceiptLine>(textLines.Count);
+            foreach (var t in textLines) rich.Add(new ReceiptLine(t));
+            return Build(rich, cut, drawerKick, drawerPin);
+        }
+
+        public static byte[] Build(IList<ReceiptLine> lines, bool cut, bool drawerKick, int drawerPin)
+        {
             var ms = new MemoryStream();
             ms.Write(Init, 0, Init.Length);
+            // Left-align the printer's cursor. The formatter builds fixed-width
+            // 48-column lines, so alignment is done in text — the printer just
+            // needs to start at the left margin.
             ms.Write(AlignLeft, 0, AlignLeft.Length);
             var enc = Cp437;
-            foreach (var line in textLines)
+            foreach (var line in lines)
             {
-                byte[] b = enc.GetBytes(line);
+                if (line.Bold) ms.Write(BoldOn, 0, BoldOn.Length);
+                if (line.DoubleSize) ms.Write(SizeDouble, 0, SizeDouble.Length);
+                byte[] b = enc.GetBytes(line.Text ?? "");
                 ms.Write(b, 0, b.Length);
+                if (line.DoubleSize) ms.Write(SizeNormal, 0, SizeNormal.Length);
+                if (line.Bold) ms.Write(BoldOff, 0, BoldOff.Length);
                 ms.Write(LF, 0, LF.Length);
             }
             var feed = FeedLines(3);
@@ -50,5 +72,18 @@ namespace GroceryPos.Printing
             if (cut) ms.Write(CutFull, 0, CutFull.Length);
             return ms.ToArray();
         }
+    }
+
+    /// <summary>A single printed line with optional emphasis. Text is expected
+    /// pre-padded to the paper width by the formatter.</summary>
+    public class ReceiptLine
+    {
+        public string Text;
+        public bool Bold;
+        public bool DoubleSize;
+        public ReceiptLine() { }
+        public ReceiptLine(string text) { Text = text; }
+        public ReceiptLine(string text, bool bold, bool doubleSize)
+        { Text = text; Bold = bold; DoubleSize = doubleSize; }
     }
 }

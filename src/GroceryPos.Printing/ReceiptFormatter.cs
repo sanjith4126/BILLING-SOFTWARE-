@@ -34,6 +34,36 @@ namespace GroceryPos.Printing
             public long PointsBalance;
         }
 
+        /// <summary>Solid horizontal line — CP437 0xC4 (Unicode U+2500 BOX DRAWINGS LIGHT
+        /// HORIZONTAL). Encodes cleanly on the TVS RP 3230.</summary>
+        public const char LineChar = '─';
+
+        /// <summary>Rich version returning per-line emphasis so the caller can print
+        /// the NET line double-size bold.</summary>
+        public IList<ReceiptLine> FormatRich(StoreInfo store, Bill bill, string cashierName,
+                                             Dictionary<long, string> itemNamesById,
+                                             bool duplicate = false,
+                                             Money? previousBalance = null,
+                                             Money? newBalance = null,
+                                             LoyaltyBlock loyalty = null)
+        {
+            var text = Format(store, bill, cashierName, itemNamesById, duplicate, previousBalance, newBalance, loyalty);
+            string netPrefix = "NET PAYABLE";
+            var rich = new List<ReceiptLine>(text.Count);
+            foreach (var l in text)
+            {
+                var line = new ReceiptLine(l);
+                if (l != null && l.StartsWith(netPrefix, StringComparison.OrdinalIgnoreCase))
+                {
+                    // Net payable is the one number the customer looks at — make it big + bold.
+                    line.Bold = true;
+                    line.DoubleSize = true;
+                }
+                rich.Add(line);
+            }
+            return rich;
+        }
+
         public IList<string> Format(StoreInfo store, Bill bill, string cashierName,
                                     Dictionary<long, string> itemNamesById,
                                     bool duplicate = false,
@@ -58,11 +88,11 @@ namespace GroceryPos.Printing
             string when = bill.BilledAt.ToString("dd/MM/yy HH:mm", CultureInfo.InvariantCulture);
             lines.Add(PadPair(billNo, when));
             lines.Add(PadPair("Cashier: " + SafeAscii(cashierName), "Ctr " + store.CounterId));
-            lines.Add(new string('-', Width));
+            lines.Add(new string(LineChar, Width));
 
             // Header row: Item(22) Qty(9) Rate(7) Amount(10) => 22+9+7+10=48
             lines.Add(PadRight("Item", 22) + PadLeft("Qty", 9) + PadLeft("Rate", 7) + PadLeft("Amount", 10));
-            lines.Add(new string('-', Width));
+            lines.Add(new string(LineChar, Width));
 
             foreach (var l in bill.Lines)
             {
@@ -87,7 +117,7 @@ namespace GroceryPos.Printing
                     lines.Add("  HSN " + SafeAscii(l.HsnCode));
             }
 
-            lines.Add(new string('-', Width));
+            lines.Add(new string(LineChar, Width));
             var subtotal = new Money(bill.SubtotalPaise);
             var discount = new Money(bill.DiscountPaise);
             var taxable = new Money(bill.TaxablePaise);
@@ -109,9 +139,9 @@ namespace GroceryPos.Printing
             if (roundOff.Paise != 0)
                 lines.Add(PadPair("Round off", (roundOff.Paise >= 0 ? "+" : "") + roundOff.ToString()));
 
-            lines.Add(new string('-', Width));
+            lines.Add(new string(LineChar, Width));
             lines.Add(PadPair("NET PAYABLE", "Rs. " + net.ToString()));
-            lines.Add(new string('-', Width));
+            lines.Add(new string(LineChar, Width));
 
             if (bill.Payments != null)
             {
@@ -125,7 +155,7 @@ namespace GroceryPos.Printing
 
             if (previousBalance.HasValue && newBalance.HasValue)
             {
-                lines.Add(new string('-', Width));
+                lines.Add(new string(LineChar, Width));
                 lines.Add(PadPair("Previous balance", previousBalance.Value.ToString()));
                 lines.Add(PadPair("This bill (khata)", (net - previousBalance.Value + newBalance.Value).ToString()));
                 lines.Add(PadPair("Total outstanding", newBalance.Value.ToString()));
@@ -133,7 +163,7 @@ namespace GroceryPos.Printing
 
             if (loyalty != null)
             {
-                lines.Add(new string('-', Width));
+                lines.Add(new string(LineChar, Width));
                 if (!string.IsNullOrWhiteSpace(loyalty.CustomerName))
                     lines.Add(PadPair("Customer: " + SafeAscii(loyalty.CustomerName),
                                       "Ph: " + SafeAscii(loyalty.CustomerPhone ?? "")));

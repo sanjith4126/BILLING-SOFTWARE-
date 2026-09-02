@@ -42,7 +42,7 @@ namespace GroceryPos.App
             ctx.Purchases = new PurchaseRepository(db, ctx.Audit);
             ctx.Shifts = new ShiftRepository(db, ctx.Audit);
             ctx.Printer = new WindowsRawPrinter();
-            ctx.WeightSource = new ManualWeightSource();
+            ctx.RebuildWeightSource();
 
             // Seed default owner if empty
             if (ctx.Users.All().Count == 0)

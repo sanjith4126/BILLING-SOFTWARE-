@@ -60,6 +60,9 @@ namespace GroceryPos.Domain
         public int RoundToGrams { get; set; }
         public int MinSaleGrams { get; set; }
         public bool IsActive { get; set; }
+        public long DefaultCostPaise { get; set; }
+        public long DefaultSellingPaise { get; set; }
+        public long DefaultMrpPaise { get; set; }
     }
 
     public class ItemBarcode

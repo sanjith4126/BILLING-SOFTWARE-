@@ -281,6 +281,8 @@ namespace GroceryPos.App
                     batchInfo = b.BatchCode;
                 }
             }
+            // Fall back to the item's default selling price if no batch is available yet.
+            if (rate == 0) rate = it.DefaultSellingPaise;
             if (rate == 0)
             {
                 using (var r = new RateEntryDialog(it)) { if (r.ShowDialog(this) == DialogResult.OK) rate = r.Paise; else return; }
@@ -388,12 +390,45 @@ namespace GroceryPos.App
             var line = _bill.Lines[idx];
             var item = _ctx.Items.FindById(line.ItemId);
             if (item == null || item.SoldBy != SoldBy.Weight) { MessageBox.Show("Not a weight item"); return; }
-            int g = PromptWeight(item);
-            if (g <= 0) return;
-            line.QtyGrams = g;
-            line.RawGrams = g;
-            line.WeightSource = _ctx.WeightSource != null && _ctx.WeightSource.Mode == WeightMode.Serial
-                ? WeightSource.Scale : WeightSource.Manual;
+
+            int rawGrams = 0;
+            bool fromScale = false;
+            var src = _ctx.WeightSource;
+            if (src != null && src.Mode == WeightMode.Serial)
+            {
+                var reading = src.Latest;
+                if (!reading.HasValue)
+                {
+                    MessageBox.Show("Scale connected but no reading yet. Put the item on the pan and try again.");
+                    return;
+                }
+                if (!reading.Value.Stable)
+                {
+                    MessageBox.Show("Scale reading not stable yet. Wait for it to settle and try again.");
+                    return;
+                }
+                rawGrams = reading.Value.Grams;
+                fromScale = true;
+            }
+            else
+            {
+                rawGrams = PromptWeight(item);
+                if (rawGrams <= 0) return;
+            }
+
+            int rounded = item.RoundToGrams > 0
+                ? new Grams(rawGrams).RoundToStep(item.RoundToGrams).Value
+                : rawGrams;
+            int minSale = item.MinSaleGrams > 0 ? item.MinSaleGrams : 100;
+            if (rounded < minSale)
+            {
+                MessageBox.Show("Weight " + new Grams(rounded) + " is below the minimum sale weight of "
+                                + new Grams(minSale) + " for this item.");
+                return;
+            }
+            line.QtyGrams = rounded;
+            line.RawGrams = rawGrams;
+            line.WeightSource = fromScale ? WeightSource.Scale : WeightSource.Manual;
             RefreshView();
             _scan.Focus();
         }
@@ -497,21 +532,22 @@ namespace GroceryPos.App
                         PointsBalance = _customer.LoyaltyPoints
                     };
                 }
-                var lines = fmt.Format(store, b, _ctx.CurrentUser.Name, names, false, prev, cur, loyalty);
+                var richLines = fmt.FormatRich(store, b, _ctx.CurrentUser.Name, names, false, prev, cur, loyalty);
                 var payments = b.Payments != null && b.Payments.Any(p => p.Mode == PaymentMode.Cash);
                 int drawerPin;
                 int.TryParse(_ctx.Settings.Get("drawer_pin", "0"), out drawerPin);
                 bool drawerEnabled = _ctx.Settings.Get("drawer_enabled", "0") == "1";
                 bool kick = drawerEnabled && payments;
-                var bytes = EscPos.Build(lines, cut: true, drawerKick: kick, drawerPin: drawerPin);
+                var bytes = EscPos.Build(richLines, cut: true, drawerKick: kick, drawerPin: drawerPin);
                 string queue = _ctx.Settings.Get("printer_name", "");
                 if (string.IsNullOrWhiteSpace(queue))
                 {
                     // No printer configured: show preview
                     using (var pf = new Form { Text = "Receipt preview (no printer configured)", Width = 500, Height = 600 })
                     {
+                        var previewText = string.Join(Environment.NewLine, richLines.Select(rl => rl.Text));
                         pf.Controls.Add(new TextBox { Multiline = true, Dock = DockStyle.Fill, Font = new Font("Consolas", 9),
-                            ScrollBars = ScrollBars.Vertical, Text = string.Join(Environment.NewLine, lines), ReadOnly = true });
+                            ScrollBars = ScrollBars.Vertical, Text = previewText, ReadOnly = true });
                         pf.ShowDialog();
                     }
                     return;
