@@ -191,7 +191,18 @@ namespace GroceryPos.App
                 Tuple.Create(9600, 7, Parity.Even, StopBits.One),
             };
             string port = _port.Text;
-            if (string.IsNullOrWhiteSpace(port)) { MessageBox.Show("Pick a port first"); return; }
+            if (string.IsNullOrWhiteSpace(port))
+            {
+                MessageBox.Show("Choose which socket the scale is plugged into first.",
+                    "Pick a port", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                return;
+            }
+
+            // Detect opens the port itself, so the running application has to let
+            // go of it first, exactly as the live dump does.
+            StopLiveDump();
+            ReleaseAppPort();
+
             var sb = new StringBuilder();
             foreach (var a in attempts)
             {
@@ -228,6 +239,7 @@ namespace GroceryPos.App
                 catch (Exception ex) { sb.AppendLine("  failed: " + ex.Message); }
             }
             _rawDump.Text = sb.ToString();
+            RestoreAppPort();
         }
 
         // ---------- Live raw dump ----------
@@ -236,6 +248,13 @@ namespace GroceryPos.App
             StopLiveDump();
             try
             {
+                // A COM port can only be held by one thing at a time. Once the
+                // scale is saved as Serial the main application keeps the port
+                // open for billing, so opening it again here fails with
+                // "access denied". Let go of it first and take it back in
+                // StopLiveDump.
+                ReleaseAppPort();
+
                 int baud = int.Parse(_baud.Text);
                 int data = int.Parse(_data.Text);
                 Parity par = (Parity)Enum.Parse(typeof(Parity), _parity.Text);
@@ -249,8 +268,64 @@ namespace GroceryPos.App
             }
             catch (Exception ex)
             {
-                MessageBox.Show("Cannot open port: " + ex.Message);
+                RestoreAppPort();
+                ShowPortProblem(_port.Text, ex);
             }
+        }
+
+        /// <summary>
+        /// Drops the running application's grip on the serial port so this screen
+        /// can test it. Billing falls back to manual entry meanwhile.
+        /// </summary>
+        private void ReleaseAppPort()
+        {
+            try
+            {
+                if (_ctx.WeightSource != null) _ctx.WeightSource.Dispose();
+                _ctx.WeightSource = new ManualWeightSource();
+                // Windows does not always free the handle instantly.
+                System.Threading.Thread.Sleep(250);
+            }
+            catch { /* already closed */ }
+        }
+
+        /// <summary>Hands the port back to the application when testing stops.</summary>
+        private void RestoreAppPort()
+        {
+            try { _ctx.RebuildWeightSource(); } catch { /* stays manual */ }
+        }
+
+        /// <summary>Explains a failed port open in words the shop owner can act on.</summary>
+        private void ShowPortProblem(string port, Exception ex)
+        {
+            string msg;
+            if (ex is UnauthorizedAccessException)
+            {
+                msg = port + " is being used by something else.\r\n" +
+                      "Close any other program that reads the scale - a scale " +
+                      "capture tool, PuTTY, or a second copy of this software - " +
+                      "and try again.";
+            }
+            else if (ex is System.IO.IOException)
+            {
+                msg = port + " could not be opened.\r\n" +
+                      "Check that the scale is switched on and its cable is " +
+                      "pushed firmly into the 9-pin socket on the back of the " +
+                      "computer, then try again.\r\n" +
+                      "If the socket is not listed at all, try COM2 or COM3.";
+            }
+            else if (ex is ArgumentException)
+            {
+                msg = "\"" + port + "\" is not a port on this computer.\r\n" +
+                      "Open the Port list and pick one that is shown there.";
+            }
+            else
+            {
+                msg = "The scale could not be read on " + port + ".\r\n" +
+                      "Details: " + ex.Message;
+            }
+            MessageBox.Show(msg, "Cannot read the scale",
+                MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
 
         private void RefreshDump()
@@ -276,8 +351,12 @@ namespace GroceryPos.App
 
         private void StopLiveDump()
         {
+            bool wasTesting = _tmpSource != null;
             try { if (_rawTimer != null) { _rawTimer.Stop(); _rawTimer.Dispose(); _rawTimer = null; } } catch { }
             try { if (_tmpSource != null) { _tmpSource.Dispose(); _tmpSource = null; } } catch { }
+            // Give the port back to billing, or the counter is stuck on manual
+            // entry until the software is restarted.
+            if (wasTesting) RestoreAppPort();
         }
 
         // ---------- Regex test ----------

@@ -134,22 +134,39 @@ namespace GroceryPos.App
             {
                 Dock = DockStyle.Fill,
                 AllowUserToAddRows = false,
-                ReadOnly = true,
-                AutoGenerateColumns = false
+                // Qty, Rate and Disc are typed into directly; the rest stay
+                // read-only so a cashier cannot rename an item on the bill.
+                ReadOnly = false,
+                AutoGenerateColumns = false,
+                EditMode = DataGridViewEditMode.EditOnKeystrokeOrF2
             };
             Theme.ApplyGrid(_grid);
-            _grid.Columns.Add(Theme.NumberColumn("LineNo", "#", 46));
+            var lineNoCol = Theme.NumberColumn("LineNo", "#", 46);
+            lineNoCol.ReadOnly = true;
+            _grid.Columns.Add(lineNoCol);
             var nameCol = Theme.TextColumn("ItemName", "Item", 300);
             nameCol.AutoSizeMode = DataGridViewAutoSizeColumnMode.Fill;   // takes the slack
             nameCol.MinimumWidth = 180;
+            nameCol.ReadOnly = true;
             _grid.Columns.Add(nameCol);
-            _grid.Columns.Add(Theme.NumberColumn("Qty", "Qty", 110));
-            _grid.Columns.Add(Theme.NumberColumn("Rate", "Rate", 90));
-            _grid.Columns.Add(Theme.NumberColumn("Disc", "Disc", 80));
+
+            var qtyCol = Theme.NumberColumn("Qty", "Qty", 110);
+            var rateCol = Theme.NumberColumn("Rate", "Rate", 90);
+            var discCol = Theme.NumberColumn("Disc", "Disc", 80);
+            foreach (var c in new[] { qtyCol, rateCol, discCol })
+            {
+                Theme.MarkEditable(c);   // tints them as "you can type here"
+                _grid.Columns.Add(c);
+            }
+
             var amt = Theme.NumberColumn("Amount", "Amount", 110);
             amt.DefaultCellStyle.Font = Theme.DataBold;
+            amt.ReadOnly = true;         // always worked out, never typed
             _grid.Columns.Add(amt);
             _grid.DataSource = _linesView;
+
+            _grid.CellEndEdit += Grid_CellEndEdit;
+            _grid.DataError += (s, e) => { e.ThrowException = false; };
 
             _emptyBill = Theme.EmptyState(
                 "No items yet.\r\n\r\nScan a barcode, or type part of an item name and press Enter.",
@@ -159,6 +176,115 @@ namespace GroceryPos.App
             host.Controls.Add(_grid);
             host.Controls.Add(_emptyBill);
             return host;
+        }
+
+        /// <summary>
+        /// Applies a quantity, rate or discount typed straight into the bill grid.
+        /// Anything invalid is refused with a plain message and the old value is
+        /// put back, so a mistyped rate can never reach a customer's bill.
+        /// </summary>
+        private void Grid_CellEndEdit(object sender, DataGridViewCellEventArgs e)
+        {
+            if (e.RowIndex < 0 || e.RowIndex >= _bill.Lines.Count) return;
+
+            var line = _bill.Lines[e.RowIndex];
+            string col = _grid.Columns[e.ColumnIndex].DataPropertyName;
+            string typed = (_grid.Rows[e.RowIndex].Cells[e.ColumnIndex].Value ?? "").ToString().Trim();
+
+            try
+            {
+                if (col == "Qty")
+                {
+                    if (line.QtyGrams > 0)
+                    {
+                        // Loose goods are changed by weighing again, not by typing
+                        // a quantity, or the weight and the charge stop matching.
+                        Theme.Warn("This is a weighed item.\r\n" +
+                                   "Use Weigh (F4) to change it, or remove the line and weigh again.");
+                        RefreshView();
+                        return;
+                    }
+
+                    int units;
+                    if (!int.TryParse(typed, out units) || units <= 0)
+                    {
+                        Theme.Warn("Quantity must be a whole number of 1 or more.");
+                        RefreshView();
+                        return;
+                    }
+                    line.QtyUnits = units;
+                }
+                else if (col == "Rate")
+                {
+                    long rate = Money.ParseRupees(typed).Paise;
+                    if (rate <= 0)
+                    {
+                        Theme.Warn("The rate must be more than zero.");
+                        RefreshView();
+                        return;
+                    }
+
+                    // Rule 6: never sell above the printed MRP.
+                    var item = _ctx.Items.FindById(line.ItemId);
+                    if (item != null && item.DefaultMrpPaise > 0 && rate > item.DefaultMrpPaise)
+                    {
+                        Theme.Warn("Rs. " + new Money(rate) + " is above the MRP of Rs. " +
+                                   new Money(item.DefaultMrpPaise) + ".\r\n" +
+                                   "You cannot sell above the printed price.");
+                        RefreshView();
+                        return;
+                    }
+                    line.RatePaise = rate;
+                }
+                else if (col == "Disc")
+                {
+                    long disc = Money.ParseRupees(typed).Paise;
+                    if (disc < 0)
+                    {
+                        Theme.Warn("A discount cannot be less than zero.");
+                        RefreshView();
+                        return;
+                    }
+
+                    long lineTotal = line.QtyGrams > 0
+                        ? (line.RatePaise * line.QtyGrams + 500L) / 1000L
+                        : line.RatePaise * line.QtyUnits;
+
+                    if (disc > lineTotal)
+                    {
+                        Theme.Warn("The discount is more than the line is worth (Rs. " +
+                                   new Money(lineTotal) + ").");
+                        RefreshView();
+                        return;
+                    }
+                    line.DiscountPaise = disc;
+                }
+                else
+                {
+                    return;   // not an editable column
+                }
+            }
+            catch (Exception)
+            {
+                Theme.Warn("That is not a number the software can read.\r\n" +
+                           "Type it like 45 or 45.50.");
+            }
+
+            RefreshView();
+            SelectLine(e.RowIndex);
+        }
+
+        /// <summary>Keeps the highlight on a line after the grid is rebuilt.</summary>
+        private void SelectLine(int index)
+        {
+            if (index < 0 || index >= _grid.Rows.Count) return;
+            try
+            {
+                _grid.ClearSelection();
+                _grid.Rows[index].Selected = true;
+                _grid.CurrentCell = _grid.Rows[index].Cells[1];
+            }
+            catch { /* row went away */ }
         }
 
         private void UpdateEmptyBill()
@@ -416,13 +542,31 @@ namespace GroceryPos.App
 
         private void BillingForm_KeyDown(object sender, KeyEventArgs e)
         {
+            // While a cell is being typed into, Del and Esc belong to the editor:
+            // Del removes a character and Esc cancels the edit. Letting them
+            // through here would delete the line, or throw away the whole bill,
+            // in the middle of correcting a quantity.
+            bool editingCell = _grid != null && _grid.IsCurrentCellInEditMode;
+
             if (e.KeyCode == Keys.F2) { HoldCurrent(); e.Handled = true; }
             else if (e.KeyCode == Keys.F3) { RecallHeld(); e.Handled = true; }
             else if (e.KeyCode == Keys.F4) { WeighSelected(); e.Handled = true; }
             else if (e.KeyCode == Keys.F5) { ApplyDiscount(); e.Handled = true; }
-            else if (e.KeyCode == Keys.F9) { OpenPayment(); e.Handled = true; }
-            else if (e.KeyCode == Keys.Delete && _grid.Focused) { RemoveSelectedLine(); e.Handled = true; }
-            else if (e.KeyCode == Keys.Escape) { ClearBill(true); e.Handled = true; }
+            else if (e.KeyCode == Keys.F9)
+            {
+                // Commit whatever is half-typed before totalling the bill.
+                if (editingCell) _grid.EndEdit();
+                OpenPayment();
+                e.Handled = true;
+            }
+            else if (e.KeyCode == Keys.Delete && _grid.Focused && !editingCell)
+            {
+                RemoveSelectedLine(); e.Handled = true;
+            }
+            else if (e.KeyCode == Keys.Escape && !editingCell)
+            {
+                ClearBill(true); e.Handled = true;
+            }
             else if (e.Control && e.KeyCode == Keys.K) { LookupCustomer(); e.Handled = true; }
         }
 
@@ -523,10 +667,8 @@ namespace GroceryPos.App
             using (var c = _ctx.Db.Open())
             {
                 var b = c.QueryFirstOrDefault<BatchPick>(
-                    @"SELECT id AS Id, selling_paise AS SellingPaise, mrp_paise AS MrpPaise, batch_code AS BatchCode, expiry_date AS ExpiryDate
-                      FROM batches WHERE item_id=@i AND (qty_units>0 OR qty_grams>0)
-                      ORDER BY (expiry_date IS NULL) ASC, expiry_date ASC, mrp_paise ASC LIMIT 1",
-                    new { i = it.Id });
+                    @"SELECT id AS Id, selling_paise AS SellingPaise, mrp_paise AS MrpPaise, batch_code AS BatchCode, expiry_date AS ExpiryDateFROM batches WHERE item_id=@i AND (qty_units>0 OR qty_grams>0)
+                      ORDER BY (expiry_date IS NULL) ASC, expiry_date ASC, mrp_paise ASC LIMIT 1",new { i = it.Id });
                 if (b != null)
                 {
                     rate = b.SellingPaise;
@@ -540,6 +682,28 @@ namespace GroceryPos.App
             {
                 using (var r = new RateEntryDialog(it)) { if (r.ShowDialog(this) == DialogResult.OK) rate = r.Paise; else return; }
             }
+            // Scanning the same packet twice should read "2", not print two lines.
+            // Only piece-sold goods merge: two separate weighings are genuinely
+            // two different weights and must stay on their own lines so the
+            // customer can see what each one was.
+            if (units > 0 && grams == 0)
+            {
+                var existing = _bill.Lines.FirstOrDefault(l =>
+                    l.ItemId == it.Id &&
+                    l.BatchId == batchId &&
+                    l.QtyGrams == 0 &&
+                    l.RatePaise == rate &&
+                    l.DiscountPaise == 0);
+
+                if (existing != null)
+                {
+                    existing.QtyUnits += units;
+                    RefreshView();
+                    SelectLine(_bill.Lines.IndexOf(existing));
+                    return;
+                }
+            }
+
             var line = new BillLine
             {
                 LineNo = _bill.Lines.Count + 1,
@@ -556,6 +720,7 @@ namespace GroceryPos.App
             };
             _bill.Lines.Add(line);
             RefreshView();
+            SelectLine(_bill.Lines.Count - 1);
         }
 
         private void RefreshView()
