@@ -25,32 +25,64 @@ namespace GroceryPos.App
         public DashboardForm(AppContext ctx)
         {
             _ctx = ctx;
+            Theme.ApplyForm(this);
             Text = "Dashboard";
-            Width = 1000; Height = 640;
-            StartPosition = FormStartPosition.CenterParent;
-            BackColor = Color.FromArgb(245, 247, 250);
-            WindowState = FormWindowState.Maximized;
+            Width = 1180; Height = 720;
+            MinimumSize = new Size(900, 600);
+            StartPosition = FormStartPosition.CenterScreen;
 
-            var header = new Panel { Dock = DockStyle.Top, Height = 60, BackColor = Color.FromArgb(30, 60, 100) };
-            header.Controls.Add(new Label
+            var header = Theme.Header("Dashboard", DateTime.Today.ToString("dddd, dd MMMM yyyy"));
+
+            _cardsPanel = new Panel
             {
-                Text = "Dashboard  ·  " + DateTime.Today.ToString("dd MMM yyyy"),
-                ForeColor = Color.White,
-                Font = new Font("Segoe UI", 16F, FontStyle.Bold),
-                Left = 20, Top = 14, Width = 500, Height = 32
-            });
-            Controls.Add(header);
+                Dock = DockStyle.Top,
+                Height = 108,
+                BackColor = Theme.Background,
+                Padding = new Padding(Theme.Md, Theme.Sm, Theme.Md, Theme.Sm)
+            };
 
-            _cardsPanel = new Panel { Dock = DockStyle.Top, Height = 130, BackColor = Color.FromArgb(245, 247, 250) };
-            Controls.Add(_cardsPanel);
-
-            _chartPanel = new Panel { Dock = DockStyle.Fill, BackColor = Color.White, Padding = new Padding(10) };
+            var chartHost = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Theme.Background,
+                Padding = new Padding(Theme.Md, 0, Theme.Md, Theme.Md)
+            };
+            var chartCard = new Panel
+            {
+                Dock = DockStyle.Fill,
+                BackColor = Theme.Surface,
+                BorderStyle = BorderStyle.FixedSingle,
+                Padding = new Padding(Theme.Md)
+            };
+            _chartPanel = new Panel { Dock = DockStyle.Fill, BackColor = Theme.Surface };
             _chartPanel.Paint += (s, e) => DrawChart(e.Graphics);
-            Controls.Add(_chartPanel);
+            _chartPanel.Resize += (s, e) => _chartPanel.Invalidate();
+            chartCard.Controls.Add(_chartPanel);
+            chartCard.Controls.Add(new Label
+            {
+                Text = "Sales over the last 7 days",
+                Dock = DockStyle.Top,
+                Height = 26,
+                Font = Theme.BodyBold,
+                TextAlign = ContentAlignment.MiddleLeft
+            });
+            chartHost.Controls.Add(chartCard);
+
+            var footer = new Panel { Dock = DockStyle.Bottom, Height = 56, BackColor = Theme.Surface, Padding = new Padding(Theme.Md, Theme.Sm, Theme.Md, Theme.Sm) };
+            var close = Theme.SecondaryButton("Close");
+            close.Width = 120; close.Height = 40; close.Dock = DockStyle.Right;
+            close.Click += (s, e) => Close();
+            footer.Controls.Add(close);
+
+            // Fill goes in first, or it covers the cards and the header.
+            Controls.Add(chartHost);
+            Controls.Add(footer);
+            Controls.Add(_cardsPanel);
+            Controls.Add(header);
+            CancelButton = close;
 
             Load += (s, e) => Reload();
             _cardsPanel.Resize += (s, e) => LayoutCards();
-            Theme.Retrofit(this);
         }
 
         private long _salesToday, _billCount, _avgBill, _grossMargin, _cashInHand;
@@ -68,7 +100,8 @@ namespace GroceryPos.App
                 _avgBill = _billCount == 0 ? 0 : _salesToday / _billCount;
                 _grossMargin = c.ExecuteScalar<long>(@"
                     SELECT COALESCE(SUM(bl.amount_paise - bl.tax_paise
-                        - (SELECT cost_paise FROM batches ba WHERE ba.id=bl.batch_id) * (bl.qty_units + bl.qty_grams/1000)),0)
+                        - COALESCE((SELECT cost_paise FROM batches ba WHERE ba.id=bl.batch_id), 0)
+                          * (bl.qty_units + bl.qty_grams/1000)),0)
                     FROM bill_lines bl JOIN bills b ON b.id=bl.bill_id
                     WHERE b.status='completed' AND b.billed_at BETWEEN @f AND @t",
                     new { f = todayFrom, t = todayTo });
@@ -138,22 +171,83 @@ namespace GroceryPos.App
 
         private void DrawChart(Graphics g)
         {
-            g.Clear(Color.White);
-            var f = new Font("Segoe UI", 9F);
-            g.DrawString("Sales — last 7 days", f, Brushes.Black, 10, 6);
-            int left = 40, right = _chartPanel.Width - 20, top = 30, bottom = _chartPanel.Height - 30;
-            g.DrawLine(Pens.Black, left, top, left, bottom);
-            g.DrawLine(Pens.Black, left, bottom, right, bottom);
-            long max = 1;
-            foreach (var v in _sales7) if (v > max) max = v;
-            int barW = (right - left) / 8;
-            for (int i = 0; i < 7; i++)
+            g.SmoothingMode = System.Drawing.Drawing2D.SmoothingMode.AntiAlias;
+            g.Clear(Theme.Surface);
+
+            int w = _chartPanel.ClientSize.Width;
+            int h = _chartPanel.ClientSize.Height;
+            if (w < 80 || h < 80) return;
+
+            using (var axisFont = Theme.Body)
+            using (var valueFont = Theme.Data)
+            using (var axisPen = new Pen(Theme.Outline))
+            using (var gridPen = new Pen(Color.FromArgb(238, 240, 243)))
+            using (var barBrush = new SolidBrush(Color.FromArgb(60, 110, 175)))
+            using (var todayBrush = new SolidBrush(Theme.Primary))
+            using (var textBrush = new SolidBrush(Theme.Muted))
+            using (var boldBrush = new SolidBrush(Theme.OnSurface))
             {
-                float h = (float)((_sales7[i] * (double)(bottom - top)) / max);
-                var rect = new RectangleF(left + 10 + i * barW, bottom - h, barW - 10, h);
-                g.FillRectangle(Brushes.SteelBlue, rect);
-                g.DrawString(_days7[i].ToString("dd/MM"), f, Brushes.Black, rect.Left, bottom + 4);
-                g.DrawString(new Money(_sales7[i]).ToString(), f, Brushes.Black, rect.Left, rect.Top - 14);
+                long max = 0;
+                foreach (var v in _sales7) if (v > max) max = v;
+
+                if (max == 0)
+                {
+                    string msg = "No sales in the last 7 days.";
+                    var size = g.MeasureString(msg, axisFont);
+                    g.DrawString(msg, axisFont, textBrush,
+                                 (w - size.Width) / 2, (h - size.Height) / 2);
+                    return;
+                }
+
+                // A quarter of headroom, so the tallest bar never touches the top
+                // and its figure always has room to print above it. Without this
+                // the busiest day filled the whole panel edge to edge.
+                long scaleMax = (long)(max * 1.25);
+
+                int left = 70, right = w - 16, top = 16, bottom = h - 34;
+                if (right <= left || bottom <= top) return;
+
+                // Four faint gridlines, with the rupee value down the left.
+                for (int i = 0; i <= 4; i++)
+                {
+                    int y = bottom - (bottom - top) * i / 4;
+                    g.DrawLine(gridPen, left, y, right, y);
+                    long v = scaleMax * i / 4;
+                    string label = new Money(v).ToString();
+                    var sz = g.MeasureString(label, valueFont);
+                    g.DrawString(label, valueFont, textBrush, left - sz.Width - 6, y - sz.Height / 2);
+                }
+                g.DrawLine(axisPen, left, top, left, bottom);
+                g.DrawLine(axisPen, left, bottom, right, bottom);
+
+                int slot = (right - left) / 7;
+                int barW = Math.Max(8, Math.Min(64, slot - 18));
+
+                for (int i = 0; i < 7; i++)
+                {
+                    float barH = (float)((_sales7[i] * (double)(bottom - top)) / scaleMax);
+                    float x = left + i * slot + (slot - barW) / 2f;
+                    var rect = new RectangleF(x, bottom - barH, barW, barH);
+
+                    bool isToday = _days7[i].Date == DateTime.Today;
+                    if (barH >= 1f)
+                        g.FillRectangle(isToday ? todayBrush : barBrush, rect);
+
+                    // Day name under the axis; today in darker text.
+                    string day = _days7[i].ToString("ddd dd");
+                    var daySize = g.MeasureString(day, axisFont);
+                    g.DrawString(day, axisFont, isToday ? boldBrush : textBrush,
+                                 x + (barW - daySize.Width) / 2f, bottom + 6);
+
+                    // Amount above the bar, only where there was a sale.
+                    if (_sales7[i] > 0)
+                    {
+                        string amt = new Money(_sales7[i]).ToString();
+                        var amtSize = g.MeasureString(amt, valueFont);
+                        g.DrawString(amt, valueFont, boldBrush,
+                                     x + (barW - amtSize.Width) / 2f, rect.Top - amtSize.Height - 2);
+                    }
+                }
             }
         }
     }
@@ -232,25 +326,167 @@ namespace GroceryPos.App
         public ReportsMenuForm(AppContext ctx)
         {
             _ctx = ctx;
-            Text = "Reports"; Width = 500; Height = 600;
-            StartPosition = FormStartPosition.CenterParent;
-            var flow = new FlowLayoutPanel { Dock = DockStyle.Fill, FlowDirection = FlowDirection.TopDown, Padding = new Padding(12) };
-            flow.Controls.Add(Btn("Dashboard", () => new DashboardForm(_ctx).ShowDialog()));
-            flow.Controls.Add(Btn("Sales register", () => new ReportForm(_ctx, "Sales register", Reports.SalesRegister).ShowDialog()));
-            flow.Controls.Add(Btn("Item movement", () => new ReportForm(_ctx, "Item movement", Reports.ItemMovement).ShowDialog()));
-            flow.Controls.Add(Btn("Margin report", () => new ReportForm(_ctx, "Margin report", Reports.Margin).ShowDialog()));
-            flow.Controls.Add(Btn("Stock valuation", () => new ReportForm(_ctx, "Stock valuation", Reports.StockValuation).ShowDialog()));
-            flow.Controls.Add(Btn("Dead stock (90d)", () => new ReportForm(_ctx, "Dead stock 90d", Reports.DeadStock).ShowDialog()));
-            flow.Controls.Add(Btn("Tax by HSN", () => new ReportForm(_ctx, "Tax by HSN", Reports.TaxByHsn).ShowDialog()));
-            flow.Controls.Add(Btn("Cashier performance", () => new ReportForm(_ctx, "Cashier performance", Reports.CashierPerformance).ShowDialog()));
-            flow.Controls.Add(Btn("Collections (kadan)", () => new ReportForm(_ctx, "Collections", Reports.Collections).ShowDialog()));
-            flow.Controls.Add(Btn("Limit overrides", () => new ReportForm(_ctx, "Limit overrides", Reports.LimitOverrides).ShowDialog()));
-            flow.Controls.Add(Btn("Write-offs", () => new ReportForm(_ctx, "Write-offs", Reports.WriteOffs).ShowDialog()));
-            flow.Controls.Add(Btn("Export GSTR-1 CSV", () => Export(x => new ExportService(_ctx.Db).Gstr1(DateTime.Today.AddMonths(-1), DateTime.Today, x), "gstr1.csv")));
-            flow.Controls.Add(Btn("Export GSTR-3B CSV", () => Export(x => new ExportService(_ctx.Db).Gstr3b(DateTime.Today.AddMonths(-1), DateTime.Today, x), "gstr3b.csv")));
-            flow.Controls.Add(Btn("Export Tally daybook CSV", () => Export(x => new ExportService(_ctx.Db).Tally(DateTime.Today.AddMonths(-1), DateTime.Today, x), "tally.csv")));
-            Controls.Add(flow);
-            Theme.Retrofit(this);
+            Theme.ApplyForm(this);
+            Text = "Reports and GST";
+            Width = 860; Height = 640;
+            MinimumSize = new Size(720, 520);
+            StartPosition = FormStartPosition.CenterScreen;
+
+            var header = Theme.Header("Reports and GST",
+                "Pick a report. Each one opens with a date range you can change.");
+
+            var body = new Panel
+            {
+                Dock = DockStyle.Fill,
+                AutoScroll = true,
+                BackColor = Theme.Surface,
+                Padding = new Padding(Theme.Lg, Theme.Md, Theme.Lg, Theme.Lg)
+            };
+
+            var flow = new FlowLayoutPanel
+            {
+                Dock = DockStyle.Top,
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                FlowDirection = FlowDirection.TopDown,
+                WrapContents = false,
+                Width = 780
+            };
+
+            Group(flow, "How the shop is doing");
+            Row(flow,
+                Btn("Dashboard", "Today at a glance", () => new DashboardForm(_ctx).ShowDialog()),
+                Btn("Sales register", "Every bill for a period",
+                    () => new ReportForm(_ctx, "Sales register", Reports.SalesRegister).ShowDialog()));
+            Row(flow,
+                Btn("Margin report", "What you actually made",
+                    () => new ReportForm(_ctx, "Margin report", Reports.Margin).ShowDialog()),
+                Btn("Cashier performance", "Who billed what",
+                    () => new ReportForm(_ctx, "Cashier performance", Reports.CashierPerformance).ShowDialog()));
+
+            Group(flow, "Stock");
+            Row(flow,
+                Btn("Item movement", "What sold, what did not",
+                    () => new ReportForm(_ctx, "Item movement", Reports.ItemMovement).ShowDialog()),
+                Btn("Stock valuation", "What your stock is worth",
+                    () => new ReportForm(_ctx, "Stock valuation", Reports.StockValuation).ShowDialog()));
+            Row(flow,
+                Btn("Dead stock", "Nothing sold in 90 days",
+                    () => new ReportForm(_ctx, "Dead stock 90d", Reports.DeadStock).ShowDialog()),
+                null);
+
+            Group(flow, "Credit (kadan)");
+            Row(flow,
+                Btn("Collections", "Money collected, by day and by staff",
+                    () => new ReportForm(_ctx, "Collections", Reports.Collections).ShowDialog()),
+                null);
+
+            Group(flow, "For your accountant");
+            Row(flow,
+                Btn("Tax by HSN", "For the GST return",
+                    () => new ReportForm(_ctx, "Tax by HSN", Reports.TaxByHsn).ShowDialog()),
+                Btn("Tally daybook", "Save a file for Tally",
+                    () => Export(x => new ExportService(_ctx.Db).Tally(DateTime.Today.AddMonths(-1), DateTime.Today, x), "tally.csv")));
+            Row(flow,
+                Btn("GSTR-1 file", "Save a file for GST filing",
+                    () => Export(x => new ExportService(_ctx.Db).Gstr1(DateTime.Today.AddMonths(-1), DateTime.Today, x), "gstr1.csv")),
+                Btn("GSTR-3B file", "Save a file for GST filing",
+                    () => Export(x => new ExportService(_ctx.Db).Gstr3b(DateTime.Today.AddMonths(-1), DateTime.Today, x), "gstr3b.csv")));
+
+            body.Controls.Add(flow);
+
+            var footer = new Panel { Dock = DockStyle.Bottom, Height = 56, BackColor = Theme.Surface, Padding = new Padding(Theme.Md, Theme.Sm, Theme.Md, Theme.Sm) };
+            var close = Theme.SecondaryButton("Close");
+            close.Width = 120; close.Height = 40; close.Dock = DockStyle.Right;
+            close.Click += (s, e) => Close();
+            footer.Controls.Add(close);
+
+            Controls.Add(body);
+            Controls.Add(footer);
+            Controls.Add(header);
+            CancelButton = close;
+        }
+
+        /// <summary>A heading with a rule under it, to break the list into groups.</summary>
+        private static void Group(FlowLayoutPanel host, string title)
+        {
+            host.Controls.Add(new Label
+            {
+                Text = title,
+                Font = Theme.Headline,
+                AutoSize = false,
+                Width = 760,
+                Height = 30,
+                TextAlign = ContentAlignment.BottomLeft,
+                Margin = new Padding(0, Theme.Md, 0, Theme.Xs)
+            });
+            host.Controls.Add(new Panel
+            {
+                Width = 760, Height = 1, BackColor = Theme.Outline,
+                Margin = new Padding(0, 0, 0, Theme.Sm)
+            });
+        }
+
+        /// <summary>Two report cards side by side.</summary>
+        private static void Row(FlowLayoutPanel host, Control a, Control b)
+        {
+            var row = new FlowLayoutPanel
+            {
+                AutoSize = true,
+                AutoSizeMode = AutoSizeMode.GrowAndShrink,
+                FlowDirection = FlowDirection.LeftToRight,
+                WrapContents = false,
+                Margin = new Padding(0, 0, 0, Theme.Sm)
+            };
+            if (a != null) row.Controls.Add(a);
+            if (b != null) row.Controls.Add(b);
+            host.Controls.Add(row);
+        }
+
+        /// <summary>A report button that says what the report is for.</summary>
+        private Panel Btn(string title, string subtitle, Action onClick)
+        {
+            var card = new Panel
+            {
+                Width = 370,
+                Height = 62,
+                BackColor = Theme.Surface,
+                BorderStyle = BorderStyle.FixedSingle,
+                Margin = new Padding(0, 0, Theme.Sm, 0),
+                Cursor = Cursors.Hand
+            };
+            var t = new Label
+            {
+                Text = title, Font = Theme.BodyBold, ForeColor = Theme.Primary,
+                AutoSize = false, Left = Theme.Md, Top = 8, Width = 330, Height = 22,
+                TextAlign = ContentAlignment.MiddleLeft, BackColor = Color.Transparent
+            };
+            var sub = new Label
+            {
+                Text = subtitle, Font = Theme.Body, ForeColor = Theme.Muted,
+                AutoSize = false, Left = Theme.Md, Top = 30, Width = 330, Height = 22,
+                TextAlign = ContentAlignment.TopLeft, BackColor = Color.Transparent
+            };
+            card.Controls.Add(t);
+            card.Controls.Add(sub);
+
+            EventHandler click = (s, e) =>
+            {
+                try { onClick(); }
+                catch (Exception ex)
+                {
+                    Theme.Error("This report could not be opened." +
+                                Environment.NewLine + Environment.NewLine +
+                                "Details: " + ex.Message);
+                }
+            };
+            foreach (Control c in new Control[] { card, t, sub })
+            {
+                c.Click += click;
+                c.MouseEnter += (s, e) => card.BackColor = Color.FromArgb(240, 244, 250);
+                c.MouseLeave += (s, e) => card.BackColor = Theme.Surface;
+            }
+            return card;
         }
 
         private Button Btn(string t, Action a)
@@ -285,7 +521,7 @@ namespace GroceryPos.App
                     FROM bills b LEFT JOIN customers cu ON cu.id=b.customer_id
                     WHERE b.billed_at BETWEEN @f AND @t ORDER BY b.billed_at",
                     new { f = from.ToString("yyyy-MM-dd"), t = to.ToString("yyyy-MM-dd 23:59:59") })
-                    .Select(r => (object)new { BillNo = "INV-" + (long)r.BillNo, At = (string)r.At, Net = new Money((long)r.Net).ToString(), Customer = (string)r.Customer, Status = (string)r.Status }).ToList();
+                    .Select(r => (object)new { BillNo = "INV-" + L(r.BillNo), At = S(r.At), Net = new Money(L(r.Net)).ToString(), Customer = S(r.Customer), Status = S(r.Status) }).ToList();
             }
         }
 
@@ -299,8 +535,25 @@ namespace GroceryPos.App
                     WHERE b.status='completed' AND b.billed_at BETWEEN @f AND @t
                     GROUP BY i.id ORDER BY Amount DESC",
                     new { f = from.ToString("yyyy-MM-dd"), t = to.ToString("yyyy-MM-dd 23:59:59") })
-                    .Select(r => (object)new { Item = (string)r.Item, Units = (long)r.Units, Grams = (long)r.Grams, Amount = new Money((long)r.Amount).ToString() }).ToList();
+                    .Select(r => (object)new { Item = S(r.Item), Units = L(r.Units), Grams = L(r.Grams), Amount = new Money(L(r.Amount)).ToString() }).ToList();
             }
+        }
+
+        /// <summary>
+        /// SQL aggregates return NULL when they match no rows, and casting that
+        /// straight to long throws "Cannot convert null to long". Reports must
+        /// never crash on an empty shop, so every numeric read goes through here.
+        /// </summary>
+        private static long L(object v)
+        {
+            if (v == null || v is DBNull) return 0L;
+            try { return Convert.ToInt64(v); } catch { return 0L; }
+        }
+
+        /// <summary>Same idea for text: a missing name reads blank, not a crash.</summary>
+        private static string S(object v)
+        {
+            return (v == null || v is DBNull) ? "" : Convert.ToString(v);
         }
 
         internal static List<object> Margin(AppContext ctx, DateTime from, DateTime to)
@@ -308,15 +561,16 @@ namespace GroceryPos.App
             using (var c = ctx.Db.Open())
             {
                 return c.Query<dynamic>(@"SELECT i.name AS Item,
-                    SUM(bl.amount_paise - bl.tax_paise) AS Revenue,
-                    SUM((SELECT cost_paise FROM batches ba WHERE ba.id=bl.batch_id) * (bl.qty_units + bl.qty_grams/1000)) AS Cost
+                    COALESCE(SUM(bl.amount_paise - bl.tax_paise), 0) AS Revenue,
+                    COALESCE(SUM(COALESCE((SELECT cost_paise FROM batches ba WHERE ba.id=bl.batch_id), 0)
+                                 * (bl.qty_units + bl.qty_grams/1000)), 0) AS Cost
                     FROM bill_lines bl JOIN bills b ON b.id=bl.bill_id JOIN items i ON i.id=bl.item_id
                     WHERE b.status='completed' AND b.billed_at BETWEEN @f AND @t
                     GROUP BY i.id ORDER BY Revenue DESC",
                     new { f = from.ToString("yyyy-MM-dd"), t = to.ToString("yyyy-MM-dd 23:59:59") })
                     .Select(r => {
-                        long rev = (long)r.Revenue, cost = (long)r.Cost;
-                        return (object)new { Item = (string)r.Item, Revenue = new Money(rev).ToString(), Cost = new Money(cost).ToString(), Margin = new Money(rev - cost).ToString() };
+                        long rev = L(r.Revenue), cost = L(r.Cost);
+                        return (object)new { Item = S(r.Item), Revenue = new Money(rev).ToString(), Cost = new Money(cost).ToString(), Margin = new Money(rev - cost).ToString() };
                     }).ToList();
             }
         }
@@ -330,7 +584,7 @@ namespace GroceryPos.App
                     (b.cost_paise * b.qty_units + b.cost_paise * b.qty_grams / 1000) AS Value
                     FROM batches b JOIN items i ON i.id=b.item_id
                     WHERE b.qty_units>0 OR b.qty_grams>0 ORDER BY Value DESC")
-                    .Select(r => (object)new { Item = (string)r.Item, Batch = (string)r.Batch, Units = (long)r.Units, Grams = (long)r.Grams, Value = new Money((long)r.Value).ToString() }).ToList();
+                    .Select(r => (object)new { Item = S(r.Item), Batch = S(r.Batch), Units = L(r.Units), Grams = L(r.Grams), Value = new Money(L(r.Value)).ToString() }).ToList();
             }
         }
 
@@ -350,7 +604,7 @@ namespace GroceryPos.App
                         OR (SELECT MAX(b.billed_at) FROM bill_lines bl JOIN bills b ON b.id=bl.bill_id
                           WHERE bl.item_id=i.id AND b.status='completed') < @c)
                     ORDER BY i.name", new { c = cutoff })
-                    .Select(r => (object)new { Item = (string)r.Item, Sku = (string)r.Sku, OnHand = (long)r.OnHand, LastSold = (string)(r.LastSold ?? "never") }).ToList();
+                    .Select(r => (object)new { Item = S(r.Item), Sku = S(r.Sku), OnHand = L(r.OnHand), LastSold = (string)(r.LastSold ?? "never") }).ToList();
             }
         }
 
@@ -364,7 +618,7 @@ namespace GroceryPos.App
                     WHERE b.status='completed' AND b.billed_at BETWEEN @f AND @t
                     GROUP BY bl.hsn_code, bl.tax_rate_bp ORDER BY bl.hsn_code",
                     new { f = from.ToString("yyyy-MM-dd"), t = to.ToString("yyyy-MM-dd 23:59:59") })
-                    .Select(r => (object)new { HSN = (string)r.Hsn, RatePct = ((long)r.Rate / 100.0).ToString("0.00"), Taxable = new Money((long)r.Taxable).ToString(), Tax = new Money((long)r.Tax).ToString() }).ToList();
+                    .Select(r => (object)new { HSN = S(r.Hsn), RatePct = (L(r.Rate) / 100.0).ToString("0.00"), Taxable = new Money(L(r.Taxable)).ToString(), Tax = new Money(L(r.Tax)).ToString() }).ToList();
             }
         }
 
@@ -377,7 +631,7 @@ namespace GroceryPos.App
                     WHERE b.status='completed' AND b.billed_at BETWEEN @f AND @t
                     GROUP BY u.id ORDER BY Sales DESC",
                     new { f = from.ToString("yyyy-MM-dd"), t = to.ToString("yyyy-MM-dd 23:59:59") })
-                    .Select(r => (object)new { Cashier = (string)r.Cashier, Bills = (long)r.Bills, Sales = new Money((long)r.Sales).ToString() }).ToList();
+                    .Select(r => (object)new { Cashier = S(r.Cashier), Bills = L(r.Bills), Sales = new Money(L(r.Sales)).ToString() }).ToList();
             }
         }
 
@@ -391,7 +645,7 @@ namespace GroceryPos.App
                     WHERE p.received_at BETWEEN @f AND @t
                     GROUP BY date(p.received_at), p.mode, p.received_by ORDER BY Day DESC",
                     new { f = from.ToString("yyyy-MM-dd"), t = to.ToString("yyyy-MM-dd 23:59:59") })
-                    .Select(r => (object)new { Day = (string)r.Day, Mode = (string)r.Mode, By = (string)r.ReceivedBy, Amount = new Money((long)r.Amount).ToString() }).ToList();
+                    .Select(r => (object)new { Day = S(r.Day), Mode = S(r.Mode), By = S(r.ReceivedBy), Amount = new Money(L(r.Amount)).ToString() }).ToList();
             }
         }
 
@@ -405,7 +659,7 @@ namespace GroceryPos.App
                     FROM credit_limit_events e LEFT JOIN customers cu ON cu.id=e.customer_id
                     WHERE e.at BETWEEN @f AND @t ORDER BY e.at DESC",
                     new { f = from.ToString("yyyy-MM-dd"), t = to.ToString("yyyy-MM-dd 23:59:59") })
-                    .Select(r => (object)new { At = (string)r.At, Customer = (string)(r.Customer ?? ""), Type = (string)r.Type, Attempted = new Money((long)(r.Attempted ?? 0L)).ToString(), Balance = new Money((long)(r.Balance ?? 0L)).ToString(), Reason = (string)(r.Reason ?? "") }).ToList();
+                    .Select(r => (object)new { At = S(r.At), Customer = (string)(r.Customer ?? ""), Type = S(r.Type), Attempted = new Money((long)(r.Attempted ?? 0L)).ToString(), Balance = new Money((long)(r.Balance ?? 0L)).ToString(), Reason = (string)(r.Reason ?? "") }).ToList();
             }
         }
 
@@ -418,7 +672,7 @@ namespace GroceryPos.App
                     FROM customer_ledger l JOIN customers cu ON cu.id=l.customer_id JOIN users u ON u.id=l.user_id
                     WHERE l.type='write_off' AND l.at BETWEEN @f AND @t ORDER BY l.at DESC",
                     new { f = from.ToString("yyyy-MM-dd"), t = to.ToString("yyyy-MM-dd 23:59:59") })
-                    .Select(r => (object)new { At = (string)r.At, Customer = (string)r.Customer, Amount = new Money((long)r.Amount).ToString(), Reason = (string)r.Reason, By = (string)r.By }).ToList();
+                    .Select(r => (object)new { At = S(r.At), Customer = S(r.Customer), Amount = new Money(L(r.Amount)).ToString(), Reason = S(r.Reason), By = S(r.By) }).ToList();
             }
         }
     }

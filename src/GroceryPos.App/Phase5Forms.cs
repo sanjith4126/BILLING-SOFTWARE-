@@ -27,45 +27,57 @@ namespace GroceryPos.App
         public CustomerLedgerForm(AppContext ctx)
         {
             _ctx = ctx;
+            Theme.ApplyForm(this);
             Text = "Customer credit (kadan)";
-            Width = 1000; Height = 620;
-            StartPosition = FormStartPosition.CenterParent;
+            Width = 1100; Height = 680;
+            MinimumSize = new Size(900, 560);
+            StartPosition = FormStartPosition.CenterScreen;
 
-            var top = new Panel { Dock = DockStyle.Top, Height = 80 };
-            top.Controls.Add(new Label { Text = "Phone", Left = 8, Top = 12, Width = 40 });
-            _phone = new TextBox { Left = 60, Top = 8, Width = 160 };
+            var pageHeader = Theme.Header("Customer credit (kadan)",
+                "Who owes what, and what it was for.");
+
+            var top = new Panel
+            {
+                Dock = DockStyle.Top,
+                Height = 62,
+                BackColor = Theme.Surface,
+                Padding = new Padding(Theme.Md, Theme.Sm, Theme.Md, Theme.Sm)
+            };
+            var lblPhone = Theme.FieldLabel("Customer phone number");
+            lblPhone.SetBounds(Theme.Md, 2, 220, 16);
+            top.Controls.Add(lblPhone);
+            _phone = Theme.TextField(180);
+            _phone.SetBounds(Theme.Md, 20, 180, Theme.FieldHeight);
             top.Controls.Add(_phone);
-            var lookup = new Button { Text = "Lookup", Left = 230, Top = 6, Width = 80 };
+
+            var lookup = Theme.PrimaryButton("Find");
+            lookup.SetBounds(206, 20, 90, Theme.ButtonHeight);
             lookup.Click += (s, e) => Lookup();
             top.Controls.Add(lookup);
-            var newBtn = new Button { Text = "New customer", Left = 320, Top = 6, Width = 120 };
+
+            var newBtn = Theme.SecondaryButton("New customer");
+            newBtn.SetBounds(306, 20, 140, Theme.ButtonHeight);
             newBtn.Click += (s, e) => NewCustomer();
             top.Controls.Add(newBtn);
-            var payBtn = new Button { Text = "Record payment (F2)", Left = 450, Top = 6, Width = 160 };
+
+            var payBtn = Theme.PrimaryButton("Record a payment");
+            payBtn.SetBounds(456, 20, 170, Theme.ButtonHeight);
             payBtn.Click += (s, e) => RecordPayment();
             top.Controls.Add(payBtn);
-            var stmtBtn = new Button { Text = "Print statement (thermal)", Left = 620, Top = 6, Width = 190 };
+
+            var stmtBtn = Theme.SecondaryButton("Print statement");
+            stmtBtn.SetBounds(636, 20, 150, Theme.ButtonHeight);
             stmtBtn.Click += (s, e) => PrintStatement(false);
             top.Controls.Add(stmtBtn);
-            var stmtA4 = new Button { Text = "A4 statement", Left = 820, Top = 6, Width = 130 };
+
+            var stmtA4 = Theme.SecondaryButton("A4 statement");
+            stmtA4.SetBounds(796, 20, 140, Theme.ButtonHeight);
             stmtA4.Click += (s, e) => PrintStatement(true);
             top.Controls.Add(stmtA4);
 
-            var limitBtn = new Button { Text = "Adjust limit (owner)", Left = 8, Top = 44, Width = 160 };
-            limitBtn.Click += (s, e) => AdjustLimit();
-            top.Controls.Add(limitBtn);
-            var disable = new Button { Text = "Disable credit", Left = 175, Top = 44, Width = 120 };
-            disable.Click += (s, e) => ToggleCredit(false);
-            top.Controls.Add(disable);
-            var enable = new Button { Text = "Enable credit", Left = 300, Top = 44, Width = 120 };
-            enable.Click += (s, e) => ToggleCredit(true);
-            top.Controls.Add(enable);
-            var writeOff = new Button { Text = "Write-off (owner)", Left = 425, Top = 44, Width = 140 };
-            writeOff.Click += (s, e) => new WriteOffForm(_ctx, _current).ShowDialog(this);
-            top.Controls.Add(writeOff);
-            var adj = new Button { Text = "Adjustment (owner)", Left = 570, Top = 44, Width = 140 };
-            adj.Click += (s, e) => new AdjustmentForm(_ctx, _current).ShowDialog(this);
-            top.Controls.Add(adj);
+            // Credit limits, enable/disable, write-off and adjustment were all
+            // removed at the shop's request: they extend credit on judgement, not
+            // on a number, and the extra buttons only got in the way.
 
             _header = new Label { Dock = DockStyle.Top, Height = 60, Font = new Font("Segoe UI", 10F) };
 
@@ -85,6 +97,7 @@ namespace GroceryPos.App
             Controls.Add(_grid);
             Controls.Add(_header);
             Controls.Add(top);
+            Controls.Add(pageHeader);
             Theme.Retrofit(this);
         }
 
@@ -113,13 +126,25 @@ namespace GroceryPos.App
             long outstanding = _current.CurrentBalancePaise;
             var oldestUnpaid = OldestUnpaidDays();
             var lastPayment = LastPaymentDate();
-            _header.Text = "Name: " + _current.Name + "   |   Outstanding: Rs. " + new Money(outstanding) +
-                "   |   Limit: Rs. " + new Money(_current.CreditLimitPaise) +
-                "   |   Available: Rs. " + new Money(_current.CreditLimitPaise - outstanding) +
-                "\r\nOldest unpaid: " + (oldestUnpaid.HasValue ? oldestUnpaid.Value + " days" : "—") +
-                "   |   Last payment: " + (lastPayment.HasValue ? lastPayment.Value.ToString("dd/MM/yy") : "—") +
-                "   |   Since: " + _current.Since.ToString("dd/MM/yy") +
-                "   |   Credit allowed: " + (_current.CreditAllowed ? "YES" : "NO");
+            // A cleared balance is the thing the owner most wants to see at a
+            // glance, so it is stated in a word rather than left as "0.00".
+            bool settled = outstanding == 0;
+            bool inAdvance = outstanding < 0;
+
+            string status = settled ? "SETTLED - nothing owed"
+                          : inAdvance ? "IN ADVANCE Rs. " + new Money(-outstanding)
+                          : "OWES Rs. " + new Money(outstanding);
+
+            _header.Text = _current.Name + "   (" + (_current.Phone ?? "") + ")" +
+                "   |   " + status +
+                "\r\nOldest unpaid: " + (oldestUnpaid.HasValue ? oldestUnpaid.Value + " days" : "-") +
+                "   |   Last payment: " + (lastPayment.HasValue ? lastPayment.Value.ToString("dd/MM/yy") : "-") +
+                "   |   Customer since: " + _current.Since.ToString("dd/MM/yy");
+
+            _header.ForeColor = settled ? Theme.Success
+                              : inAdvance ? Theme.Primary
+                              : Theme.Danger;
+            _header.Font = Theme.BodyBold;
 
             var users = _ctx.Users.All().ToDictionary(u => u.Id, u => u.Name);
             var display = _entries.Select(e => new
@@ -301,8 +326,7 @@ namespace GroceryPos.App
     public class CustomerEditForm : Form
     {
         private readonly AppContext _ctx;
-        private TextBox _phone, _name, _address, _limit;
-        private CheckBox _creditAllowed;
+        private TextBox _phone, _name, _address;
         public string SavedPhone;
 
         public CustomerEditForm(AppContext ctx)
@@ -317,9 +341,15 @@ namespace GroceryPos.App
             _name = new TextBox { Left = 100, Top = y, Width = 260 }; Controls.Add(_name); y += 30;
             Controls.Add(new Label { Text = "Address", Left = 8, Top = y + 3, Width = 80 });
             _address = new TextBox { Left = 100, Top = y, Width = 260 }; Controls.Add(_address); y += 30;
-            Controls.Add(new Label { Text = "Credit limit (Rs)", Left = 8, Top = y + 3, Width = 120 });
-            _limit = new TextBox { Left = 130, Top = y, Width = 100, Text = "0" }; Controls.Add(_limit); y += 30;
-            _creditAllowed = new CheckBox { Text = "Credit allowed (owner/manager sets)", Left = 8, Top = y, Width = 300 }; Controls.Add(_creditAllowed); y += 30;
+            // No credit limit and no enable switch: the shop decides who gets
+            // credit by knowing the person, and every customer can take it.
+            Controls.Add(new Label
+            {
+                Text = "Anyone added here can buy on credit (kadan).",
+                Left = 8, Top = y + 3, Width = 350, Height = 20,
+                ForeColor = Theme.Muted
+            });
+            y += 30;
             var save = new Button { Text = "Save", Left = 100, Top = y + 10, Width = 120 };
             save.Click += (s, e) => Save();
             Controls.Add(save);
@@ -335,8 +365,10 @@ namespace GroceryPos.App
                     Phone = _phone.Text.Trim(),
                     Name = _name.Text.Trim(),
                     Address = _address.Text,
-                    CreditLimitPaise = Money.ParseRupees(_limit.Text).Paise,
-                    CreditAllowed = _creditAllowed.Checked
+                    // Credit is always allowed, with no ceiling. The ledger still
+                    // records every rupee, which is what the owner actually needs.
+                    CreditLimitPaise = 0,
+                    CreditAllowed = true
                 };
                 _ctx.Customers.Create(cust, _ctx.CurrentUser.Id);
                 SavedPhone = cust.Phone;

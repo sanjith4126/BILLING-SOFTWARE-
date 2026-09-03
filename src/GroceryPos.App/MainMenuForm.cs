@@ -110,6 +110,45 @@ namespace GroceryPos.App
 
             Controls.Add(_flow);
             Controls.Add(header);
+
+            // The shop's screen is narrower than this laptop's. Fixed-width rows
+            // pushed the panel wider than the window, which turned the vertical
+            // scrollbar into a horizontal one and left the lower tiles
+            // unreachable. Resize the rows with the window instead.
+            _flow.Resize += (s, e) => FitRowsToWidth();
+            Shown += (s, e) => FitRowsToWidth();
+
+            // A wheel over a tile would otherwise do nothing, because the tile
+            // has focus rather than the scrolling panel.
+            HookWheel(_flow);
+        }
+
+        /// <summary>Keeps every row as wide as the visible area, less the padding.</summary>
+        private void FitRowsToWidth()
+        {
+            int usable = _flow.ClientSize.Width - _flow.Padding.Horizontal;
+            if (usable < 300) usable = 300;
+            foreach (Control c in _flow.Controls)
+                c.Width = usable;
+        }
+
+        /// <summary>Sends the mouse wheel to the scrolling panel from any child.</summary>
+        private void HookWheel(Control parent)
+        {
+            foreach (Control c in parent.Controls)
+            {
+                c.MouseWheel += (s, e) =>
+                {
+                    var native = (HandledMouseEventArgs)e;
+                    native.Handled = true;
+                    int delta = -Math.Sign(e.Delta) * 60;
+                    var v = _flow.VerticalScroll;
+                    v.Value = Math.Max(v.Minimum, Math.Min(v.Maximum, v.Value + delta));
+                    _flow.PerformLayout();
+                };
+                c.MouseEnter += (s, e) => { if (!_flow.Focused) _flow.Focus(); };
+                if (c.HasChildren) HookWheel(c);
+            }
         }
 
         // ---- Layout helpers -------------------------------------------------
@@ -121,14 +160,14 @@ namespace GroceryPos.App
                 Font = Theme.Headline,
                 ForeColor = Theme.OnSurface,
                 AutoSize = false,
-                Width = 1180,
+                Width = 1100,
                 Height = 34,
                 TextAlign = ContentAlignment.BottomLeft,
                 Margin = new Padding(0, Theme.Md, 0, Theme.Xs)
             };
             _flow.Controls.Add(l);
 
-            var rule = new Panel { Width = 1180, Height = 1, BackColor = Theme.Outline, Margin = new Padding(0, 0, 0, Theme.Sm) };
+            var rule = new Panel { Width = 1100, Height = 1, BackColor = Theme.Outline, Margin = new Padding(0, 0, 0, Theme.Sm) };
             _flow.Controls.Add(rule);
         }
 
@@ -140,7 +179,7 @@ namespace GroceryPos.App
                 AutoSize = true,
                 AutoSizeMode = AutoSizeMode.GrowAndShrink,
                 WrapContents = true,
-                Width = 1180,
+                Width = 1100,
                 Margin = new Padding(0, 0, 0, Theme.Sm),
                 FlowDirection = FlowDirection.LeftToRight
             };

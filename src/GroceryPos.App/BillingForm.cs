@@ -924,11 +924,21 @@ namespace GroceryPos.App
 
         private void WeighSelected()
         {
-            if (_grid.CurrentRow == null) { MessageBox.Show("Select a weight line first"); return; }
+            if (_grid.CurrentRow == null)
+            {
+                Theme.Warn("Click the loose item on the bill first, then press F4.");
+                return;
+            }
             int idx = _grid.CurrentRow.Index;
             var line = _bill.Lines[idx];
             var item = _ctx.Items.FindById(line.ItemId);
-            if (item == null || item.SoldBy != SoldBy.Weight) { MessageBox.Show("Not a weight item"); return; }
+            if (item == null || item.SoldBy != SoldBy.Weight)
+            {
+                Theme.Warn("This item is sold by the piece, so it is not weighed." +
+                           Environment.NewLine + Environment.NewLine +
+                           "F4 is only for loose goods.");
+                return;
+            }
 
             int rawGrams = 0;
             bool fromScale = false;
@@ -938,12 +948,18 @@ namespace GroceryPos.App
                 var reading = src.Latest;
                 if (!reading.HasValue)
                 {
-                    MessageBox.Show("Scale connected but no reading yet. Put the item on the pan and try again.");
+                    Theme.Warn("Nothing on the scale yet." +
+                               Environment.NewLine + Environment.NewLine +
+                               "Put the goods on the pan, wait for the number at the top of this " +
+                               "screen to turn green, then press F4.");
                     return;
                 }
                 if (!reading.Value.Stable)
                 {
-                    MessageBox.Show("Scale reading not stable yet. Wait for it to settle and try again.");
+                    Theme.Warn("The scale is still settling." +
+                               Environment.NewLine + Environment.NewLine +
+                               "Wait for the weight at the top of this screen to stop moving and " +
+                               "turn green, then press F4.");
                     return;
                 }
                 rawGrams = reading.Value.Grams;
@@ -994,27 +1010,16 @@ namespace GroceryPos.App
             {
                 if (pay.ShowDialog(this) != DialogResult.OK) { _scan.Focus(); return; }
 
-                // Credit limit check
-                if (pay.Payments.Any(p => p.Mode == PaymentMode.Khata))
+                // Credit (kadan) needs a customer to owe the money -- nothing more.
+                // The shop asked for no limit and no approval: they know who they
+                // give credit to, and a manager PIN at the counter only held up
+                // the queue. Every credit sale is still recorded against a name,
+                // so the ledger still answers who owes what.
+                if (pay.Payments.Any(p => p.Mode == PaymentMode.Khata) && _customer == null)
                 {
-                    if (_customer == null) { MessageBox.Show("Credit (kadan) requires a customer"); return; }
-                    if (!_customer.CreditAllowed) { MessageBox.Show("Credit not enabled for this customer"); return; }
-                    long khata = pay.Payments.Where(p => p.Mode == PaymentMode.Khata).Sum(p => p.AmountPaise);
-                    long newBal = _customer.CurrentBalancePaise + khata;
-                    if (newBal > _customer.CreditLimitPaise)
-                    {
-                        string reason;
-                        long? authoriser = ManagerOverrideDialog.Prompt(_ctx,
-                            "Credit limit exceeded.\nBalance: " + new Money(_customer.CurrentBalancePaise) +
-                            "\nThis bill: " + new Money(khata) +
-                            "\nLimit: " + new Money(_customer.CreditLimitPaise) +
-                            "\nShortfall: " + new Money(newBal - _customer.CreditLimitPaise) +
-                            "\n\nManager PIN to allow:", out reason);
-                        _ctx.CreditLimits.LogEvent(_customer.Id, authoriser.HasValue ? "override_allowed" : "override_refused",
-                            _customer.CreditLimitPaise, _customer.CreditLimitPaise, null, khata, _customer.CurrentBalancePaise,
-                            reason, authoriser, _ctx.CurrentUser.Id);
-                        if (!authoriser.HasValue) { MessageBox.Show("Override refused"); return; }
-                    }
+                    Theme.Warn("Credit (kadan) needs a customer.\r\n\r\n" +
+                               "Press Ctrl+K to find them by phone number, then take the payment again.");
+                    return;
                 }
 
                 int loyaltyRate;
@@ -1398,7 +1403,10 @@ namespace GroceryPos.App
             _current = _ctx.Customers.Search(_search.Text);
             _list.Items.Clear();
             foreach (var c in _current)
-                _list.Items.Add(c.Name + "  " + (c.Phone ?? "") + "   bal " + new Money(c.CurrentBalancePaise) + (c.CreditAllowed ? "  [credit]" : ""));
+                _list.Items.Add(c.Name + "  " + (c.Phone ?? "") + "   " +
+                    (c.CurrentBalancePaise == 0 ? "SETTLED"
+                     : c.CurrentBalancePaise < 0 ? "in advance Rs. " + new Money(-c.CurrentBalancePaise)
+                     : "owes Rs. " + new Money(c.CurrentBalancePaise)));
         }
 
         private void Pick()

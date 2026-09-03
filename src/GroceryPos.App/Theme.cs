@@ -536,6 +536,18 @@ namespace GroceryPos.App
                     && (box != null || c is ComboBox || c is NumericUpDown
                                     || c is DateTimePicker || c is CheckBox))
                 {
+                    // A form's AcceptButton swallows Enter before KeyDown ever
+                    // runs, which is why Enter in the supplier dialog saved
+                    // instead of moving on. PreviewKeyDown fires first, and
+                    // suppressing the key there stops the default button.
+                    c.PreviewKeyDown += (s, e) =>
+                    {
+                        if (e.KeyCode != Keys.Enter) return;
+                        var cb = s as ComboBox;
+                        if (cb != null && cb.DroppedDown) return;
+                        e.IsInputKey = true;   // deliver it to KeyDown below
+                    };
+
                     c.KeyDown += (s, e) =>
                     {
                         if (e.KeyCode != Keys.Enter) return;
@@ -545,8 +557,20 @@ namespace GroceryPos.App
                         if (combo != null && combo.DroppedDown) return;
 
                         e.Handled = true;
-                        e.SuppressKeyPress = true;      // no "ding" from the beep
-                        form.SelectNextControl((Control)s, true, true, true, true);
+                        e.SuppressKeyPress = true;      // no "ding", and no AcceptButton
+
+                        var here = (Control)s;
+                        var next = form.GetNextControl(here, true);
+                        while (next != null && (!next.TabStop || !next.Enabled || !next.Visible))
+                            next = form.GetNextControl(next, true);
+
+                        if (next != null) next.Focus();
+                        else if (form.AcceptButton != null)
+                        {
+                            // Last field: Enter now means "done", which is what a
+                            // person expects at the end of a form.
+                            form.AcceptButton.PerformClick();
+                        }
                     };
                 }
 
